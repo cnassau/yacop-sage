@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 def __startup__():
    import sage.algebras.steenrod.steenrod_algebra
@@ -210,6 +211,19 @@ def __startup__():
             return self.set.cardinality()
       method = types.MethodType(cardinality_14541,None,LazyFamily)
       setattr(LazyFamily,"cardinality",method)
+
+def __print_banner__():
+    import yacop
+    from sage.env import SAGE_BANNER
+    if SAGE_BANNER.lower() == "no":
+       return
+    bars = u"─"*68
+    s = []
+    a = s.append
+    a(u'┌' + bars + u'┐')
+    a(u"\n│ %-66s │\n" % ("Imported package Yacop (version %s)" % yacop.__version__))
+    a(u'└' + bars + u'┘')
+    print u"".join(s)
 
 # Local Variables:
 # eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
