@@ -1,0 +1,250 @@
+# test file for ground field resolutions -*-tcl-*-
+
+lappend auto_path [file dirname [info script]]/..
+
+package require yacop::sage
+
+if {[lsearch [namespace children] ::tcltest] == -1} {
+    package require tcltest
+    namespace import -force ::tcltest::*
+}
+
+yacop::sectionizer quiet on
+
+foreach {prime obj algebra viewtype filename} {
+    2 A1 {0 {2 1}}    even file:gfr-A1.db?mode=memory&cache=shared
+    2 A2 {0 {3 2 1}}  even file:gfr-A2.db?mode=memory&cache=shared
+} {
+
+    test gfr-$obj "create resolution of $obj" {
+	yacop::gfr create $obj $filename
+	$obj algebra $prime $algebra
+	$obj viewtype $viewtype
+	$obj profmode auto
+	$obj extend-to {sdeg 20 rtdeg 50}
+	return ok
+    } ok
+}
+
+test gfr-A1-gens "generators of A1 resolution" {
+    A1 db eval {
+	select count(*) from generators where sdeg < 7
+	group by sdeg order by sdeg
+    }
+} {1 2 2 2 3 4 4}
+
+test gfr-A2-gens "generators of A2 resolution" {
+    A2 db eval {
+	select count(*) from generators where sdeg < 7
+	group by sdeg order by sdeg
+    }
+} {1 3 4 5 9 12 12}
+
+test chmap-1 "chain map A1 -> A2" {
+    set basecycle [A2 db eval {select 1,rowid from generators where sdeg=0}]
+    yacop::chainmap create ch1 A1 A2 idmap $basecycle file:ch1.db?mode=memory&cache=shared
+    set res {}
+    ch1 extend {smax 6}
+    lappend res [ch1 db onecolumn {select count(*) from generators}]
+    ch1 extend {smax 6}
+    lappend res [ch1 db onecolumn {select count(*) from generators}]
+    ch1 extend {smax 20}
+    set res
+} {18 18}
+
+proc nontrivially-mapped {chainmap conditions} {
+    set res {}
+    set lkey -
+    $chainmap src db eval [format {select rowid,sdeg,ideg,edeg from generators where %s order by sdeg,ideg,edeg} $conditions] {
+	$chainmap db eval {select frag_decode(format,data,targen) as pol from fragments where srcgen=$rowid and opideg=0} {
+	    steenrod::poly varcancel pol 2
+	    if {$pol ne ""} {
+		set key $sdeg,$ideg,$edeg
+		if {$lkey ne $key} { lappend res $key }
+		set lkey $key
+	    }
+	}
+    }
+    return $res
+}
+
+test chmap-2 "hurewicz A1 -> A2" {
+    nontrivially-mapped ch1 {sdeg<8}
+} {0,0,0 1,2,0 1,4,0 2,4,0 2,8,0 3,6,0 4,8,0 4,24,0 5,10,0 5,26,0 5,28,0 6,12,0 6,28,0 6,32,0 7,14,0 7,30,0}
+
+test chmap-3 "periodicity map A1 -> A1" {
+    set basecycle [A1 db eval {select 1,rowid from generators where sdeg=4 and ideg=24}]
+    yacop::chainmap create ch2 A1 A1 idmap $basecycle file:ch2.db?mode=memory&cache=shared
+    ch2 extend {smax 20}
+    nontrivially-mapped ch2 {sdeg<10}
+} {4,24,0 5,26,0 5,28,0 6,28,0 6,32,0 7,30,0 7,38,0 8,32,0 8,40,0 8,48,0 9,34,0 9,42,0 9,50,0 9,52,0}
+
+test psi-1 "psi map A1 -> A1" {
+    set basecycle [A2 db eval {select 1,rowid from generators where sdeg=0}]
+    yacop::chainmap create psi1 A2 A2 psi $basecycle file:psi1.db?mode=memory&cache=shared
+    psi1 extend {smax 3}
+} {}
+
+if 0 {
+    A2 db eval { select * from fragments join generators g on g.rowid=srcgen where g.sdeg<4 order by g.sdeg,g.ideg} w {
+	parray w
+    }
+    psi1 db eval { select * from fragments order by srcgen} h {
+	parray h
+    }
+}
+
+yacop::sectionizer quiet on
+
+foreach {prime obj algebra viewtype flavour filename} {
+    2 EA2 {7 {2 1}} odd regular file:gfr-EA2.db?mode=memory&cache=shared
+    2 AM2 {0 {3 2 1}} odd motivic file:motc-A2.db?mode=memory&cache=shared
+    2 AM  {0 full} odd motivic file:motc-A.db?mode=memory&cache=shared
+    3 A3  {-1 full} odd regular file:gfr-A3.db?mode=memory&cache=shared
+    5 A5  {-1 full} odd regular file:gfr-A5.db?mode=memory&cache=shared
+} {
+    test gfr-$obj "create resolution of $obj" {
+	yacop::gfr create $obj $filename flavour $flavour
+	$obj algebra $prime $algebra
+	$obj viewtype $viewtype
+	$obj profmode auto
+	$obj extend-to {sdeg 20 ideg 50}
+	return ok
+    } ok
+}
+
+test gfr-motivic-1 {number of generators} {
+    set qry {
+	select g.sdeg,g.ideg,g.edeg,count(*) as cnt
+	from generators g
+	group by g.sdeg, g.ideg, g.edeg
+	order by g.sdeg, g.ideg, g.edeg
+    }
+    set gens1 [EA2 db eval $qry]
+    set gens2 [AM2 db eval $qry]
+    expr {($gens1 eq $gens2) ? "ok" : "failed"}
+} ok
+
+test gfr-motivic-2 {basic numerology} {
+    set ans <
+    AM db eval {
+	select g.sdeg as sdeg, g.ideg-g.sdeg as tdim, g.edeg as edeg, count(f.data) as ndiff
+	from generators g left join fragments f on f.srcgen = g.rowid and f.opideg = 0
+	where tdim < 16 and sdeg <= 10
+	group by g.sdeg, tdim, g.edeg
+	order by tdim,sdeg,edeg
+    } h {
+	lappend ans [format "   %-10s : %d" "($h(sdeg),$h(tdim),$h(edeg))" $h(ndiff)]
+    }
+    lappend ans <
+    join $ans \n
+} "<
+   (0,0,0)    : 0
+   (1,0,1)    : 0
+   (2,0,2)    : 0
+   (3,0,3)    : 0
+   (4,0,4)    : 0
+   (5,0,5)    : 0
+   (6,0,6)    : 0
+   (7,0,7)    : 0
+   (8,0,8)    : 0
+   (9,0,9)    : 0
+   (10,0,10)  : 0
+   (1,1,0)    : 0
+   (2,2,0)    : 0
+   (1,3,0)    : 0
+   (2,3,1)    : 0
+   (3,3,0)    : 0
+   (4,4,0)    : 1
+   (3,5,2)    : 0
+   (5,5,0)    : 1
+   (2,6,0)    : 0
+   (4,6,2)    : 0
+   (6,6,0)    : 1
+   (1,7,0)    : 0
+   (2,7,1)    : 0
+   (3,7,2)    : 0
+   (4,7,3)    : 0
+   (5,7,2)    : 0
+   (7,7,0)    : 1
+   (2,8,0)    : 0
+   (3,8,1)    : 0
+   (6,8,2)    : 0
+   (8,8,0)    : 1
+   (3,9,0)    : 0
+   (4,9,1)    : 0
+   (5,9,4)    : 0
+   (7,9,2)    : 0
+   (9,9,0)    : 1
+   (5,10,1)   : 1
+   (6,10,4)   : 0
+   (8,10,2)   : 0
+   (10,10,0)  : 1
+   (4,11,3)   : 0
+   (5,11,4)   : 0
+   (6,11,1)   : 1
+   (6,11,5)   : 0
+   (7,11,4)   : 0
+   (9,11,2)   : 0
+   (5,12,3)   : 0
+   (7,12,1)   : 1
+   (8,12,4)   : 1
+   (10,12,2)  : 0
+   (6,13,3)   : 0
+   (7,13,6)   : 0
+   (8,13,1)   : 1
+   (9,13,4)   : 1
+   (2,14,0)   : 0
+   (3,14,1)   : 0
+   (4,14,2)   : 0
+   (5,14,3)   : 0
+   (6,14,4)   : 0
+   (7,14,3)   : 0
+   (8,14,6)   : 0
+   (9,14,1)   : 1
+   (10,14,4)  : 1
+   (1,15,0)   : 0
+   (2,15,1)   : 0
+   (3,15,2)   : 0
+   (4,15,3)   : 0
+   (5,15,2)   : 0
+   (5,15,4)   : 0
+   (6,15,5)   : 0
+   (7,15,6)   : 0
+   (8,15,3)   : 0
+   (8,15,7)   : 0
+   (9,15,6)   : 0
+   (10,15,1)  : 1
+<"
+
+set obj GMENUM1
+yacop::gfr create $obj file:tempmennum&mode=memory flavour motivic
+$obj algebra 2 {0 full}
+foreach {limits results} {
+    {mw 0 tmin -3} {2 0 0 2 0 1 2 0 2 2 0 3 2 0 4 2 0 5 2 0 6}
+} {
+    test gfr-motr-enumeration "smash generators with $limits" {
+	$obj db eval {
+	    delete from generators;
+	    insert into generators(rowid,sdeg,ideg,edeg) values(1,1,4,0); -- "tau^{-2} h2"
+	    insert into generators(rowid,sdeg,ideg,edeg) values(2,3,6,0); -- "tau^{-3} h1^3"
+
+	    drop table if exists testtab;
+	    create temporary table testtab
+	    (motgen int, tau int, rho int);
+	}
+	set ans {}
+	$obj motr-foreach-smash-gen sg $limits {
+	    $obj db eval {
+		insert into testtab(motgen,tau,rho) values(:sg(motgen),:sg(tpow),:sg(rpow))
+	    }
+	}
+	set gens [$obj db eval {
+	    select motgen, tau, rho from testtab order by motgen, tau, rho
+	}]
+	return $gens
+    } $results
+}
+
+# cleanup
+::tcltest::cleanupTests

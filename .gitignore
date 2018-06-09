@@ -1,0 +1,12 @@
+*.pyc
+*~
+
+build/
+
+manual/*log
+manual/*pdf
+manual/*aux
+manual/*toc
+manual/manual_doctest*
+manual/*.sagetex.*
+

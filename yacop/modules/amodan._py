@@ -1,0 +1,166 @@
+
+# Local Variables:
+# eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
+# End:
+
+
+
+
+
+from yacop.modules.modbase import SteenrodAlgebraSmashable, SteenrodAlgebraSmashableElement
+from yacop.utils.region import region as _regioncmd
+from yacop.utils.tcl import Yacop
+
+from sage.algebras.steenrod_algebra_element import SteenrodAlgebraElement, Sq
+from sage.rings.infinity import Infinity
+from sage.sets.set import Set
+from sage.structure.formal_sum import FormalSum, FormalSums
+
+def _make_topclass(n):
+    r=[]
+    while n>-1:
+       r.append((1<<(n+1))-1)
+       n=n-1
+    r.append(0)
+    r.append(0)
+    #print "r=%s" % r
+    dict = {tuple(r): 1}
+    return SteenrodAlgebraElement(dict, p=2)
+
+
+class AModAnElement(SteenrodAlgebraSmashableElement,FormalSum):
+    """
+      Class for elements of A//A(n)
+    """
+
+    def __init__(self):
+        pass
+
+class AModAn(SteenrodAlgebraSmashable):
+    "A//A(n) for p=2"
+
+    def _repr_(self):
+       if self.weight is None:
+          res = ""
+       else:
+          res = "weight %d summand M(%d) of " % (self.weight,self.weight)
+       res = res + "A//A(%d)" % self.n
+       return res
+
+    def element_class(self):
+        return AModAnElement
+
+    def __init__(self,n,weight=None):
+        SteenrodAlgebraSmashable.__init__(self)
+        self.n = n
+        self.topclass = _make_topclass(n)
+        self.topdeg = self.topclass.degree()
+        self.weight = weight
+        self._bbox['tmax'] = +Infinity
+        if weight is None:
+           wgt = "{}"
+        else:
+           wgt = weight
+           self._bbox['tmax'] = 4*weight
+           self._bbox['tmin'] = 2*weight
+        self.tcl = Yacop.Interpreter()
+        self.tcl.eval("""
+       set N %s
+       set W %s
+       set pro {}
+       for {set k -1} {$k<$N} {incr k} {
+               set pro [list [expr {($k+2)}] {*}$pro] 
+       }
+       set A [namespace current]::enm
+       steenrod::enumerator $A -prime 2 -genlist {{0 0 0 0}}
+       $A configure -profile [list 0 0 $pro 0]
+       #$A configure -ideg 16; puts pro=$pro,bas=[$A basis]
+
+           proc weight {seq} {
+               set res 0
+           set fac 1
+           foreach r $seq {
+                   incr res [expr {$fac*$r}]
+           set fac [expr {$fac<<1}]
+           }
+               #puts weight($seq)=$res
+           return $res
+       }
+
+           proc pybasis {deg} {
+           variable A
+           variable W
+               set res {}
+           $A configure -ideg [expr {$deg}]
+               foreach b [$A basis] {
+                   set r [lindex $b 2]
+           if {$W ne "" && [weight $r] != $W} continue
+           lappend r 0
+           lappend res Sq([join $r ,])
+           }
+               #puts pybasis($deg)=[join $res ,]
+           return "set(\[[join $res ,]\])"
+       }
+        """ % (n,wgt))
+
+    def basis(self,region=None):
+        res = set([])
+        reg = _regioncmd.normalize(region)
+        reg = _regioncmd.intersect(reg,self._bbox)
+        if reg['smax']<0 or reg['smin']>0:
+           return Set(res)
+        if reg['emax']<0 or reg['emin']>0:
+           return Set(res)
+        i0 = max(0,reg['tmin'])
+        if reg['tmax'] == +Infinity:
+           raise ValueError, "module is unbounded"
+        for i in range(i0,reg['tmax']):
+           res = self._append_basis(res,i)
+        # multiply with topclass
+        x=set([])
+        for a in res:
+           x.add(self.topclass*a)
+        res = Set(x)
+        #print "bas(%s)=%s" % (region,res)
+        return res
+
+    def _append_basis(self,res,dim):
+        pyb = self.tcl.eval("pybasis %d" % dim);
+        #print "pybasis(%s)=%s" % (dim,pyb)
+        d=eval(pyb)
+        rs = res.union(d)
+        return rs
+
+    def degrees(self,basel):
+        res = { 's' : 0, 'e' : 0 }
+        res['i'] = 2*(basel.degree()-self.topdeg)
+        #print "deg(%s) = %s" % (basel,res)
+        return res
+
+    def _formal_sum_from_steenrod_algebra_element(self,a):
+        r = []
+        dct = a.milnor()._raw['milnor']
+        for x in dct:
+           dict = {x: 1}
+           w = SteenrodAlgebraElement(dict, p=2)
+           r.append((dct[x],w))
+        return FormalSum(r,self._ring)
+                    
+    def actL(self,basel,a):
+        return self._actL_via_conjugation(basel,a)
+
+    def _baselconj(self,basel):
+        return basel.antipode() 
+
+    def actR(self,basel,a):
+        prod = basel*a
+        #print "(%s)*(%s)=(%s)" % (basel,a,prod)
+        return self._formal_sum_from_steenrod_algebra_element(prod)
+
+    def _element_constructor_(self,e):
+        pass
+    
+        
+
+
+
