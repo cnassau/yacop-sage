@@ -3,6 +3,10 @@ FROM cnassau/yacop-base:$SAGE_VERSION
 
 LABEL maintainer="Christian Nassau <nassau@nullhomotopie.de>"
 
+USER root
+RUN mkdir /data && chown sage:sage /data
+VOLUME /data/
+
 USER sage
 ENV HOME /home/sage
 WORKDIR /home/sage
@@ -12,7 +16,9 @@ RUN echo "Running docker-install.sh" \
     && echo "Starting Sage once" && echo "quit();" | env SAGE_BANNER=no sage \
     && echo "Cleaning up" \
     && rm -rf /tmp/* \
+    && cd /home/sage && ln -s /data yacop_data \
     && sync 
 
 ENTRYPOINT [ "sage-entrypoint" ]
 CMD [ "sage" ]
+
