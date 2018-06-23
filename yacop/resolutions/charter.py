@@ -202,11 +202,13 @@ class Charter(SageObject):
             nmin = [min(nmin),]
             nmax = [max(nmax),]
         for l in self.chartlines():
-            pts,lineargs = self.lineinfo[l["line"]]
-            x1,y1 = self.get_coords(self.geninfo(int(l["src"])))
-            x2,y2 = self.get_coords(self.geninfo(int(l["tar"])))
-            G += line2d([(x1,y1),(x2,y2)],**lineargs)
-        
+            try:
+                pts,lineargs = self.lineinfo[l["line"]]
+                x1,y1 = self.get_coords(self.geninfo(int(l["src"])))
+                x2,y2 = self.get_coords(self.geninfo(int(l["tar"])))
+                G += line2d([(x1,y1),(x2,y2)],**lineargs)
+            except:
+                print "line not understood:",l
         off=0.5
         G.ymin(smin[0]-off)
         G.ymax(smax[0]+off)

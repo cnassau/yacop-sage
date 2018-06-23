@@ -221,9 +221,20 @@ class XiTauRing(CombinatorialFreeModule, UniqueRepresentation):
         return self._from_dict({(q, tuple(exp*_ for _ in p)) : cf})
 
     class Element(CombinatorialFreeModule.Element):
+        """
+        TESTS::
 
-        def exponents(self):
-            e, p = self
+            sage: from yacop.modules.xitauring import XiTauRing
+            sage: X = XiTauRing(5,names=["a{idx}","b{idx}"],numxi=2,numtau=1)
+            sage: b0,a1,a2 = list(X.gens())
+            sage: a1**17
+            a1**17
+            sage: (a1+a2)**3
+            a2**3 + 3*a1*a2**2 + 3*a1**2*a2 + a1**3
+            sage: (a1+b0)**18
+            a1**18 + 3*b0*a1**17
+        """
+        pass
 
 
 

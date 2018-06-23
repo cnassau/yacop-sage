@@ -89,13 +89,13 @@ A base class for algebras over the Steenrod algebra.
         0
         sage: [Q(i)*(Q(i)*(a*b)) for i in (0,..,3)]
         [0, 0, 0, 0]
-        sage: matrix([[Q(i)*(Q(j)*(a*b) + Q(j)*(Q(i)*(a*b))) for i in (0,..,3)] for j in (0,..,3)])
+        sage: matrix([[Q(i)*(Q(j)*(a*b)) + Q(j)*(Q(i)*(a*b)) for i in (0,..,3)] for j in (0,..,3)])
         [0 0 0 0]
         [0 0 0 0]
         [0 0 0 0]
         [0 0 0 0]
         sage: [Q(i)*(a*b) for i in (0,..,3)]
-        [a*y + x*b, a*y^3 + x^3*b, a*y^9 + x^9*b, a*y^27 + x^27*b]
+        [2*a*y + x*b, 2*a*y^3 + x^3*b, 2*a*y^9 + x^9*b, 2*a*y^27 + x^27*b]
         sage: [P(i)*x**26 for i in (0,..,7)]
         [x^26, 2*x^28, x^30, 2*x^32, x^34, 2*x^36, x^38, 2*x^40]
         sage: [P(i)*(x*y) for i in (0,..,7)]
@@ -121,8 +121,10 @@ A base class for algebras over the Steenrod algebra.
         P(6) :        0|       0|       0|       0|       0|       0|  y^18*b|  y^19*b|  y^20*b|       0
 
         sage: from yacop.utils.region import region
-        sage: X._manual_test_left_conj_action(region(tmax=20))
-        sage: X._manual_test_left_action(region(tmax=20))
+        sage: #X._manual_test_left_conj_action(region(tmax=10))
+        sage: X._manual_test_left_action(region(tmax=10))
+        284 non-zero multiplications checked
+
 
 
 """
@@ -130,6 +132,8 @@ A base class for algebras over the Steenrod algebra.
 #       Copyright (C) 2011 Christian Nassau <nassau@nullhomotopie.de>
 #  Distributed under the terms of the GNU General Public License (GPL)
 #*****************************************************************************
+
+#pylint: disable=E0213
 
 from yacop.utils.region import region
 from yacop.utils.gradings import YacopGrading
@@ -356,7 +360,6 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
         if right_action is None:
             right_action = False
         assert left_action or right_action
-        rg = ring.gens()
         return super(
             SteenrodAlgebraBase, cls).__classcall__(cls, ring, degrees, ideal, algebra=algebra,
                                                     left_action=left_action, right_action=right_action,
@@ -486,6 +489,9 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
                                   % (gdegs,))
         octs = self.octants()
         for (t, e, s) in islice(self._degrees, 30):
+            if 0!=(e&1):
+                # allow mismatch for exterior generators
+                continue
             ok = False
             for (ts, es, ss) in octs:
                 if (sgn(t) in (ts, 0)) and (sgn(e) in (es, 0)) and (sgn(s) in (ss, 0)):
@@ -600,71 +606,12 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
         return self._from_dict(dict(ans))
 
     def _repr_term(self, exponents):
-        # print exponents; return "huhu"
         x = self.__to_R(exponents)
         return x._repr_()
 
     def _latex_term(self, exponents):
         x = self.__to_R(exponents)
         return x._latex_()
-
-    def _xxmanual_test_left_action(self, reg, opdeg, verbose=False):
-        return (
-            self._manual_test_action(reg, opdeg, mode='left', verbose=verbose)
-        )
-
-    def _xxmanual_test_right_action(self, reg, opdeg, verbose=False):
-        return (
-            self._manual_test_action(reg, opdeg, mode='right', verbose=verbose)
-        )
-
-    def _xxmanual_test_bimod_action(self, reg, opdeg, verbose=False):
-        return (
-            self._manual_test_action(reg, opdeg, mode='bimod', verbose=verbose)
-        )
-
-    def _xxmanual_test_action(self, reg, opdeg, mode='left', verbose=False):
-        """
-        a check of the associativity of the steenrod algebra action
-        """
-        if mode == 'left':
-            LHS = lambda op1, op2, a: (op1 * op2) * a
-            RHS = lambda op1, op2, a: op1 * (op2 * a)
-        elif mode == 'right':
-            LHS = lambda op1, op2, a: a * (op1 * op2)
-            RHS = lambda op1, op2, a: (a * op1) * op2
-        elif mode == 'bimod':
-            LHS = lambda op1, op2, a: (op1 * a) * op2
-            RHS = lambda op1, op2, a: op1 * (a * op2)
-        else:
-            raise ValueError("unknown mode %s" % mode)
-
-        from sage.combinat.integer_vector_weighted import WeightedIntegerVectors
-        A = SteenrodAlgebra(self._prime, generic=self._generic)
-        p = self._prime
-        weights = [2 * (p ** k - 1)
-                   for k in range(1, 6)] if self._generic else [1, 3, 7, 15, 31, 63, 127]
-        A = SteenrodAlgebra(self._prime, generic=self._generic)
-        cnt = 0
-        for b in self.graded_basis(reg):
-            for i in range(1, opdeg + 1):
-                for v1 in WeightedIntegerVectors(i, weights):
-                    op1 = A.P(*v1)
-                    for j in range(1, opdeg + 1):
-                        if verbose:
-                            print mode, b, i, j, cnt
-                        for v2 in WeightedIntegerVectors(j, weights):
-                            op2 = A.P(*v2)
-                            if LHS(op1, op2, b) != RHS(op1, op2, b):
-                                print "ERROR:"
-                                print "op1", op1
-                                print "op2", op2
-                                print "  b", b
-                                print "LHS = ", LHS(op1, op2, b)
-                                print "RHS = ", RHS(op1, op2, b)
-                                raise ValueError("mismatch")
-                            cnt += 1
-        return "%d multiplications checked" % cnt
 
     class _coaction_tensor(SageObject):
 
@@ -700,7 +647,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
            sage: b*c
            [(tau[1]*xi[4])*tau(0,1,0,1)*xi(7,1,1)]
            sage: c*b
-           [(4*tau[1]*xi[4])*tau(0,1,0,1)*xi(7,1,1)]
+           [(tau[1]*xi[4])*tau(0,1,0,1)*xi(7,1,1)]
            sage: r,q,p=a
            sage: print(r,q,tuple(p))
            xi[2] 5 (3, 0, 1)
@@ -739,18 +686,33 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
             return w
 
         def __mul__(left, right):
+            #print "__mul__(%s,%s)" % (left,right)
             if 0 != (left.q & right.q):
                 return []
             w = left._vector_add(left.p, right.p)
             cls = left.__class__
             P = left.r.parent()
             r = P.product(left.r, right.r)
+            if 0 == len([k for (k,cf) in r if cf]):
+                # product is zero
+                return []
+            sgn = -1 if 0 != (1 & right.r.e & bitcount(left.q)) else 1
             if sign_correction(left.q, right.q):
+                sgn = -sgn
+            if sgn<0:
                 r = -r
+            #print "(r,left.q,right.q)=(%s,%s,%s)" % (r,left.q,right.q)
             return [cls(r, left.q | right.q, w), ]
 
         def __iter__(self):
             return iter([self.r, self.q, self.p])
+
+        def __cmp__(self,other):
+            """
+            A cmp method to make sorting of _coaction_tensor objects
+            independent of the object id (used in doctests).
+            """
+            return cmp(str(self),str(other))
 
         def filter(self, maxq, maxp, left_factor=True):
             if (self.q & maxq) != self.q:
@@ -782,12 +744,18 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
             r = tuple(r)
         ans = []
         for (res, qmsk, pexp) in actfunc(m, e, r):
-            if qmsk == e and tuple(pexp) == r:
-                print "_act_from_coact(%s,%s): (e,res)=(%s,%s)" %(a,m,e,res)
-                if (bitcount(e)&1)==1 and (res.e&1)==1:
-                    ans.append(-res)
-                else: 
-                    ans.append(res)
+            if qmsk == e and tuple(pexp) == r and not res.is_zero():
+                bc = bitcount(e)
+
+                # sign change because we rearrange bocksteins and tau as in 
+                #  Q1 ... Qn  t1 ... tn  <-> Q1t1 ... Qntn
+                sgn = -1 if (2&bc) else 1
+
+                #print "_act_from_coact(%s,%s): (e,res)=(%s,%s)" %(a,m,e,res)
+                # TODO: add doctest for this sign change
+                if (bc&1)==1 and (res.e&1)==1:
+                    sgn = -sgn
+                ans.append(res if sgn>0 else -res)
         return self.sum(ans)
 
     def left_steenrod_action_milnor(self, a, m):
@@ -801,14 +769,63 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
             return True
         return False
 
-    def _factor_key(self, expos):
+    def _factor_key(self, expos, maxp):
         """
         Factor a monomial as ``x_{i1}^(a1*p^u1) ... x_{in}^(an*p^un)``
+
+        Negative exponents require special care, which is why we
+        have the argument ``maxp``.
+
+        TESTS::
+
+            sage: from yacop.testing.testalgebra import Testclass1
+            sage: X=Testclass1(3)
+            sage: X.inject_variables()
+            Defining x, a, y, b
+
+            sage: # 7 = 1*1 + 2*3, 1=1*1, 3=1*3
+            sage: X._factor_key((7,1,3,0), 3)
+            [(0, 1, 0), (0, 2, 1), (1, 1, 0), (2, 1, 1)]
+
+            sage: # b**2 == 0
+            sage: X._factor_key((7,0,3,2), 3)
+            []
+
+            sage: # -7 = -1*3^2 + 2*1 
+            sage: X._factor_key((-7,0,3,1), 2)
+            [(0, -1, 2), (0, 2, 0), (2, 1, 1), (3, 1, 0)]
+
+            sage: # maxp = 2 forces -1 = -1*9 + 2*1 + 2*3
+            sage: X._factor_key((-1,0,0,0), 2)
+            [(0, -1, 2), (0, 2, 0), (0, 2, 1)]
+
+            sage: # -764 = 1*1 + 2*9 + 1*27 + 2*81 + 2*243 + 1*729 + -1*2187 
+            sage: X._factor_key((-764,0,3,1), 2)
+            [(0, -1, 7),
+            (0, 1, 0),
+            (0, 2, 2),
+            (0, 1, 3),
+            (0, 2, 4),
+            (0, 2, 5),
+            (0, 1, 6),
+            (2, 1, 1),
+            (3, 1, 0)]
+
         """
         ans = []
         for (idx, e) in zip(N0(), expos):
             if self.__gen_is_odd(idx) and e > 1:
                 return []
+            if e<0:
+                # negative exponent: add prime power that
+                # is invariant under all P(..)
+                u = maxp
+                pow = self._prime ** u
+                while e + pow < 0:
+                    pow *= self._prime
+                    u += 1
+                ans.append((idx,-1,u))
+                e = e + pow
             for (u, a) in zip(N0(), Integer(e).digits(self._prime)):
                 if a > 0:
                     ans.append((idx, a, u))
@@ -824,8 +841,24 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
         """
         compute left or right coaction on ``x_{id}^(a*p^u)``
         """
-        assert 0 < a and a < self._prime
+        assert 0 < a and a < self._prime or a == -1
         ppow = self._prime ** u
+        if a<0:
+            assert a == -1
+            # negative exponents: these are guaranteed to be invariant under
+            # the operation, so we only care about the initial summand
+            # psi(x^{p^k}) = (whatever) * 1
+            mq2, mp2 = 0, () 
+            coa = actfunc(idx, mq2, mp2)
+            #print "(a,u)=",(a,u),coa.__name__,list(actfunc(idx,mq2,mp2))
+            #return
+
+            for smd in coa:
+                for _ in smd.filter(mq2, mp2):
+                    res, qexp, pexp = smd
+                    yield self._coaction_tensor(self._ppower(res, -ppow), qexp, [ppow * u for u in pexp])
+            return
+
         if u > 0:
             mq2 = 0
             mp2 = [exp // ppow for exp in maxp]
@@ -833,10 +866,9 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
             mq2 = maxq
             mp2 = maxp
         coa = actfunc(idx, mq2, mp2)
-        # print coa,list(actfunc(idx,mq2,mp2))
-        if a == 1:
+        if a == 1 or a == -1:
             for smd in coa:
-                for rem in smd.filter(mq2, mp2):
+                for _ in smd.filter(mq2, mp2):
                     res, qexp, pexp = smd
                     yield self._coaction_tensor(self._ppower(res, ppow), qexp, [ppow * u for u in pexp])
             return
@@ -847,7 +879,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
         for (smd, restexpo, explst) in self._multinomials(iter(coa), self._prime, a):
             if restexpo == 0:
                 # print "   :",explst, "->",smd
-                for rem in smd.filter(maxq, maxp):
+                for _ in smd.filter(maxq, maxp):
                     r, q, p = smd
                     yield self._coaction_tensor(self._ppower(r, ppow), q, [ppow * u for u in p])
 
@@ -890,7 +922,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
                 # print "_coaction_helper_single
                 # gives",list(self._coaction_helper_single(actfunc,idx,a,u,maxq2,maxp2))
                 for osmd in self._coaction_helper_single(actfunc, idx, a, u, maxq2, maxp2):
-                    # print "%s * %s = %s" % (smd,osmd,smd*osmd)
+                    #print "%s * %s = %s" % (osmd,smd,osmd*smd)
                     for reslt in osmd * smd:
                         yield reslt
 
@@ -898,7 +930,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
         return (
             self._coaction_helper(
                 self._left_steenrod_coaction_milnor_gen,
-                self._factor_key(a),
+                self._factor_key(a, 0 if len(maxp)==0 else max(maxp)),
                 maxq,
                 maxp)
         )
@@ -907,7 +939,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
         return (
             self._coaction_helper(
                 self._right_steenrod_coaction_milnor_gen,
-                self._factor_key(a),
+                self._factor_key(a, 0 if len(maxp)==0 else max(maxp)),
                 maxq,
                 maxp)
         )

@@ -353,12 +353,12 @@ class DualSteenrodAlgebra(SteenrodAlgebraBase):
             sage: X=DualSteenrodAlgebra(3) ; X.inject_variables()
             Defining xi, tau
             sage: from yacop.utils.region import region
-            sage: print(X._manual_test_left_action(region(tmin=-30,tmax=10),20)) # long time
-            2793 multiplications checked
-            sage: print(X._manual_test_right_action(region(tmin=-30,tmax=10),20)) # long time
-            2793 multiplications checked
-            sage: print(X._manual_test_bimod_action(region(tmin=-30,tmax=10),20)) # long time
-            2793 multiplications checked
+            sage: X._manual_test_left_action(region(tmin=-30,tmax=10),20) # long time
+            1712 non-zero multiplications checked
+            sage: X._manual_test_right_action(region(tmin=-30,tmax=10),20) # long time
+            2793 non-zero multiplications checked
+            sage: X._manual_test_bimod_action(region(tmin=-30,tmax=10),20) # long time
+            2793 non-zero multiplications checked
             sage: A=SteenrodAlgebra(3) ; P=A.P
             sage: # this was broken once
             sage: (P(3)*P(1)*(xi[3]*tau[0]*tau[2])) == P(3)*(P(1)*(xi[3]*tau[0]*tau[2]))

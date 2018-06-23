@@ -15,6 +15,7 @@ AUTHORS:
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
+#pylint: disable=E0213
 
 from sage.rings.infinity import Infinity
 from sage.misc.abstract_method import abstract_method

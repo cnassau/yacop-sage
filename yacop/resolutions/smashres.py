@@ -201,6 +201,12 @@ class Smasher(Parent,UniqueRepresentation):
         else:
             return self._filename
 
+    def Chart(self,viewtype=None):
+        from yacop.resolutions.charter import Charter
+        if viewtype is None:
+            viewtype = self._viewtype
+        return Charter(self._filename, viewtype)
+
     def _errorcallback(self, location, message):
         if self._errorlocation is None:
             self._errorlocation = eval(location)
@@ -214,26 +220,23 @@ class Smasher(Parent,UniqueRepresentation):
         #print action,args
         import string
         if action == 'actR':
-          try:
-            algebra = self._resolution._algebra
-            el = self._module.load_element(args[0])
-            op = tclsteenrodop(algebra,args[1])
-            res = op % el 
-            ans = ""
-            if not res.is_zero():
-                if algebra.is_generic():
-                    e,r = op.leading_support()
-                    if len(e)&1:
-                        res = -res
-                reg = region(s=res.s,t=res.t,e=res.e)
-                gb = self._module.graded_basis(reg)
-                cfs = self._module.graded_basis_coefficients(res,reg)
-                for (bel,cf) in zip(gb,cfs):
-                    ans += " %d {%s}" % (cf,self._module.dump_element(bel))
-            return ans
-          except Exception as e:
-            print(e)
-            raise e
+            try:
+                algebra = self._resolution._algebra
+                el = self._module.load_element(args[0])
+                op = tclsteenrodop(algebra,args[1])
+                res = op % el
+                ans = ""
+                if not res.is_zero():
+                    reg = region(s=res.s,t=res.t,e=res.e)
+                    gb = self._module.graded_basis(reg)
+                    cfs = self._module.graded_basis_coefficients(res,reg)
+                    for (bel,cf) in zip(gb,cfs):
+                        ans += " %d {%s}" % (cf,self._module.dump_element(bel))
+                #print "actR",args,"=",res,"=",ans,"aus",op,"%",el
+                return ans
+            except Exception as e:
+                print(e)
+                raise e
         elif action == 'generators':
             algebra = self._resolution._algebra
             fac = self._tfactor ;# 1 if algebra.is_generic() else 2
@@ -340,7 +343,8 @@ class Smasher(Parent,UniqueRepresentation):
             sage: R=SmashResolution(M,C) ; R = R._worker
             sage: # the following computation requires 
             sage: R._find_region(region(nmin=100,nmax=110,smin=50,smax=52))
-            region(t <= 180), [(49,127), (50,127), (51,127), (52,127), (53,127)]
+            (region(-Infinity < t <= 163),
+             [(47, 133), (48, 132), (49, 131), (50, 130), (51, 129)])
 
             sage: # examples with odd viewtype
             sage: C = newres(SteenrodAlgebra(2,generic=True))
@@ -348,6 +352,7 @@ class Smasher(Parent,UniqueRepresentation):
             sage: M = BZpGeneric(2)
             sage: R=SmashResolution(M,C) ; R = R._worker
             sage: R._find_region(region(n=4,s=17))
+            (region(-Infinity < t <= 22), [(16, 6), (17, 5), (18, 4)])
 
         """
         reg = copy(reg)
@@ -769,7 +774,6 @@ class Smasher(Parent,UniqueRepresentation):
 from yacop.modules.module_base import SteenrodModuleBase_Tensor
 
 class SmashResolution(SteenrodModuleBase_Tensor,UniqueRepresentation):
-    # FIXME: rename Smasher and GFR -> yacop_worker
 
     @staticmethod
     def __classcall_private__(cls,module,resolution,filename=None, category=None, with_worker=None, debug=False):
@@ -889,6 +893,11 @@ class SmashResolution(SteenrodModuleBase_Tensor,UniqueRepresentation):
     def _latex_(self):
         mod, res = self._sets
         return "%s \\land %s" % (latex(res), latex(mod))
+
+    def Chart(self,*args,**kwds):
+        X = self._worker.Chart(*args,**kwds)
+        X.rename("Chart of %s" % self);
+        return X
 
     def _errorhandler(self,location):
         """
@@ -1091,6 +1100,9 @@ class SmashResolutionHomology(FreeModuleImpl,UniqueRepresentation):
 
     def gui(self):
         return self._res.gui()
+
+    def Chart(self,*args,**kwds):
+        return self.ambient().Chart(*args,**kwds)
 
     @staticmethod
     def SuspendedObjectsFactory(module,*args,**kwopts):

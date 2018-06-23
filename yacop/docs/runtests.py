@@ -51,7 +51,7 @@ def Run():
     root = 'yacop/docs/jupyter'
     pattern = "*.ipynb"
     errs = []
-    print("Executing notebooks in directory", root)
+    print("Executing notebooks in directory %s" % root)
     for path, subdirs, files in os.walk(root):
         for name in files:
             if fnmatch(name, pattern):

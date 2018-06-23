@@ -8,7 +8,9 @@ RUN mkdir /data && chown sage:sage /data
 VOLUME /data/
 
 USER sage
-ENV HOME /home/sage
+ENV HOME=/home/sage
+ENV SAGE_TIMEOUT=3600 SAGE_TIMEOUT_LONG=3600
+ENV YACOP_DOUBLECHECK=1
 WORKDIR /home/sage
 ADD --chown=sage . /tmp/yacop
 RUN echo "Running docker-install.sh" \

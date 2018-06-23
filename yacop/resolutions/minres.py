@@ -238,9 +238,11 @@ class GFR(Parent,UniqueRepresentation):
 
         Parent.__init__(self,category=Sets())
 
-    def Chart(self):
+    def Chart(self,viewtype = None):
         from yacop.resolutions.charter import Charter
-        return Charter(self._filename,self._viewtype)
+        if viewtype is None:
+            viewtype = self._viewtype
+        return Charter(self._filename,viewtype)
 
     def _repr_(self):
         return "minimal resolution of %s" % self._algebra

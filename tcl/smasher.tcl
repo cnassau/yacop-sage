@@ -512,34 +512,35 @@ oo::class create yacop::smashres {
 	set ::steenrod::_progvarname ::yacop::progVar
 	yacop::interruptible {
 	    my db progress $::yacop::dbprogsteps yacop::ProgressHandler
-
-	    Section "Updating smash product basis" {
-		set lastflush [clock seconds]
-		$res db eval {
-		    select rowid as resgen, sdeg as rsdeg, ideg as rideg, edeg as redeg
-		    from generators order by sdeg,ideg,edeg
-		} {
-		    my db eval {
-			select rowid as modgen, sdeg as msdeg, ideg as mideg, edeg as medeg
-			from module_generators
-			where not exists( select rowid from smash_generators
-					  where resgen=:resgen and modgen=:modgen )
+	    my db transaction {
+		Section "Updating smash product basis" {
+		    set lastflush [clock seconds]
+		    $res db eval {
+			select rowid as resgen, sdeg as rsdeg, ideg as rideg, edeg as redeg
+			from generators order by sdeg,ideg,edeg
 		    } {
-			yacop::ProgressHandler
-			my new-smashgen $rsdeg $rideg $redeg $msdeg $mideg $medeg $resgen $modgen
 			my db eval {
-			    select rowid as gid, sdeg,ideg,edeg from smash_generators
-			    where resgen=$resgen and modgen=$modgen
-			} break
-			my db eval {
-			    insert or ignore into smash_boxes(sdeg,ideg,edeg)
-			    values($sdeg,$ideg,$edeg)
-			}
-			set msg "Setting checkpoint at $sdeg/$ideg/$edeg"
-			if {[clock seconds]>$lastflush+10} {
-			    Section $msg {
-				my db eval "commit;begin"
-				set lastflush [clock seconds]
+			    select rowid as modgen, sdeg as msdeg, ideg as mideg, edeg as medeg
+			    from module_generators
+			    where not exists( select rowid from smash_generators
+					      where resgen=:resgen and modgen=:modgen )
+			} {
+			    yacop::ProgressHandler
+			    my new-smashgen $rsdeg $rideg $redeg $msdeg $mideg $medeg $resgen $modgen
+			    my db eval {
+				select rowid as gid, sdeg,ideg,edeg from smash_generators
+				where resgen=$resgen and modgen=$modgen
+			    } break
+			    my db eval {
+				insert or ignore into smash_boxes(sdeg,ideg,edeg)
+				values($sdeg,$ideg,$edeg)
+			    }
+			    set msg "Setting checkpoint at $sdeg/$ideg/$edeg"
+			    if {[clock seconds]>$lastflush+10} {
+				Section $msg {
+				    my db eval "commit;begin"
+				    set lastflush [clock seconds]
+				}
 			    }
 			}
 		    }
@@ -847,6 +848,9 @@ oo::class create yacop::smashres {
         } {
             foreach pts $ptslist op $oplist ptsdeg $ptsdeglist {
 
+		#set debug [expr {$pts eq ""}]
+		if {$debug} { puts "$resgen -> $data * $targen" }
+
 		if {$ptsdeg>$opideg} continue
 
 		set shifted {}
@@ -869,8 +873,15 @@ oo::class create yacop::smashres {
 
 		set sign [expr { ($mideg & $opideg & 1) ? -1 : 1 }]
 
+		if {0 && ($ideg & 1)} {
+		    # our resolution is linear in the ungraded sense. flip a sign to make it
+		    # obey the Koszul sign rule with a differential of degree 1
+		    set sign [expr {-$sign}]
+		}
+
 		if {$debug} {
 		    puts " $data/$op =  $shifted"
+		    puts " [list $module actR $sagename $shifted]"
 		    puts " right action on $modgen: $action"
 		    puts " sign = $sign"
 		}

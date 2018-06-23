@@ -1,6 +1,11 @@
 r"""
 The Dickson-Mui algebras as algebras over the Steenrod algebra.
 
+  THIS FILE IS WORK IN PROGRESS - NOT EVERYTHING IS WORKING (OR EVEN IMPLEMENTED) 
+  ===============================================================================
+
+Some references:
+
 Masaki Kameko, Mamoru Mimura,
 Mui invariants and Milnor operations
 https://arxiv.org/abs/0903.4912
@@ -11,7 +16,7 @@ Source: Kodai Math. J. Volume 17, Number 3 (1994), 585-595.
 
 http://projecteuclid.org/euclid.kmj/1138040053
 
-AUTHORS: - Christian Nassau (2011-05-13: version 1.0)
+AUTHORS: - Christian Nassau (2018)
 
 
 CLASS DOCUMENTATION:
@@ -292,10 +297,11 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
 
             sage: from yacop.modules.dickson import DicksonDualSteenrodAlgebra
             sage: D=DicksonDualSteenrodAlgebra(5,3)
-            sage: E=D._dicksonalgebra()
+            sage: D._dicksonalgebra
             Dickson-Mui algebra D(3) for prime 5
 
         """
+        from yacop.modules.dickson import DicksonAlgebra
         return DicksonAlgebra(self._prime,self._index,generic=self._generic)
 
     def _repr_(self):
@@ -436,8 +442,8 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
         """
         TESTS::
 
-           sage: from yacop.modules.dual_steenrod_algebra import *
-           sage: D=DicksonDualSteenrodAlgebra(5)
+           sage: from yacop.modules.dickson import *
+           sage: D=DicksonDualSteenrodAlgebra(5,6)
            sage: for u in (0,..,6):
            ...      print("%-6s"%D._monomial_gen(u+1), "->", list(D._coproduct_gen(u)))
            tau[0] -> [(tau[0], 1), (1, tau[0])]
@@ -466,12 +472,12 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
 
     def _left_steenrod_coaction_milnor_gen(self, idx, maxQ, maxP):
         for (ff, sf) in self._coproduct_gen(idx):
-            q, p = self.__toqp(sf)
+            q, p = self._toqp(sf)
             yield self._coaction_tensor(ff, q, p)
 
     def _right_steenrod_coaction_milnor_gen(self, idx, maxQ, maxP):
         for (ff, sf) in self._coproduct_gen(idx):
-            q, p = self.__toqp(ff)
+            q, p = self._toqp(ff)
             yield self._coaction_tensor(sf, q, p)
 
 
@@ -517,6 +523,13 @@ class DicksonAlgebra(DicksonBase):
             47    [tau1*d52, tau0*d48]
             123   [tau0*d36**2*d52, tau2*d36*d52**2]
             sage: TestSuite(E).run()
+
+            sage: # the following failes once
+            sage: A=SteenrodAlgebra(3)
+            sage: A.P(1)*(A.Q(0)*(tau0*tau1))
+            2*tau0*d52
+            sage: (A.P(1)*A.Q(0))*(tau0*tau1)
+            2*tau0*d52
 
             sage: F=DicksonAlgebra(5,2,generic=False); F
             Dickson algebra D(2) for prime 5
@@ -640,9 +653,39 @@ class DicksonAlgebra(DicksonBase):
             y[2*(self._index-idx)-1] += pow
             x = tuple(y)
         elif idx > self._index:
-            raise ValueError, "zeta%d not in %s" % (id, self)
+            raise ValueError, "zeta%d not in %s" % (idx, self)
         return self._from_dict({x:1})
 
+    def _xipower(self, idx, pow=1):
+        """
+        TESTS::
+ 
+            sage: from yacop.modules.dickson import DicksonAlgebra
+            sage: D = DicksonAlgebra(2,3)
+            sage: [D._xipower(i) for i in (0,1,2,3)]
+            [1,
+            d6*d7**(-1),
+            d6**3*d7**(-3) + d4*d7**(-1),
+            d7**(-1) + d6**7*d7**(-7) + d4*d6**4*d7**(-5) + d4**2*d6*d7**(-3)]
+            sage: D = DicksonAlgebra(3,2)
+            sage: [D._xipower(i) for i in (0,1,2)]
+            [1, 2*d12*d16**(-1), 2*d16**(-1) + d12**4*d16**(-4)]
+
+        """
+        # FIXME: compute this more intelligently, e.g. just cache xi^k with k<p
+        return self.__xi(idx,pow)
+
+    @cached_method
+    def __xi(self,idx,pow):
+        if idx == 0:
+            return self.one()
+        elif idx > self._index:
+            raise ValueError, "xi%d not in %s" % (idx, self)
+        if pow > 1:
+            return self.product(self.__xi(idx,pow-1),self.__xi(idx,1))
+        p = self._prime
+        return -self.sum(self.product(self.__xi(j,1),self._zetapower(idx-j,p**j)) for j in range(idx))
+        
     def admissible_action(self, redpow, elem, debug=False):
         """
         Compute redpow * elem using admissible matrices
@@ -733,8 +776,8 @@ class DicksonAlgebra(DicksonBase):
             sage: from yacop.modules.dickson import DicksonAlgebra
             sage: from yacop.utils.region import region
             sage: D=DicksonAlgebra(2,3)
-            sage: print(D._manual_test_left_action(region(tmax=20,tmin=15),opdeg=5)) # long time
-            768 multiplications checked
+            sage: D._manual_test_left_action(region(tmax=20,tmin=15),opdeg=5) # long time
+            126 multiplications checked
             sage: for g in D.gens():
             ....:    for n in range(50):
             ....:        x = Sq(n)*g
@@ -756,8 +799,8 @@ class DicksonAlgebra(DicksonBase):
 
             sage: E=DicksonAlgebra(2,4,generic=True) ; E.inject_variables()
             Defining tau0, d16, tau1, d24, tau2, d28, tau3, d30
-            sage: print(E._manual_test_left_action(region(tmax=12,tmin=10),opdeg=15)) # long time
-            1350 multiplications checked
+            sage: E._manual_test_left_action(region(tmax=12,tmin=10),opdeg=15) # long time
+            384 multiplications checked
             sage: A=SteenrodAlgebra(2,generic=True)
             sage: [(i,A.P(i)*d30) for i in range(60) if A.P(i)*d30 != 0]
             [(0, d30), (8, d16*d30), (12, d24*d30), (14, d28*d30), (15, d30**2)]
@@ -765,21 +808,27 @@ class DicksonAlgebra(DicksonBase):
             [(0, d16), (4, d24), (6, d28), (7, d30), (8, d16**2)]
             sage: [(g,A.Q(0)*g) for g in E.gens()]
             [(tau0, 1),
-            (d16, 0),
-            (tau1, d28*d30**(-1)),
-            (d24, 0),
-            (tau2, d24*d30**(-1)),
-            (d28, 0),
-            (tau3, d16*d30**(-1)),
-            (d30, 0)]
+             (d16, 0),
+             (tau1, d28*d30**(-1)),
+             (d24, 0),
+             (tau2, d28**3*d30**(-3) + d24*d30**(-1)),
+             (d28, 0),
+             (tau3,
+             d28**7*d30**(-7) + d24*d28**4*d30**(-5) + d24**2*d28*d30**(-3) + d16*d30**(-1)),
+             (d30, 0)]
             sage: [(g,A.Q(1)*g) for g in E.gens()[::2]]
-            [(tau0, 0), (tau1, 1), (tau2, d28**2*d30**(-2)), (tau3, d24**2*d30**(-2))]
+            [(tau0, 0),
+             (tau1, 1),
+             (tau2, d28**2*d30**(-2)),
+             (tau3, d28**6*d30**(-6) + d24**2*d30**(-2))]
             sage: [(g,A.Q(2)*g) for g in E.gens()[::2]]
             [(tau0, 0), (tau1, 0), (tau2, 1), (tau3, d28**4*d30**(-4))]
+            sage: E._manual_test_left_action(region(tmax=10,tmin=-10)) #long time
+            2044 non-zero multiplications checked
 
             sage: F = DicksonAlgebra(3, 2)
-            sage: print(F._manual_test_left_action(region(tmax=20),opdeg=20)) # long time
-            686 multiplications checked
+            sage: F._manual_test_left_action(region(tmax=20),opdeg=20)
+            479 non-zero multiplications checked
             sage: A = SteenrodAlgebra(3)
             sage: for g in F.gens()[1::2]:
             ....:    for n in range(50):
@@ -819,8 +868,11 @@ class DicksonAlgebra(DicksonBase):
             # Delta(tau_n) = sum zeta_{n-i}^{p^i}*tau_i + tau_n*1
             ppow = 1
             yield self._coaction_tensor(self._monomial_gen(idx+1), 0, ())
+            #print "Delta(tau%d)" % n
+            #print self._coaction_tensor(self._monomial_gen(idx+1), 0, ())
             for i in range(0, n + 1):
-                yield self._coaction_tensor(self._zetapower(n - i, ppow), 1<<i, ())
+                #print self._coaction_tensor(self._zetapower(n - i, ppow), 1<<i, ())
+                yield self._coaction_tensor(self._xipower(n - i, ppow), 1<<i, ())
                 ppow = ppow * self._prime
 
 
@@ -832,7 +884,8 @@ class DicksonAlgebra(DicksonBase):
 
             sage: from yacop.modules.dickson import DicksonAlgebra
             sage: from yacop.utils.region import region
-            sage: D=DicksonAlgebra(2,3)
+            sage: E=DicksonAlgebra(3,2)
+            sage: E._manual_test_left_conj_action(region(tmax=30,emax=30))
         """
         if idx & 1:
             num = (idx + 1) >> 1
@@ -859,7 +912,7 @@ class DicksonAlgebra(DicksonBase):
 
     def _left_conjugate_coaction_on_basis(self, a, maxq, maxp):
         return self._coaction_helper(self._left_conjugate_steenrod_coaction_milnor_gen, 
-                                     self._factor_key(a), maxq, maxp)
+                                     self._factor_key(a, 0 if len(maxp)==0 else max(maxp)), maxq, maxp)
 
     def left_steenrod_action_milnor_conj(self, a, m):
         """
@@ -874,25 +927,6 @@ class DicksonAlgebra(DicksonBase):
 
         """
         return self._act_from_coact(self._left_conjugate_coaction_on_basis, a, m)
-
-    def conjugate_action(self):
-        """
-        TESTS::
-
-            sage: from yacop.modules.dickson import DicksonAlgebra
-            sage: from yacop.utils.region import region
-            sage: D=DicksonAlgebra(2,3) ; D.inject_variables()
-            Defining d4, d6, d7
-            sage: c=D.conjugate_action(); c
-            conjugate action of mod 2 Steenrod algebra, milnor basis on Dickson algebra D(3) for prime 2
-            sage: c(Sq(18,6),d4**5)
-            d7**8 + d4**4*d6**2*d7**4
-
-        """
-        A = self.__yacop_category__().base_ring()
-        ans = SteenrodAlgebraAction(A, self, self.left_steenrod_action_milnor_conj, is_left=True)
-        ans.rename("conjugate action of %s on %s" % (A, self))
-        return ans
 
     def _restriction_basis(self, dest, key):
         idx = dest._index
@@ -910,6 +944,7 @@ class DicksonAlgebra(DicksonBase):
         """
         TESTS::
 
+            sage: from yacop.modules.dickson import DicksonAlgebra
             sage: D=DicksonAlgebra(3,3)
             sage: r = D.restriction(DicksonAlgebra(3,2)) ; r
             restriction from Dickson-Mui algebra D(3) for prime 3 to Dickson-Mui algebra D(2) for prime 3
@@ -923,6 +958,7 @@ class DicksonAlgebra(DicksonBase):
             tau0*tau1*d16**3
 
             sage: D=DicksonAlgebra(2,3) ; D.inject_variables()
+            Defining d4, d6, d7
             sage: r = D.restriction(DicksonAlgebra(2,2))
             sage: r(d4), r(d6), r(d7)
             (d2**2, d3**2, 0)
@@ -947,6 +983,7 @@ class DicksonAlgebra(DicksonBase):
         """
         TESTS::
 
+            sage: from yacop.modules.dickson import DicksonAlgebra
             sage: D=DicksonAlgebra(3,1)
             sage: t = D.transfer(DicksonAlgebra(3,5)) ; t
             transfer from Dickson-Mui algebra D(1) for prime 3 to Dickson-Mui algebra D(5) for prime 3
