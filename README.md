@@ -10,7 +10,7 @@ Yet Another Cohomology Program
 docker run --rm -it cnassau/yacop-sage
 ```
 
-### Persistant data storage
+### Persistent data storage
 
 ```bash
 docker run -v /path/to/your/directory:/data --rm -it cnassau/yacop-sage

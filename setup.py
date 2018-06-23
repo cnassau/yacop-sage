@@ -22,5 +22,5 @@ setup(
   maintainer_email = "nassau@nullhomotopie.de",
   url = "http://nullhomotopie.de",
   description = "Yacop - Steenrod algebra cohomology",
-  packages=["yacop","yacop.resolutions","yacop.modules","yacop.utils"],
+  packages=["yacop","yacop.resolutions","yacop.modules","yacop.utils","yacop.testing"],
 )
