@@ -777,7 +777,7 @@ class DicksonAlgebra(DicksonBase):
             sage: from yacop.utils.region import region
             sage: D=DicksonAlgebra(2,3)
             sage: D._manual_test_left_action(region(tmax=20,tmin=15),opdeg=5) # long time
-            126 multiplications checked
+            126 non-zero multiplications checked
             sage: for g in D.gens():
             ....:    for n in range(50):
             ....:        x = Sq(n)*g
@@ -800,7 +800,7 @@ class DicksonAlgebra(DicksonBase):
             sage: E=DicksonAlgebra(2,4,generic=True) ; E.inject_variables()
             Defining tau0, d16, tau1, d24, tau2, d28, tau3, d30
             sage: E._manual_test_left_action(region(tmax=12,tmin=10),opdeg=15) # long time
-            384 multiplications checked
+            384 non-zero multiplications checked
             sage: A=SteenrodAlgebra(2,generic=True)
             sage: [(i,A.P(i)*d30) for i in range(60) if A.P(i)*d30 != 0]
             [(0, d30), (8, d16*d30), (12, d24*d30), (14, d28*d30), (15, d30**2)]
