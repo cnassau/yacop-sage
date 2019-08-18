@@ -18,12 +18,13 @@ def __startup__():
         return MinimalResolution(self,memory=memory,filename=filename)
     setattr(sage.algebras.steenrod.steenrod_algebra.SteenrodAlgebra_generic,"resolution",resolution)
 
-    def Ext(algebra,M,N=None):
+    def Ext(algebra,M,N=None,filename=None):
         """
         ``Ext(M,N)`` over ``algebra``.
         """
         from yacop.resolutions.smashres import SmashResolution
-        return SmashResolution(M,algebra.resolution()).Homology()
+        assert N is None
+        return SmashResolution(M,algebra.resolution(),filename=filename).Homology()
     setattr(sage.algebras.steenrod.steenrod_algebra.SteenrodAlgebra_generic,"Ext",Ext)
 
     # fix antipode sign #25603

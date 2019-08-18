@@ -43,7 +43,12 @@ oo::class create yacop::motc_resolver {
     }
 
     method fillMonomap {suff sdegree} {
-	# read differentials from the database
+	# read differentials from the database:
+	#
+	#   mmnext    (s+1) -> s        (only e-degree homogeneous summands)
+	#   mmcurr        s -> (s-1)    (only e-degree homogeneous summands)
+	#   motcurr       s -> (s-1)    (the full differential)
+	#
 	set mapname mm$suff
 	$mapname clear
 	if {$suff eq "curr"} {
@@ -74,6 +79,10 @@ oo::class create yacop::motc_resolver {
 	if 0 {
 	    my dumpMonomap $mapname
 	    if {$suff eq "curr"} {
+		puts "gens with s=$sdegree: [db eval {select id from generators where sdeg = :sdegree order by id}]"
+		db eval {select g.rowid,id, frag_decode(format,data), f.srcgen, f.targen
+		    from generators g join fragments as f
+		    on g.rowid=f.srcgen where sdeg=:sdegree} f { parray f }
 		my dumpMonomap motcurr
 	    }
 	}
@@ -132,14 +141,6 @@ oo::class create yacop::motc_resolver {
 		continue
 	    }
 	    set lft [steenrod::matrix lift $prime $mdsc $bas errmat]
-	    if {![steenrod::matrix iszero $errmat]} {
-		# The lift is allowed to fail if the current generator supports a
-		# differential d(g) = h + ... and h has not yet been computed.
-		# This can happen if we're working at (s,t) but (s-1,t) has not
-		# been done yet (only (s-1,t-1)). We then need to introduce the
-		# target generator now.
-		error "lift failed (x)"
-	    }
 	    set cnt 0
 	    set corrections {}
 	    foreach id $idlist {
@@ -247,10 +248,13 @@ oo::class create yacop::motc_resolver {
 	yacop::logvars fulldim dimcnt
 
 	set allzero 1
-	foreach {genlist errterms} $errors {
-	    if {![steenrod::matrix iszero $errterms]} {
-		set allzero 0
-		break
+	if 1 {
+	    # TODO: remove this code
+	    foreach {genlist errterms} $errors {
+		if {![steenrod::matrix iszero $errterms]} {
+		    set allzero 0
+		    break
+		}
 	    }
 	}
 	if {$allzero && $edeg > $sdeg+1} {
@@ -272,37 +276,129 @@ oo::class create yacop::motc_resolver {
 	}
 	MotPrev configure -prime $prime -algebra $algebrareg -ideg [expr {2*$ideg}] -edeg 0 -genlist $glmot
 
-	# the resolution loop uses 3 variables
-	set gens {}              ;# list of tuples (id, sdeg, ideg, edeg) for each new generator
+	# the resolution loop uses these variables
+	set gens {}              ;# list of tuples (id, sdeg, ideg, edeg) for each new generator in sdeg = s+1
 	unset -nocomplain diffs  ;# array id -> differential of the new generator
+	set gensx {}             ;# list of tuples (id, sdeg, ideg, edeg) for each new generator in sdeg = s
+	unset -nocomplain diffsx ;# array id -> differential of the new generator
 	set errors {}            ;# alternating list of "(id1,...,idk)" and "matrix of dd(id1),..,dd(idk)"
 
 	for {set edeg 0} {true} {incr edeg} {
 	    my setmaxprofile $profilechoice
-	    my resolve-step gens diffs errors
-	    if {$edeg>$sdeg + 1000} {
-		error "internal error: edeg much too big $edeg >> $sdeg"
+	    my resolve-step gens diffs errors ;# will act as "break" when all errors are zero
+
+	    # reasons for this bound on the edeg:
+	    #  - generators in s=$sdeg have edeg <= $sdeg
+	    #  - milnor basis elements with edeg = n have at least internal degree 1 + 3 + 7 + ... + (2**n-1)
+	    #      = (2 + 4 + 8 + ... + 2**n) - n
+	    #  - add an extra offset in case our analysis is off by one or two ...
+	    if {0 && $edeg>=$sdeg} {
+		set ed2 [expr {$edeg-$sdeg}] ;# exterior degree left over for the milnor op
+		set minidegfromedeg [expr {(2<<$ed2)-1 - $ed2}]
+		#puts edeg=$edeg,mini=$minidegfromedeg,ideg=$ideg
+		if {$ideg < ($minidegfromedeg - 3)} break
 	    }
+	    if {$edeg > 200} break
+	}
+
+	if 0 {
+	    # the following computation revealed an interesting error:
+	    set filename "file:motc-Atdeg2.db?mode=memory&cache=private"
+	    set obj X
+	    yacop::gfr create $obj $filename flavour motivic
+	    $obj algebra 2 {0 {3 2 1}}
+	    $obj viewtype odd
+	    $obj profmode auto
+	    $obj extend-to [list sdeg 25 ideg 100]
+	    $obj extend-to [list sdeg 25 tdeg 80]
+	    # for s=20, ideg=101 4 new generators were introduced as targets
+	    # of differentials: two of them had identical differentials.
+	    # the differentials came from different "batches"; we therefore
+	    # need to deal with all batches at once
+	}
+	set nidlist {}
+	set errlist {}
+	foreach {idlist errterms} $errors {
+	    lappend nidlist {*}$idlist
+	    lappend errlist $errterms
+	}
+	set errors {} ;# release reference on the matrices
+	set idlist $nidlist
+	set errterms [steenrod::matrix concat errlist]
+
+	if {[llength $idlist] && ![steenrod::matrix iszero $errterms]} {
+
+	    # this can happen if we are introducing new generators that will support
+	    # differentials to a region that we have not yet computed; it reflects
+	    # the non-minimality of our resolution.  the assertion that the target
+	    # bidegree really is not yet completed is checked generically for every
+	    # new generator.
+
+	    #puts errdims=[steenrod::matrix dimensions $errterms]
+	    set ecopy $errterms
+	    steenrod::matrix ortho 2 errterms kern
+	    unset kern
+	    #puts errdims=[steenrod::matrix dimensions $errterms]
+	    set numtargets [lindex [steenrod::matrix dimensions $errterms] 0]
+	    set lastgencurr [lindex $genlists(curr) end 0]
+	    set newtargets {}
+	    unset -nocomplain edegmap
+	    foreach itm $genlists(prev) {
+		foreach {id degi dege} $itm break
+		set edegmap($id) $dege
+	    }
+	    for {set cnt 0} {$cnt<$numtargets} {incr cnt} {
+		set row [steenrod::matrix extract single-row $errterms $cnt]
+		incr lastgencurr
+		set diffsx($lastgencurr) [steenrod::poly etatom [MotPrev decode $row]]
+		unset -nocomplain medeg
+		set medeg 100000
+		steenrod::poly foreach $diffsx($lastgencurr) m {
+		    set m2 [steenrod::mono edegree $m]
+		    set m3 $edegmap([steenrod::mono gen $m])
+		    set medeg [expr {min($medeg,$m2+$m3)}]
+		}
+		#puts "new generator $lastgencurr with edeg=$edeg and diff-edeg=$medeg -> $diffsx($lastgencurr)"
+		lappend gensx [list $lastgencurr $sdeg $ideg $medeg]
+		lappend genlists(curr) [list $lastgencurr $ideg $medeg]
+		lappend newtargets $lastgencurr
+	    }
+	    foreach x $newtargets {
+		motcurr set [list 1 0 0 $x] $diffsx($x)
+	    }
+	    #set e2 $errterms; puts errterms=$e2
+	    set l [steenrod::matrix liftvar 2 errterms ecopy]
+	    #puts l=$l
+	    set cnt -1
+	    foreach ngen $idlist {
+		set row [steenrod::matrix extract single-row $l [incr cnt]]
+		#puts "d($ngen) += $row"
+		foreach x $newtargets cf $row {
+		    if {$cf} {
+			steenrod::poly varappend diffs($ngen) [list [list -$cf 0 0 $x]]
+			#puts diffs($ngen)=$diffs($ngen)
+		    }
+		}
+	    }
+	}
+
+	set g2 {}
+
+	# must add generators with sdeg-1 first
+
+	foreach itm $gensx {
+	    lappend g2 $itm
+	    set id [lindex $itm 0]
+	    lappend dfs $diffsx($id)
 	}
 
 	foreach itm $gens {
+	    lappend g2 $itm
 	    set id [lindex $itm 0]
-	    #puts "ZZZ $itm -> $diffs($id)"
 	    lappend dfs $diffs($id)
 	}
 
-	foreach {idlist errterms} $errors {
-	    if {![steenrod::matrix iszero $errterms]} {
-		puts "ids=$idlist"
-		puts errterms=\n[join $errterms \n]
-		foreach row $errterms {
-		    puts "> [MotPrev decode $row]"
-		}
-		error "internal error: error terms not reduced to zero"
-	    }
-	}
-
-	return [list $gens $dfs]
+	return [list $g2 $dfs]
     }
 
 

@@ -507,15 +507,22 @@ import sage.categories.action
 import operator
 class SteenrodAlgebraAction(sage.categories.action.Action):
     def __init__(self, A, M, thefunc, is_left=True, op=operator.mul):
-        sage.categories.action.Action.__init__(self, A, M, is_left, op)
+        # if A is a subalgebra of the Steenrod algebra we nevertheless register an action
+        # of the full Steenrod algebra (which raises an error in _act_ if necessary)
+        self._Aeff = SteenrodAlgebra(A.prime(),generic=A.is_generic())
+        sage.categories.action.Action.__init__(self, self._Aeff, M, is_left, op)
         self._module = M
         self._algebra = A
         self._thefunc = thefunc
         self._gf = A.base_ring()
 
-    def _call_(self, a, x):
+    def _act_(self, a, x):
+        if not self._is_left:
+            a, x = x, a
         if a in self._gf:
             return self._module._scalar_action(a,x)
+        if not self._Aeff is self._algebra:
+            a = self._algebra(a) 
         return self._thefunc(a,x)
 
 @cached_function
@@ -1118,6 +1125,75 @@ class SteenrodAlgebraModules(Category_over_base_ring):
             assert f.codomain() is self
             return CokerImpl(f,**options)
 
+        def _xx_test_truncation(self,tester = None,**options):
+            from yacop.modules.functors import truncation
+            from sage.misc.sage_unittest import TestSuite
+            from sage.misc.lazy_format import LazyFormat
+            is_sub_testsuite = (tester is not None)
+            tester = self._tester(tester = tester, **options)
+            myatt = "_truncation_tested"
+            if not hasattr(self,myatt):
+                # find a non-zero action a*m = n in self
+                def testops(A):
+                    for _ in A.some_elements():
+                        yield _
+                    maxdeg = A.prime()**3
+                    for deg in range(1,maxdeg):
+                        for key in A.homogeneous_component(maxdeg-deg+1).basis():
+                            yield A(key)
+                n = self.zero()
+                for (deg,m) in self.an_element().homogeneous_decomposition().iteritems():
+                    if not m.is_zero():
+                        for a in testops(self._yacop_base_ring):
+                            n = a*m
+                            #print("trying %s*%s->%s"%(a,m,n))
+                            if not n.is_zero():
+                                break
+                        if not n.is_zero():
+                            break
+                if n.is_zero() or m.t == n.t:
+                    print("WARN: could not find a non-trivial action in %s" % self) 
+                else:
+                    tests = []
+                    # tests are tuples: 
+                    #   1 region to truncate to
+                    #  flags whether
+                    #   2 m survives to truncation
+                    #   3 n survives to truncation
+                    #  and
+                    #   4 result of computing a*m in the truncation 
+                    tests.append(((m.t,n.t),True,True,n))
+                    tests.append(((m.t,m.t),True,False,0))
+                    tests.append(((n.t,n.t),False,True,0))
+                    for ((tmin,tmax),sm,sn,am) in tests:
+                        T = truncation(self,tmin=tmin,tmax=tmax)
+                        if sm:
+                            tester.assertTrue(m in T,
+                                    LazyFormat("contains (+) broken for %s (elem %s)")%(T,n))
+                            tester.assertTrue(self(T(m))==m,
+                                    LazyFormat("casting from/to truncation broken for %s (elem %s)")%(T,n))
+                            tester.assertTrue(T(m).parent() is T,
+                                    LazyFormat("wrong parent for %s (elem %s)")%(T,n))
+                        else:
+                            tester.assertTrue(not m in T,
+                                    LazyFormat("contains (-) broken for %s (elem %s)")%(T,n))
+                            ok = False;
+                            try:
+                                x = T(m)
+                            except:
+                                ok = True
+                            tester.assertTrue(ok,
+                                    LazyFormat("no exception when casting %s into %s" %(m,T)))
+                        if sn:
+                            tester.assertEqual(n,self(T(n)),
+                                    LazyFormat("casting %s into %s destroys element" %(n,T)))
+                        else:
+                            tester.assertTrue(T(n).is_zero(),
+                                    LazyFormat("%s does not map to zero in %s" %(n,T)))
+                        if sm:
+                            tester.assertEqual(a*T(m),T(am),
+                                    LazyFormat("bad action %s * %s != %s" %(a,m,n)))
+            # FIXME: run the TestSuite of a truncation (and avoid infinite loops)
 
         def _test_suspension(self,tester = None,**options):
             from sage.misc.sage_unittest import TestSuite
@@ -1125,28 +1201,28 @@ class SteenrodAlgebraModules(Category_over_base_ring):
             is_sub_testsuite = (tester is not None)
             tester = self._tester(tester = tester, **options)
             myatt = "_suspension_tested"
-            s = self.an_element()
             if not hasattr(self,myatt):
-              X = suspension(self,t=5,s=3)
-              tester.assertTrue(X is suspension(self,t=5,s=3),
-                      LazyFormat("suspension(X,..) is not suspension(X,..) for X=%s")%(X,))
-              setattr(X,myatt,"yo")
-              try:
-               tester.info("\n  Running the test suite of a suspension")
-               TestSuite(X).run(verbose = tester._verbose, prefix = tester._prefix+"  ",
-                                      raise_on_failure = is_sub_testsuite)
-               tester.info(tester._prefix+" ", newline = False)
-               x = s.suspend(t=5,s=3)
-               x3 = s.suspend(t=5,s=3)
-               x2 = self.suspend_element(s,t=5,s=3)
-               tester.assertEqual(x,x3,
-                          LazyFormat("x.suspend(...) != x.suspend(...):\n   A=%s\n   B=%s")%(x,x3,))
-               tester.assertEqual(x,x2,
-                          LazyFormat("x.suspend(...) != parent.suspend_element(x,...):\n   A=%s\n   B=%s")%(x,x2,))
-               tester.assertTrue(x.parent()==X,
-                          LazyFormat("suspended element %s not in suspension %s")%(x,X,))
-              finally:
-               delattr(X,myatt)
+                s = self.an_element()
+                X = suspension(self,t=5,s=3)
+                tester.assertTrue(X is suspension(self,t=5,s=3),
+                        LazyFormat("suspension(X,..) is not suspension(X,..) for X=%s")%(X,))
+                setattr(X,myatt,"yo")
+                try:
+                    tester.info("\n  Running the test suite of a suspension")
+                    TestSuite(X).run(verbose = tester._verbose, prefix = tester._prefix+"  ",
+                                            raise_on_failure = is_sub_testsuite)
+                    tester.info(tester._prefix+" ", newline = False)
+                    x = s.suspend(t=5,s=3)
+                    x3 = s.suspend(t=5,s=3)
+                    x2 = self.suspend_element(s,t=5,s=3)
+                    tester.assertEqual(x,x3,
+                                LazyFormat("x.suspend(...) != x.suspend(...):\n   A=%s\n   B=%s")%(x,x3,))
+                    tester.assertEqual(x,x2,
+                                LazyFormat("x.suspend(...) != parent.suspend_element(x,...):\n   A=%s\n   B=%s")%(x,x2,))
+                    tester.assertTrue(x.parent()==X,
+                                LazyFormat("suspended element %s not in suspension %s")%(x,X,))
+                finally:
+                    delattr(X,myatt)
 
         def _test_cartesian_product(self,tester = None,**options):
             from sage.misc.sage_unittest import TestSuite

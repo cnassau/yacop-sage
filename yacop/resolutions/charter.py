@@ -185,6 +185,7 @@ class Charter(SageObject):
         if crowdiness == 1:
             return (pt["n"],pt["s"])
         offset = 0.4-0.8*pt["num"]/(crowdiness-1)
+        offset /= 2.5 # not sure about the best choice
         return (RDF(pt["n"]+offset),RDF(pt["s"]-offset))
     
     def make_chart(self,region=None):

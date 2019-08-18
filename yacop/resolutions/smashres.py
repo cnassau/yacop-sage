@@ -43,7 +43,11 @@ from sage.combinat.free_module import CombinatorialFreeModule
 from sage.categories.category import Category
 from sage.categories.vector_spaces import VectorSpaces
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
+from sage.matrix.constructor import matrix
+from sage.modules.free_module_element import vector
+from sage.rings.finite_rings.finite_field_constructor import FiniteField
 from copy import copy
+import os
 
 
 # internal function for testing
@@ -143,6 +147,7 @@ class Smasher(Parent,UniqueRepresentation):
         self._filename = filename
         self._tempdb = tempdb
         self._prime = self._resolution._prime
+        self._gf = FiniteField(self._prime)
         self._errorhandler = None
         self.tcl = Yacop.Interpreter()
 
@@ -212,9 +217,10 @@ class Smasher(Parent,UniqueRepresentation):
             self._errorlocation = eval(location)
         self._errors.append(message)
 
+    @cached_method
     def _tclmodule(self,action,*args):
         """
-        This funtion is a wrapper that is invoked from the Tcl code. 
+        This function is a wrapper that is invoked from the Tcl code. 
         Its purpose is to provide access to the module.
         """
         #print action,args
@@ -346,6 +352,14 @@ class Smasher(Parent,UniqueRepresentation):
             (region(-Infinity < t <= 163),
              [(47, 133), (48, 132), (49, 131), (50, 130), (51, 129)])
 
+            sage: # example with an infinite dimensional module
+            sage: P = RealProjectiveSpace(botexp=4)
+            sage: R=SmashResolution(P,C) ; R = R._worker
+            sage: R._find_region(region(s=15,t=15))
+            (region(), [])
+            sage: R._find_region(region(s=15,tmin=25,tmax=27))
+            (region(-Infinity < t <= 27), [(14, 9), (15, 8), (16, 7)])
+            
             sage: # examples with odd viewtype
             sage: C = newres(SteenrodAlgebra(2,generic=True))
             sage: from yacop.modules.classifying_spaces import BZpGeneric
@@ -376,8 +390,11 @@ class Smasher(Parent,UniqueRepresentation):
         if msmin == -Infinity:
             raise ValueError, "module not bounded from below in the s-direction"
 
-        reg.smin = max(reg.smin,msmin) ;# we assume resolution.smin == 0
+        if reg.is_empty():
+            return region(), []
 
+        reg.smin = max(reg.smin,msmin) ;# we assume resolution.smin == 0
+        
         xtmin, xtmax = reg.trange
         xnmin, xnmax = reg.nrange
         xtmin = max(reg.smin+xnmin-1,xtmin)
@@ -488,27 +505,39 @@ class Smasher(Parent,UniqueRepresentation):
         self.tcl.loadTk()
         self.tcl.eval("sqlconsole new [smashprod db]")
 
+    def __range_condition(self,var,valmin,valmax):
+        ans = ""
+        if valmin == valmax:
+            if valmin > -Infinity:
+                ans += " and %s = %d" % (var,valmin)
+        else:
+            if valmin > -Infinity:
+                ans += " and %s >= %d" % (var,valmin)
+            if valmax < +Infinity:
+                ans += " and %s <= %d" % (var,valmax)
+        return ans
 
-    def _search_condition(self,s=None,n=None,i=None,e=None,nov=None):
+    def _search_condition(self,reg):
         """
         Create a where clause from the input parameters
         """
 
         if self._resolution._viewtype == 'even':
             nexp = "(s.ideg/2-s.sdeg)"
+            texp = "(s.ideg/2)"
         else:
             nexp = "(s.ideg-s.sdeg)"
+            texp = "s.ideg"
 
         cond = ""
-        if not s is None: cond += " and s.sdeg = %d" % s
-        if not i is None: cond += " and s.ideg = %d" % i
-        if not n is None: cond += " and %s = %d" % (nexp,n)
-        if not e is None: cond += " and s.edeg = %d" % e
-        if not nov is None: cond += " and (s.sdeg-s.edeg) = %d" % nov
+        cond += self.__range_condition("s.sdeg",reg.smin, reg.smax)
+        cond += self.__range_condition(texp,reg.tmin, reg.tmax)
+        cond += self.__range_condition(nexp,reg.nmin, reg.nmax)
+        cond += self.__range_condition("s.edeg",reg.emin, reg.emax)
         if cond != "": cond = "where " + cond[4:]
-        return (cond,nexp)
+        return (cond,nexp,texp)
 
-    def homology(self,s=None,n=None,i=None,e=None,nov=None):
+    def xxxhomology(self,s=None,n=None,i=None,e=None,nov=None):
         """
         Return basis of the homology in a range of degrees
         """
@@ -531,8 +560,10 @@ class Smasher(Parent,UniqueRepresentation):
         """
         if self._resolution._viewtype == 'even':
             nexp = "(ideg/2-sdeg)"
+            texp = "(ideg/2)"
         else:
             nexp = "(ideg-sdeg)"
+            texp = "ideg"
 
         from Tkynter import TclError
         def cond(var,col,fac=1):
@@ -545,7 +576,7 @@ class Smasher(Parent,UniqueRepresentation):
             return res
         c = ""
         c += cond('s','sdeg')
-        c += cond('t','ideg')
+        c += cond('t',texp)
         c += cond('n','ndeg')
         c += cond('e','edeg')
         c += cond('b','(sdeg-edeg)')
@@ -556,11 +587,11 @@ class Smasher(Parent,UniqueRepresentation):
         if len(c) and c[:5] != "where": c = "where " + c
         code =  """
                join [smashprod db eval {
-                   select pydict('id',rowid,'s',sdeg,'t',ideg,
+                   select pydict('id',rowid,'s',sdeg,'t',%s,
                      'e',edeg,'n',%s,'num',basid) 
                      from homology_generators %s
                }] ,
-        """ % (nexp, c)
+        """ % (texp, nexp, c)
         #print code
         try:
             res = "[" + self.tcl.eval(code) + "]"
@@ -569,22 +600,23 @@ class Smasher(Parent,UniqueRepresentation):
         return eval(res)
 
 
-    def smash_basis(self,s=None,n=None,i=None,e=None,nov=None):
+    def smash_basis(self,reg):
         """
-        Return A-basis of the smash product in a range of degrees
+        Return our chosen A-basis of the smash product
         """
 
-        (cond,nexp) = self._search_condition(s=s,n=n,i=i,e=e,nov=nov)
+        (cond,nexp,texp) = self._search_condition(reg)
 
         res = "[" + self.tcl.eval( """
                join [smashprod db eval {
-                   select pydict('modgen',''''||m.sagename||'''','resgen',s.resgen)
+                   select pydict('modgen',''''||replace(m.sagename,"'","\\'")||'''','resgen',s.resgen)
                    from smash_generators as s
                    join module_generators as m on m.rowid = s.modgen %s
+                   order by s.sdeg, s.ideg, s.edeg, s.ebasid
                }] ,
             """ % (cond) ) + "]"
-        from sage.sets.set import Set
-        return Set([(self._module._make_element_(x["modgen"]),self._resolution.g(id=x["resgen"])) for x in eval(res)])
+        return list(self.make_tensor(self._module.load_element(x["modgen"]),
+            self.reference_resolution._generator_from_dict(self._resolution.g(id=x["resgen"]))) for x in eval(res))
 
     def fragments(self,querycond="where 1"):
         """
@@ -606,65 +638,42 @@ class Smasher(Parent,UniqueRepresentation):
                 break
         # FIXME: this code leaks coroutines if the generator is not executed to the end
 
-    def _unpack_vector(self,row,basis):
+    def getmatrix(self,what,reg):
         """
-        Create a cycle from coefficient vector and basis
-        """
-
-        res = []
-        idx=-1
-        for coeff in row:
-            idx=idx+1
-            if coeff != 0:
-                x = basis[idx]
-                res.append((coeff,(self._module._make_element_(x["modgen"]),self._resolution.g(id=x["resgen"]))))
-
-        return FormalSum(res,parent=self._fsums)
-
-    def _getmatrix(self,what,s=None,n=None,i=None,e=None,nov=None):
-        """
-        Return cycles in a range of degrees
+        Fetch one of the computed matrices from the database
         """
 
-        (cond,nexp) = self._search_condition(s=s,n=n,i=i,e=e,nov=nov)
+        (cond,nexp,texp) = self._search_condition(reg)
+
+        #self._tabledump("select s.sdeg, s.ideg, s.edeg, s.%s from smash_boxes s %s order by s.sdeg, s.ideg, s.edeg" % (what,cond))
 
         res = "[" + self.tcl.eval( """
-               join [smashprod db eval {
-                   select '(' || pymatrix(%s) || ',' ||
-                      (select '['
-                           || group_concat(pydict('modgen',''''||m.sagename||'''',
-                                                  'resgen',subsel.resgen))
-                           || ']' from smash_generators as subsel
-                           join module_generators as m on m.rowid = subsel.modgen
-                       where s.sdeg = subsel.sdeg and s.ideg = subsel.ideg and s.edeg = subsel.edeg)
-                   || ')'
-                   from smash_boxes as s
-                   %s
-               }] ,
-            """ % (what,cond) ) + "]"
+                join [smashprod db eval {
+                    select '(' || s.sdeg, %s, s.edeg, 'mat('||pymatrix(s.%s)||'))' from smash_boxes s
+                    %s 
+                    order by s.sdeg, s.ideg, s.edeg
+                }] ,
+            """ % (texp,what,cond) ) + "]"
 
-        #print "res=", eval(res)
-        mat = []
-        for (matrix,basis) in eval(res):
-            for row in matrix:
-                mat.append( self._unpack_vector(row,basis) )
-        return mat
-
-    def cycles(self,s=None,n=None,i=None,e=None,nov=None):
+        mat = lambda x: matrix(self._gf,x)
+        for (s,t,e,m) in eval(res):
+            yield region(s=s,t=t,e=e),m
+        
+    def xxcycles(self,s=None,n=None,i=None,e=None,nov=None):
         """
         Return cycles in a range of degrees
         """
 
         return self._getmatrix('cycles',s=s,n=n,i=i,e=e,nov=nov)
 
-    def boundaries(self,s=None,n=None,i=None,e=None,nov=None):
+    def xxboundaries(self,s=None,n=None,i=None,e=None,nov=None):
         """
         Return boundaries in a range of degrees
         """
 
         return self._getmatrix('boundaries',s=s,n=n,i=i,e=e,nov=nov)
 
-    def cycle(self,generator):
+    def xxcycle(self,generator):
         """
         Return a representing cycle for a homology generator.
         """
@@ -676,26 +685,29 @@ class Smasher(Parent,UniqueRepresentation):
     def g(self,s=None,n=None,num=None,id=None):
         """
         Construct a homology generator from id or sequence number
+
+        The routine returns a plain dictionary; this is used e.g. by the "Subset" class
+        to create proper Sage Element objects during load/dump
         """
 
         import sage
-        (cond,nexp) = self._search_condition()
+        (cond,nexp,texp) = self._search_condition()
 
         if not id is None:
             cond = "where rowid = %d" % id
         else:
-            cond = "where sdeg = %d and ideg = n2i(%d,%d) and basid = %d" % (s,s,n,num or 0)
+            cond = "where sdeg = %d and %s = %d and basid = %d" % (s,nexp,n,num or 0)
 
         res = "[" + self.tcl.eval( """
                join [smashprod db eval {
-                   select pydict('id',rowid,'s',s.sdeg,'i',s.ideg,'e',s.edeg,'n',%s,'num',s.basid,'enum',s.ebasid) from homology_generators as s %s
+                   select pydict('id',rowid,'s',s.sdeg,'i',s.ideg,'e',s.edeg,'n',%s,'num',s.basid,'enum',s.ebasid)
+                   from homology_generators as s %s
                }] ,
             """ % (nexp,cond) ) + "]"
-        #print res
-        return [FormalSumOfDict([(1,Generator(self,x))],parent=self._fsums) for x in eval(res)][0]
+        return eval(res)[0]
 
 
-    def homology_class(self,cycle):
+    def xxhomology_class(self,cycle):
         """
         Express cycle in terms of homology generators
         """
@@ -829,6 +841,7 @@ class SmashResolution(SteenrodModuleBase_Tensor,UniqueRepresentation):
         #FIXME: suspensions should all share the same Smasher object
         if with_worker:
             self._worker = Smasher(resolution,module,filename=filename,debug=debug)
+            self._worker.make_tensor = self.make_tensor
             self._worker._errorhandler = self._errorhandler
         else:
             self._worker = None
@@ -925,6 +938,9 @@ class SmashResolution(SteenrodModuleBase_Tensor,UniqueRepresentation):
             print "     d(%s) =" % sg, self.resolution().differential(sg)
             print ""
 
+    def _getmatrix(self,what,reg):
+        cond = self._worker.getmatrix(what,reg)
+
     def _dump_term(self,el):
         mkey,ckey = el
         ael,gen = ckey.split()
@@ -997,6 +1013,9 @@ class SmashResolution(SteenrodModuleBase_Tensor,UniqueRepresentation):
     def factors(self):
         return (self._sets[0],None)
 
+    def free_basis(self,reg):
+        return self._worker.smash_basis(reg)
+
     def compute(self,quiet=False,**kwargs):
         """
         TESTS::
@@ -1012,6 +1031,10 @@ class SmashResolution(SteenrodModuleBase_Tensor,UniqueRepresentation):
             sage: S.compute(smax=20,nmax=80,quiet=True)
             sage: E=S.Homology()
             sage: sorted(list(E.free_basis(s=3,imax=10)))
+
+            sage: # the "free_basis" reports only the degrees that have already
+            sage: # been computed; it does not trigger an extension of the resolution
+            sage: S.free_basis(s=3)
 
         """
         if self._worker is None:
@@ -1071,6 +1094,49 @@ class SmashResolutionHomology(FreeModuleImpl,UniqueRepresentation):
               module = mod 2 cohomology of quaternionic projective space P^{+Infinity}
             sage: E.compute(s=10,t=20,quiet=True)
 
+            sage: # create a quick ascii chart
+            sage: B = E.free_basis()
+            sage: try:
+            ....:    dims = [[len(B.truncate(s=s,t=s+t)) for t in (0,..,20)] for s in reversed([0,..,15])]
+            ....: except:
+            ....:    print("FIXME: problem with negative dimensions")
+            ....:    pass
+            FIXME: problem with negative dimensions
+            sage: def getdata():
+            ....:    return [[len(E[s,4+t]) for t in (0,..,20)] for s in reversed([0,..,15])]
+            sage: print(matrix(getdata()).str(zero=' ',plus_one='*')) # long time
+            [*       *       *       *       *       *]
+            [*       *       *       *       *       *]
+            [*       *       *       *       *       *]
+            [*       *       *       *       *       *]
+            [*       *       *       *       *     * *]
+            [*       *       *       *       *   * * *]
+            [*       *       *       *       * *   * *]
+            [*       *       *       *     * * *   * *]
+            [*       *       *       *     2 2     2 2]
+            [*       *       *   *       * 2 2   * 2 *]
+            [*       *       * *       * * 2 * *   3 *]
+            [*       *     * * *       * * * * 2   * 2]
+            [*       *     2 2     * *     2 * *     2]
+            [*   *       * 2 2   * *     * * *   *   *]
+            [* *       *   * * *   *       *          ]
+            [*               *                        ]
+
+            sage: a, = E[0,4]
+            sage: b, = E[0,12]
+            sage: c, = E[3,8]
+            sage: for _ in (a,b,c):
+            ....:     print(E.lift(_),)
+            x # g(0,0)
+            x^3 # g(0,0)
+            x^2 # g(3,3)
+            sage: e,f = E[2,11]
+            sage: e, e.cycle()
+            sage: E(e.cycle())
+            sage: E.restrict(e.cycle()) == e
+            sage: E(e.cycle() + f.cycle()) == e+f
+            True
+
         """
         self._res = resolution
         assert isinstance(self._res,SmashResolution)
@@ -1104,6 +1170,46 @@ class SmashResolutionHomology(FreeModuleImpl,UniqueRepresentation):
     def Chart(self,*args,**kwds):
         return self.ambient().Chart(*args,**kwds)
 
+    def g(self,s,t,num=0):
+        ans=[]
+        for dct in self._res._worker.generators(region(s=s,t=t),"basid=%d"%num):
+            ans.append(dct)
+            if len(ans)>1:
+                raise ValueError, "internal error: more than one generator with (s,n,num)=(%d,%d,%d)" % (s,n,num)
+        if len(ans) ==0:
+            raise ValueError, "no such generator"
+        return self(self._gens.element_class(self._gens,ans[0]))
+
+    def smash_basis(self,deg):
+        # FIXME: auto extend resolution or raise error
+        return self._res._worker.smash_basis(deg)
+
+    def _lift_homogeneous(self,deg,smd):
+        bi = self._res._worker.getmatrix('homology',deg)
+        ba = self._res._worker.smash_basis(deg)
+        (_,mat), = bi
+        par = self.ambient()
+        return par.linear_combination((par.linear_combination(zip(ba,mat.row(g.split()[1]._dct["num"]))),cf) for (g,cf) in list(smd))
+
+    def _retract_homogeneous(self,deg,smd):
+        sb = self.smash_basis(deg)
+        coeffs = []
+        for itm in sb:
+            (key,cf), = list(itm) 
+            coeffs.append(smd[key])
+        (_,mat), = self._res._worker.getmatrix('cycles',deg)
+        coeffs = vector(mat.base_ring(),coeffs)
+        ans = mat.transpose().solve_right(coeffs)
+        return self.linear_combination((self.g(deg.s,deg.t,idx),vc) for (idx,vc) in enumerate(ans))
+
+    def __call__(self,x):
+        if x.parent() is self:
+            return x
+        if x.parent() is self.ambient():
+            return self.retract(x)
+        return super(SmashResolutionHomology,self).__call__(x)
+
+
     @staticmethod
     def SuspendedObjectsFactory(module,*args,**kwopts):
         """
@@ -1117,6 +1223,15 @@ class SmashResolutionHomology(FreeModuleImpl,UniqueRepresentation):
             True
         """
         return SmashResolutionHomology(suspension(module._res,*args,**kwopts))
+
+
+
+    class Element(FreeModuleImpl.Element):
+        
+        @cached_method
+        def cycle(self):
+            return self.parent().lift(self)
+
 
 # Local Variables:
 # eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)

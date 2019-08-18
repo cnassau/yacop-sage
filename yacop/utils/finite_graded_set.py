@@ -34,7 +34,7 @@ TESTS::
    sage: list(H) == list(F)
    True
    sage: for g in H:
-   ...      assert H.degree(g) == F.degree(g)
+   ....:    assert H.degree(g) == F.degree(g)
 
 
 """

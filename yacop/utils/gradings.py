@@ -121,7 +121,6 @@ from yacop.modules.functors import tensor, TensorProductsCategory
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.structure.sage_object import SageObject
 from sage.combinat.free_module import CombinatorialFreeModule
-from sage.categories.action import Action
 import operator
 from yacop.utils.suspenders import Suspender
 from yacop.utils.set_of_elements import SetOfMonomials, SetOfElements
@@ -706,8 +705,8 @@ class YacopGrading_TensorProduct(YacopGrading):
         sage: N.category()
         Category of tensor products of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
         sage: for dim in (-5,..,10):
-        ...     assert( M.dimension(t=dim) == N.dimension(t=dim) )
-        ...     assert( M.dimension(t=dim,e=-1) == N.dimension(t=dim,e=-1) )
+        ....:   assert( M.dimension(t=dim) == N.dimension(t=dim) )
+        ....:   assert( M.dimension(t=dim,e=-1) == N.dimension(t=dim,e=-1) )
         sage: P = tensor((M,M)) ; P
         M # M
         sage: P.category() is N.category()
@@ -753,7 +752,7 @@ class YacopGrading_TensorProduct(YacopGrading):
         sage: TestSuite(DDS).run() # long time
         sage: DD = tensor((D,D))
         sage: for dim in (-5,..,1):
-        ...      print (". %3d :"%dim, sorted(iter(DD.graded_basis(t=dim))))
+        ....:    print (". %3d :"%dim, sorted(iter(DD.graded_basis(t=dim))))
         .  -5 : [1 # tau[1], 1 # tau[0]*xi[1], tau[1] # 1, xi[1] # tau[0], tau[0] # xi[1], tau[0]*xi[1] # 1]
         .  -4 : [1 # xi[1], xi[1] # 1]
         .  -3 : []
@@ -772,7 +771,6 @@ class YacopGrading_TensorProduct(YacopGrading):
     you know what you are doing::
 
         sage: tensor((DualSteenrodAlgebra(3),BZp(3)))
-        ...
         WARNING: tensor product not locally finite in the t-direction
         ...
     """

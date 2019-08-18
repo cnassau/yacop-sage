@@ -555,12 +555,12 @@ class Subset(Parent,UniqueRepresentation):
             sage: S=Subset(C,region(tmax=20,smax=15)) ; S
             generators of minimal resolution of mod 5 Steenrod algebra, milnor basis in region(-Infinity < s <= 15, -Infinity < t <= 20)
             sage: S.category()
-            Join of Category of finite enumerated sets and Category of yacop graded sets
+            Join of Category of finite enumerated sets and Category of facade sets and Category of yacop graded sets
             sage: TestSuite(S).run()
             sage: S=Subset(C,region(nmax=20)) ; S
             generators of minimal resolution of mod 5 Steenrod algebra, milnor basis in region(-Infinity < n <= 20)
             sage: S.category()
-            Join of Category of infinite enumerated sets and Category of yacop graded sets
+            Join of Category of infinite enumerated sets and Category of facade sets and Category of yacop graded sets
             sage: TestSuite(S).run()
             sage: TestSuite(S.an_element()).run()
         """
@@ -571,7 +571,7 @@ class Subset(Parent,UniqueRepresentation):
         else:
             # FIXME: finite sub hopf algebras with limited s are also finite
             cat = InfiniteEnumeratedSets()
-        Parent.__init__(self,category=(cat,YacopGradedSets()))
+        Parent.__init__(self, facade = self._res, category=(cat,YacopGradedSets()))
 
     def _repr_(self):
         if not self._reg.is_full():
@@ -753,12 +753,14 @@ class MinimalResolution(FreeModuleImpl):
     """
 
     @staticmethod
-    def __classcall_private__(cls,algebra,memory=None,filename=None,category=None,istor=None):
+    def __classcall_private__(cls,algebra,memory=None,filename=None,flavour=None,category=None,istor=None):
         if istor is None:
             istor = False
-        return super(MinimalResolution,cls).__classcall__(cls,algebra,memory=memory,filename=filename,category=category,istor=istor)
+        if flavour is None:
+            flavour = 'regular'
+        return super(MinimalResolution,cls).__classcall__(cls,algebra,memory=memory,filename=filename,flavour=flavour,category=category,istor=istor)
 
-    def __init__(self,algebra,memory=None,filename=None,category=None,istor=False):
+    def __init__(self,algebra,memory=None,filename=None,flavour=None,category=None,istor=False):
         """
         TESTS::
 
@@ -772,10 +774,11 @@ class MinimalResolution(FreeModuleImpl):
             
         """
 
-        self._worker = GFR(algebra,filename=filename,memory=memory)
+        self._worker = GFR(algebra,filename=filename,flavour=flavour,memory=memory)
         gens = Subset(self._worker,region())
         self._algebra = algebra
         self._filename = filename
+        self._flavour = flavour
         self._memory = memory
         self._istor = istor
         self._defcategory = category
@@ -790,6 +793,8 @@ class MinimalResolution(FreeModuleImpl):
         FreeModuleImpl.__init__(self,actalg,gens,None,True,False,category=category)
 
     def _repr_(self):
+        if self._flavour == 'motivic':
+            return "minimal motivic resolution of %s" % self._algebra
         return "minimal resolution of %s" % self._algebra
 
     def Chart(self):

@@ -34,6 +34,15 @@ TESTS::
     sage: P.bbox()
     region(e = 0, s = 0, -23 <= t <= 0)
 
+TESTS::
+
+    sage: M = A2Module(666)
+    sage: g = M.bottom_class()
+    sage: from yacop.modules.morph_module import SubModule
+    sage: S = SubModule(M,(Sq(1)*g,Sq(7)*g,(Sq(4,2)+Sq(0,1,1))*g))
+    sage: S.dimension()
+    53
+
 """
 
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
@@ -45,18 +54,21 @@ from yacop.modules.dual_steenrod_algebra import DualSteenrodAlgebra
 
 class A2Module(SubModule,UniqueRepresentation):
 
-   def __init__(self,idx,category=None):
-      assert 1 <= idx and idx <= 1600
-      self.idx = idx
-      gen = A2GeneratorList()[idx]
-      if category is None:
-         category = YacopLeftModules(SteenrodAlgebra(2)).Subquotients()
-      SubModule.__init__(self,gen.parent(),(gen,),category=category)
+    def __init__(self,idx,category=None):
+        assert 1 <= idx and idx <= 1600
+        self.idx = idx
+        gen = A2GeneratorList()[idx]
+        if category is None:
+            category = YacopLeftModules(SteenrodAlgebra(2)).Subquotients()
+        SubModule.__init__(self,gen.parent(),(gen,),category=category)
 
-   def _repr_(self):
-      return "A2 as a module over the mod 2 Steenrod algebra, module structure #%d" % self.idx
+    def _repr_(self):
+        return "A2 as a module over the mod 2 Steenrod algebra, module structure #%d" % self.idx
 
-   # FIXME: more functions needed
+    def bottom_class(self):
+        return self._generators[0]
+
+    # FIXME: more functions needed
 
 class A2GeneratorList(UniqueRepresentation):
 

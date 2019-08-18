@@ -71,20 +71,23 @@ class SteenrodModuleGrading(YacopGrading):
             card = Infinity
         return SetOfMonomials(self._module,bas,card)
 
+def detect_prime(category):
+    p = None
+    for supcat in category.all_super_categories():
+        try:
+            if isinstance(supcat,Category_over_base):
+                p = supcat.base_ring().characteristic()
+                break
+        except AttributeError:
+            pass
+    assert p is not None
+    return p
+    
 class SteenrodModuleBase(CombinatorialFreeModule):
 
     def __init__(self,basis,grading=None,category=None):
-        p = None
-        for supcat in category.all_super_categories():
-           try:
-               if isinstance(supcat,Category_over_base):
-                   p = supcat.base_ring().characteristic()
-                   break
-           except AttributeError:
-               pass
-        assert p is not None
-        self._prime = p
-        CombinatorialFreeModule.__init__(self, GF(p), basis,
+        self._prime = detect_prime(category)
+        CombinatorialFreeModule.__init__(self, GF(self._prime), basis,
                              category=category)
 
         if grading is None:
@@ -262,6 +265,13 @@ class SteenrodModuleBase(CombinatorialFreeModule):
                           LazyFormat("element %s of degree (%d,%d,%d) is also in graded_basis(%s)")
                                             %(m,t,e,s,rg))
 
+def withbrackets(str,islatex):
+    if str.find("+")<0 and str.find("-")<0:
+        return str
+    if islatex:
+        return "\\left(%s\\right)" % str
+    return "(%s)" % str
+
 class SteenrodModuleBase_Tensor(CombinatorialFreeModule.Tensor,SteenrodModuleBase):
 
     @staticmethod
@@ -296,14 +306,14 @@ class SteenrodModuleBase_Tensor(CombinatorialFreeModule.Tensor,SteenrodModuleBas
               symb = tensor.symbol
           else:
               symb = tensor.symbol
-          return symb.join(module.monomial(t)._repr_() for (module, t) in zip(self._sets, term))
+          return symb.join(withbrackets(module.monomial(t)._repr_(),False) for (module, t) in zip(self._sets, term))
 
     def _latex_term(self,term):
         from sage.misc.latex import latex
         # hack because our elements have a custom _repr_ and
         # which is bypassed by tensor._repr_term
         symb = " \\otimes "
-        return symb.join(latex(module.monomial(t)) for (module, t) in zip(self._sets, term))
+        return symb.join(withbrackets(latex(module.monomial(t)),True) for (module, t) in zip(self._sets, term))
 
     def _dump_term(self,el):
         return tuple(M._dump_term(x) for (M,x) in zip(self._sets,el))

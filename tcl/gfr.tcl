@@ -465,6 +465,7 @@ oo::class create yacop::gfr_generator_writer {
     }
 
     method add {p amo id s i e diff} {
+	#puts "new gen $id ($s,$i,$e) -> $diff"
 	set prime $p
 	set algmono $amo
 	$db eval {
@@ -1176,10 +1177,20 @@ oo::class create yacop::gfr {
 			set cputime [yacop::timer stop]
 			set numgens [llength $ngens]
 
+			unset -nocomplain sdeginfo
+			foreach newgen $ngens {
+			    foreach {nid nsdeg nideg nedeg} $newgen break
+			    incr sdeginfo($nsdeg)
+			}
+
 			yacop::logvars cputime numgens
 			if {$numgens} {
 			    set plurals [expr {($numgens>1) ? "s" : ""}]
-			    set sectitle "$snext/$i/$e found $numgens new generator$plurals"
+			    set numgensdisp {}
+			    foreach sdg [lsort -unique -integer [array names sdeginfo]] {
+				lappend numgensdisp $sdeginfo($sdg)
+			    }
+			    set sectitle "$snext/$i/$e found [join $numgensdisp +] new generator$plurals"
 			    if {$cputime >= 0} {
 				append sectitle " in $cputime seconds"
 			    }
@@ -1188,6 +1199,10 @@ oo::class create yacop::gfr {
 				#NewGenerators $snext $i $e $ngens $ndiffs
 				foreach newgen $ngens ply $ndiffs {
 				    foreach {nid nsdeg nideg nedeg} $newgen break
+				    #puts "nid=$nid, nsdeg=$nsdeg, nideg=$nideg, nedeg=$nedeg\n  -> $ply"
+				    if {[set gli [GetLastIdeg $nsdeg]] >= $nideg} {
+					error "found new generator in (s,i)=($nsdeg,$nideg) but resolution claims to be complete up to internal degree $gli"
+				    }
 				    Generator add $prime $algmon $nid $nsdeg $nideg $nedeg $ply
 				}
 			    }
@@ -1201,7 +1216,8 @@ oo::class create yacop::gfr {
 			}
 
 			if {[clock seconds] > 10 + $lastflush} {
-			    Section "setting checkpoint at $snext/$i/$e" {
+			    set now [clock format [clock seconds] -format "%d/%m/%Y %H:%M:%S"]
+			    Section "setting checkpoint at $snext/$i/$e on $now" {
 				my db eval {
 				    commit;
 				    begin

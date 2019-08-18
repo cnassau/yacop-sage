@@ -129,7 +129,7 @@ class DicksonBase(SteenrodAlgebraBase):
             sage: from yacop.modules.dickson import *
             sage: D=DicksonDualSteenrodAlgebra(5,6)
             sage: for u in range(0,4):
-            ...       print(u,D._monomial_gen(u))
+            ....:     print(u,D._monomial_gen(u))
             0 1
             1 tau[0]
             2 zeta[1]
@@ -198,13 +198,13 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
         sage: tau[1:]
         [tau[1], tau[2]]
         sage: for u in zeta:
-        ...      print(u, u.t,u.e,u.s)
+        ....:    print(u, u.t,u.e,u.s)
         1 0 0 0
         zeta[1] -8 0 0
         zeta[2] -48 0 0
         zeta[3] -248 0 0
         sage: for u in tau:
-        ...      print(u, u.t,u.e,u.s)
+        ....:    print(u, u.t,u.e,u.s)
         tau[0] -1 -1 0
         tau[1] -9 -1 0
         tau[2] -49 -1 0
@@ -254,7 +254,7 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
        sage: xi
        xi-generator family of dual Steenrod algebra at the prime 2
        sage: for u in zeta[:4]:
-       ...      print(u, u.t,u.e,u.s)
+       ....:    print(u, u.t,u.e,u.s)
        1 0 0 0
        zeta[1] -1 0 0
        zeta[2] -3 0 0
@@ -445,7 +445,7 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
            sage: from yacop.modules.dickson import *
            sage: D=DicksonDualSteenrodAlgebra(5,6)
            sage: for u in (0,..,6):
-           ...      print("%-6s"%D._monomial_gen(u+1), "->", list(D._coproduct_gen(u)))
+           ....:    print("%-6s"%D._monomial_gen(u+1), "->", list(D._coproduct_gen(u)))
            tau[0] -> [(tau[0], 1), (1, tau[0])]
            zeta[1]  -> [(zeta[1], 1), (1, zeta[1])]
            tau[1] -> [(tau[1], 1), (zeta[1], tau[0]), (1, tau[1])]
@@ -553,7 +553,7 @@ class DicksonAlgebra(DicksonBase):
 
         """
         DicksonBase.__init__(self, prime, index, ispos=True, generic=generic, category=category,
-                             names=("d{deg}", "tau{idx}"), latexnames=("d{deg}", "\\tau_{{{idx}}}"))
+                             names=("d{deg}", "tau{idx}"), latexnames=("d_{{{deg}}}", "\\tau_{{{idx}}}"))
 
 
     def variable_names(self):

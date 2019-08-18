@@ -6,32 +6,32 @@ A base class for algebras over the Steenrod algebra.
         sage: from yacop.modules.algebras import *
         sage: # we implement the cohomology of "BZp smash BZp"
         sage: class Testclass(SteenrodAlgebraBase):
-        ...         def __init__(this,p,category=None):
-        ...             # must admit the "category" keyword for suspendability
-        ...             R.<x,a,y,b> = PolynomialRing(GF(p),"x,a,y,b")
-        ...             I = R.ideal([a**2,b**2])
-        ...             degs = lambda idx : (1,-1,0) if (idx&1) else (2,0,0)
-        ...             SteenrodAlgebraBase.__init__(this,R,[degs(n) for n in (0,..,3)],I,
-        ...                                          SteenrodAlgebra(p),category=category)
-        ...         def _left_steenrod_coaction_milnor_gen(this,idx,maxq,maxp):
-        ...             from yacop.utils.bitstuff import Delta
-        ...             if 1&idx:
-        ...                # coact(a) = sum tau_k x^(p^k)
-        ...                yield this._coaction_tensor(this.gens()[idx],0,())
-        ...                for (i,digit) in zip(range(0,1000),reversed(bin(maxq)[2:])):
-        ...                   if digit=='1':
-        ...                      res = this.gens()[idx-1]**(this._prime**i)
-        ...                      yield this._coaction_tensor(res,1<<i,())
-        ...             else:
-        ...                # coact(x) = sum xi_k x^(p^k)
-        ...                for (i,exp) in zip(range(0,1000),[1,]+list(maxp)):
-        ...                   if exp>0:
-        ...                      res = this.gens()[idx]**(this._prime**i)
-        ...                      yield this._coaction_tensor(res,0,Delta(i))
-        ...         def _bbox(this):
-        ...             return region(tmin=0,s=0,emax=0)
-        ...         def _can_test_pickling(this):
-        ...             return False # pickling not implemented
+        ....:       def __init__(this,p,category=None):
+        ....:           # must admit the "category" keyword for suspendability
+        ....:           R.<x,a,y,b> = PolynomialRing(GF(p),"x,a,y,b")
+        ....:           I = R.ideal([a**2,b**2])
+        ....:           degs = lambda idx : (1,-1,0) if (idx&1) else (2,0,0)
+        ....:           SteenrodAlgebraBase.__init__(this,R,[degs(n) for n in (0,..,3)],I,
+        ....:                                        SteenrodAlgebra(p),category=category)
+        ....:       def _left_steenrod_coaction_milnor_gen(this,idx,maxq,maxp):
+        ....:           from yacop.utils.bitstuff import Delta
+        ....:           if 1&idx:
+        ....:              # coact(a) = sum tau_k x^(p^k)
+        ....:              yield this._coaction_tensor(this.gens()[idx],0,())
+        ....:              for (i,digit) in zip(range(0,1000),reversed(bin(maxq)[2:])):
+        ....:                 if digit=='1':
+        ....:                    res = this.gens()[idx-1]**(this._prime**i)
+        ....:                    yield this._coaction_tensor(res,1<<i,())
+        ....:           else:
+        ....:              # coact(x) = sum xi_k x^(p^k)
+        ....:              for (i,exp) in zip(range(0,1000),[1,]+list(maxp)):
+        ....:                 if exp>0:
+        ....:                    res = this.gens()[idx]**(this._prime**i)
+        ....:                    yield this._coaction_tensor(res,0,Delta(i))
+        ....:       def _bbox(this):
+        ....:           return region(tmin=0,s=0,emax=0)
+        ....:       def _can_test_pickling(this):
+        ....:           return False # pickling not implemented
         sage: X=Testclass(3)
         sage: X.category()
         Category of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
@@ -44,7 +44,7 @@ A base class for algebras over the Steenrod algebra.
         sage: X.inject_variables()
         Defining x, a, y, b
         sage: for u in X.gens():
-        ...       print(u,u.t,u.e,u.s)
+        ....:     print(u,u.t,u.e,u.s)
         x 2 0 0
         a 1 -1 0
         y 2 0 0
@@ -52,13 +52,13 @@ A base class for algebras over the Steenrod algebra.
         sage: sorted(X.graded_basis(region(tmax=4)))
         [1, b, y, y*b, y^2, a, a*b, a*y, a*y*b, x, x*b, x*y, x*a, x*a*b, x^2]
         sage: for u in [x*y-y*x,a*b+b*a,x*a-a*x,x*b-b*x,y*a-a*y,a**2,b**2]:
-        ...      assert u==X.zero()
+        ....:    assert u==X.zero()
         sage: a**2 == 0
         True
         sage: for idx in (0,..,3):
-        ...      print(X.gens()[idx])
-        ...      for smd in X._left_steenrod_coaction_milnor_gen(idx,0b10011,(1,0,2,2)):
-        ...           print(" ->",smd)
+        ....:    print(X.gens()[idx])
+        ....:    for smd in X._left_steenrod_coaction_milnor_gen(idx,0b10011,(1,0,2,2)):
+        ....:         print(" ->",smd)
         x
         -> (x)*1
         -> (x^3)*xi(1)
@@ -101,7 +101,7 @@ A base class for algebras over the Steenrod algebra.
         sage: [P(i)*(x*y) for i in (0,..,7)]
         [x*y, x*y^3 + x^3*y, x^3*y^3, 0, 0, 0, 0, 0]
         sage: for i in (0,..,6):
-        ...      print("P(%d)"%i,":","|".join(["%8s"%(P(i)*(x**j),) for j in (0,..,9)]))
+        ....:    print("P(%d)"%i,":","|".join(["%8s"%(P(i)*(x**j),) for j in (0,..,9)]))
         P(0) :        1|       x|     x^2|     x^3|     x^4|     x^5|     x^6|     x^7|     x^8|     x^9
         P(1) :        0|     x^3|   2*x^4|       0|     x^6|   2*x^7|       0|     x^9|  2*x^10|       0
         P(2) :        0|       0|     x^6|       0|       0|     x^9|       0|       0|    x^12|       0
@@ -111,7 +111,7 @@ A base class for algebras over the Steenrod algebra.
         P(6) :        0|       0|       0|       0|       0|       0|    x^18|    x^19|    x^20|       0
 
         sage: for i in (0,..,6):
-        ...      print("P(%d)"%i,":","|".join(["%8s"%(P(i)*(b*y**j),) for j in (0,..,9)]))
+        ....:    print("P(%d)"%i,":","|".join(["%8s"%(P(i)*(b*y**j),) for j in (0,..,9)]))
         P(0) :        b|     y*b|   y^2*b|   y^3*b|   y^4*b|   y^5*b|   y^6*b|   y^7*b|   y^8*b|   y^9*b
         P(1) :        0|   y^3*b| 2*y^4*b|       0|   y^6*b| 2*y^7*b|       0|   y^9*b|2*y^10*b|       0
         P(2) :        0|       0|   y^6*b|       0|       0|   y^9*b|       0|       0|  y^12*b|       0

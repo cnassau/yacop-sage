@@ -6,21 +6,21 @@ TESTS::
    sage: from yacop.utils.walker import Walker
    sage: # implement powers of two as an infinite iterator
    sage: class twopowers(Walker):
-   ...        def __init__(this):
-   ...           Walker.__init__(this)
-   ...        def __iter__(this):
-   ...           this.cnt=1
-   ...           return this
-   ...        def next(this):
-   ...           ans = this.cnt
-   ...           this.cnt = this.cnt*2
-   ...           return ans
-   ...        def _repr_(this):
-   ...           return "the powers of two"
-   ...        def __call__(this,x):
-   ...           if x in Integers() and 0 == (x&(x-1)):
-   ...              return x
-   ...           raise ValueError
+   ....:      def __init__(this):
+   ....:         Walker.__init__(this)
+   ....:      def __iter__(this):
+   ....:         this.cnt=1
+   ....:         return this
+   ....:      def next(this):
+   ....:         ans = this.cnt
+   ....:         this.cnt = this.cnt*2
+   ....:         return ans
+   ....:      def _repr_(this):
+   ....:         return "the powers of two"
+   ....:      def __call__(this,x):
+   ....:         if x in Integers() and 0 == (x&(x-1)):
+   ....:            return x
+   ....:         raise ValueError
    sage: X = twopowers() ; X
    the powers of two
    sage: from itertools import islice
@@ -42,14 +42,14 @@ TESTS::
    sage: TestSuite(X).run()
    Failure in _test_pickling:
    Traceback (most recent call last):
-   ...   
+   ....: 
    The following tests failed: _test_pickling
    sage: Y = DisjointUnionEnumeratedSets((X,X)) ; Y
    Disjoint union of Family (the powers of two, the powers of two)
    sage: TestSuite(Y).run()
    Failure in _test_pickling:
    Traceback (most recent call last):
-   ...   
+   ....: 
    The following tests failed: _test_pickling
    sage: # check that we can create a family from X
    sage: Z = Family(X) ; Z

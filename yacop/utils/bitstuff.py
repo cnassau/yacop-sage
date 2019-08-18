@@ -50,9 +50,9 @@ def bitcount(val):
        sage: from yacop.utils.bitstuff import bitcount
        sage: b=7
        sage: for u in (0,..,500):
-       ...       if 3!=bitcount(b):
-       ...          assert 0==1
-       ...       b=b*2
+       ....:     if 3!=bitcount(b):
+       ....:        assert 0==1
+       ....:     b=b*2
 
     """
     res = 0

@@ -436,7 +436,13 @@ oo::class create chartcvs {
     method viewtype {{newval {}}} {
         set types [my db eval {select name from chart_viewtypes order by name}]
         if {$newval eq ""} {set newval $cfg(viewtype)}
-        if {$newval eq ""} {set newval [lindex $types 0]}
+        if {$newval eq ""} {
+	    if {"motivic" in $types} {
+		set newval "motivic"
+	    } else {
+		set newval [lindex $types 0]
+	    }
+	}
         if {!($newval in $types)} {
             error "unknown viewtype \"$newval\", should be one of [join $types {, }]"
         }

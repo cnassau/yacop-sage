@@ -71,6 +71,25 @@ Free modules over the Steenrod algebra.
       x
       sage: A.P(0,1)*F(x)
       P(0,1)*x
+
+    TESTS::
+
+        sage: # build a presentation P -> Q -> C over A(2)
+        sage: A = SteenrodAlgebra(2,profile=(3,2,1))
+        sage: P = YacopFreeModule(A,(1,7,10),tdegree = lambda x:x)
+        sage: Q = YacopFreeModule(A,('a',), tdegree = lambda x:0)
+        sage: Q.inject_variables()
+        Defining a
+        sage: Sq(7)*a # check that Sq(7) acts, even though it's parent is not A
+        Sq(7)*a
+        sage: f = P.left_linear_morphism(codomain=Q, on_basis = lambda x : Sq(1)*a if x==1 else Sq(7)*a if x==7 else (Sq(4,2)+Sq(0,1,1))*a)
+        sage: [(_,f(_)) for _ in P.gens()]
+        [(1, Sq(1)*a), (7, Sq(7)*a), (10, Sq(0,1,1)*a + Sq(4,2)*a)]
+        sage: C = f.cokernel()
+        sage: len(C.graded_basis(tmax=50))
+        17
+
+
 """
 
 
@@ -160,14 +179,14 @@ class FreeModuleBasis(Parent,UniqueRepresentation):
     """
 
     @staticmethod
-    def __classcall_private__(cls,algebra,gens,subalgebra=None,unstable=None,bbox=None):
-       if unstable is None:
-           unstable = False
-       if bbox is None:
-           bbox = region()
-       return super(FreeModuleBasis,cls).__classcall__(cls,algebra,gens,subalgebra,unstable,bbox)
+    def __classcall_private__(cls,algebra,gens,subalgebra=None,unstable=None,bbox=None,facade=None):
+        if unstable is None:
+            unstable = False
+        if bbox is None:
+            bbox = region()
+        return super(FreeModuleBasis,cls).__classcall__(cls,algebra,gens,subalgebra,unstable,bbox,facade)
 
-    def __init__(self,algebra,gens,subalgebra,unstable,bbox):
+    def __init__(self,algebra,gens,subalgebra,unstable,bbox,facade):
         self._algebra = algebra
         self._unstable = unstable
         self._amil = algebra.an_element().change_basis('milnor').parent()
@@ -176,6 +195,9 @@ class FreeModuleBasis(Parent,UniqueRepresentation):
         self._emask = 0
         self._trunc = bbox
         self._rmask = []
+        if facade is None:
+            print("WARNING: you should supply a reasonable facade")
+            facade = self
         if subalgebra is not None:
            assert subalgebra._truncation_type == 0  ;# FIXME
            if not algebra.is_generic():
@@ -193,7 +215,7 @@ class FreeModuleBasis(Parent,UniqueRepresentation):
             self._dumpfuncs = gens.dump_element, gens.load_element
         else:
             import base64
-            from sage.structure.sage_object import dumps, loads
+            from sage.misc.persist import dumps, loads
             self._dumpfuncs = lambda x : base64.b64encode(dumps(x)), lambda x : loads(base64.b64decode(x))
         if self.is_finite():
             cat = FiniteEnumeratedSets()
@@ -207,7 +229,7 @@ class FreeModuleBasis(Parent,UniqueRepresentation):
         else:
             cat = InfiniteEnumeratedSets()
             self._algbox = region(tmin=0,emin=0,s=0)
-        Parent.__init__(self,category=(cat,YacopGradedSets()))
+        Parent.__init__(self, facade=facade, category=(cat,YacopGradedSets()))
         #self._set_grading(FreeModuleBasis.Grading(self))
 
     def gens(self):
@@ -386,7 +408,8 @@ class FreeModuleBasis(Parent,UniqueRepresentation):
                 dg = self.degree(x)
                 return (dg.t,dg.e,dg.s)
             return FiniteGradedSet(list(self._region_iterator(reg)),tesfunc=tesfunc)
-        return FreeModuleBasis(self._algebra,self._gens,self._subalg,self._unstable,self._trunc.intersect(reg))
+        return FreeModuleBasis(self._algebra,self._gens,self._subalg,self._unstable,
+            self._trunc.intersect(reg),facade=self.facade_for())
 
     def degree(self,elem):
         a,g = elem._a, elem._g
@@ -427,15 +450,13 @@ class FreeModuleBasis_Element(Element):
       return not a.__eq__(b)
 
    def __cmp__(a,b):
-      if a._g != b._g:
-         if a._g < b._g:
-            return 1
-         return -1
-      if a._a < b._a:
-         return -1
-      elif a._a > b._a:
-         return 1
-      return 0
+        ans = cmp(a._g,b._g)
+        if ans != 0:
+           return -ans
+        ans = cmp(a._a,b._a)
+        if ans != 0:
+           return ans
+        return 0
 
    def __hash__(self):
       return hash(self._a) ^ hash(self._g)
@@ -485,7 +506,7 @@ class FreeModuleImpl(SteenrodModuleBase):
         self._left_action = left_action
         self.Am = algebra.an_element().change_basis('milnor').parent()
         self._gens = gens
-        b = FreeModuleBasis(algebra,gens,subalgebra)
+        b = FreeModuleBasis(algebra,gens,subalgebra,facade=self)
         SteenrodModuleBase.__init__(self, b, category=category)
 
     def __call__(self,elem):
@@ -614,7 +635,7 @@ class FreeModuleImpl(SteenrodModuleBase):
                 mi, ma = idx, idx
             dct["%smin"%l] = mi
             dct["%smax"%l] = ma
-        return list(self.free_basis(**dct))
+        return list(self(_) for _ in self.free_basis(**dct))
 
     def free_basis(self,**kwds):
         return self._gens.truncate(region(**kwds))

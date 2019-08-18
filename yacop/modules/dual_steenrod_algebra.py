@@ -78,13 +78,13 @@ class DualSteenrodAlgebra(SteenrodAlgebraBase):
        ...
        ValueError: infinite list
        sage: for u in xi[:4]:
-       ...      print(u, u.t,u.e,u.s)
+       ....:    print(u, u.t,u.e,u.s)
        1 0 0 0
        xi[1] -8 0 0
        xi[2] -48 0 0
        xi[3] -248 0 0
        sage: for u in tau[:4]:
-       ...      print(u, u.t,u.e,u.s)
+       ....:    print(u, u.t,u.e,u.s)
        tau[0] -1 -1 0
        tau[1] -9 -1 0
        tau[2] -49 -1 0
@@ -119,7 +119,7 @@ class DualSteenrodAlgebra(SteenrodAlgebraBase):
        sage: xi
        xi-generator family of dual Steenrod algebra at the prime 2
        sage: for u in xi[:4]:
-       ...      print(u, u.t,u.e,u.s)
+       ....:    print(u, u.t,u.e,u.s)
        1 0 0 0
        xi[1] -1 0 0
        xi[2] -3 0 0
@@ -241,7 +241,7 @@ class DualSteenrodAlgebra(SteenrodAlgebraBase):
             sage: from yacop.modules.dual_steenrod_algebra import *
             sage: D=DualSteenrodAlgebra(5)
             sage: for u in range(0,4):
-            ...       print(u,D._monomial_gen(u))
+            ....:     print(u,D._monomial_gen(u))
             0 1
             1 tau[0]
             2 xi[1]
@@ -309,7 +309,7 @@ class DualSteenrodAlgebra(SteenrodAlgebraBase):
            sage: from yacop.modules.dual_steenrod_algebra import *
            sage: D=DualSteenrodAlgebra(5)
            sage: for u in (0,..,6):
-           ...      print("%-6s"%D._monomial_gen(u+1), "->", list(D._coproduct_gen(u)))
+           ....:    print("%-6s"%D._monomial_gen(u+1), "->", list(D._coproduct_gen(u)))
            tau[0] -> [(tau[0], 1), (1, tau[0])]
            xi[1]  -> [(xi[1], 1), (1, xi[1])]
            tau[1] -> [(tau[1], 1), (xi[1], tau[0]), (1, tau[1])]
