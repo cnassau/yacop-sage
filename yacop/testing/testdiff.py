@@ -80,5 +80,28 @@ sage: for n in sorted(N.graded_basis()):
 (0, d4) (0, c4)
 (0, d5) (0, c5)
 
+sage: X=SerreCartanModule(SteenrodAlgebra(2),(("x",0,0,1),("y",0,0,0)))
+sage: X.inject_variables()
+Defining x, y
+sage: X.differential_set([(x,y)])
+sage: T=tensor((X,M))
+sage: for n in sorted(T.graded_basis()):
+....:     if not n.differential().is_zero():
+....:         print(n,"->",n.differential())
+x # a1 -> y # a1
+x # b1 -> x # a1 + y # b1
+x # b2 -> y # b2
+x # b3 -> y # b3
+x # c2 -> x # b2 + y # c2
+x # c3 -> x # b3 + y # c3
+x # c4 -> y # c4
+x # c5 -> y # c5
+x # d4 -> x # c4 + y # d4
+x # d5 -> x # c5 + y # d5
+y # b1 -> y # a1
+y # c2 -> y # b2
+y # c3 -> y # b3
+y # d4 -> y # c4
+y # d5 -> y # c5
 
 """

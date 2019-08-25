@@ -1486,7 +1486,7 @@ class SteenrodAlgebraModules(Category_over_base_ring):
                 ans = []
                 for (i,mod) in enumerate(self._sets):
                     a = keys[:i]
-                    b = mod._differential_on_basis(keys[i])
+                    b = mod.differential(mod.monomial(keys[i]))
                     c = keys[i+1:]
                     for (key,cf) in b:
                         if 0 != (i&1):
