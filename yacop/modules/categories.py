@@ -1061,6 +1061,58 @@ class SteenrodAlgebraModules(Category_over_base_ring):
                                     cnt += 1
             print "%d non-zero multiplications checked" % cnt
 
+        def differential(self,elem):
+            return self.differential_morphism()(elem)
+
+        def differential_morphism(self):
+            try:
+                if not self._differential_dict is None:
+                    return self._differential_morphism_from_dict
+            except AttributeError:
+                pass
+            return self._differential_morphism_from_basis
+
+        _differential_dict = None
+
+        def differential_reset(self):
+            self._differential_dict = None
+
+        def differential_clear(self):
+            self._differential_dict = {}
+
+        def differential_set(self,lst):
+            if self._differential_dict is None:
+                self.differential_clear()
+            for (elem,dst) in lst:
+                if len(elem) != 1:
+                    raise ValueError, "source element must be a monomial"
+                (key,cf), = elem
+                self._differential_dict[key] = (1/cf)*dst
+
+        @lazy_attribute
+        def _differential_morphism_from_dict(self):
+            ans = self.module_morphism(codomain=self,on_basis=self._differential_from_dict)
+            ans.rename("internal differential of %s" % self)
+            return ans
+
+        @lazy_attribute
+        def _differential_morphism_from_basis(self):
+            ans = self.module_morphism(codomain=self,on_basis=self._differential_on_basis)
+            ans.rename("internal differential of %s" % self)
+            return ans
+
+        def _differential_on_basis(self,key):
+            """
+            default differential is zero
+            """
+            return self.zero()
+
+        def _differential_from_dict(self,key):
+            try:
+                return self._differential_dict[key]
+            except KeyError:
+                return self.zero()
+
         def _Hom_(X,Y,category):
             # here we overwrite the Rings._Hom_ implementation
             return Homset(X, Y, category = category)
@@ -1422,6 +1474,26 @@ class SteenrodAlgebraModules(Category_over_base_ring):
                                     if (deg1&1) and (m0.e&1): c=-c
                                     yield k+[k1,],c
 
+
+            def _differential_on_basis(self,keys):
+                """
+                Internal differential of a tensor product of modules
+
+                TESTS::
+
+                    sage: fix me!
+                """
+                ans = []
+                for (i,mod) in enumerate(self._sets):
+                    a = keys[:i]
+                    b = mod._differential_on_basis(keys[i])
+                    c = keys[i+1:]
+                    for (key,cf) in b:
+                        if 0 != (i&1):
+                            cf = -cf
+                        ans.append((tuple(list(a)+[key,]+list(c)),cf))
+                return self._from_dict(dict(ans))
+
             @staticmethod
             def SuspendedObjectsFactory(module,*args,**kwopts):
                 from sage.categories.tensor import tensor
@@ -1516,6 +1588,11 @@ class SteenrodAlgebraModules(Category_over_base_ring):
                     ami = Mi.right_conj_steenrod_action_on_basis(mi,a)
                     smds.append(self.summand_embedding(i)(ami))
                 return self.sum(smds)
+
+            def _differential_on_basis(self,key):
+                idx,k = key
+                mod = self._sets[idx]
+                return self.summand_embedding(idx)(mod.differential(mod.monomial(k)))
 
             def _repr_term(self,elem):
                 return "(%s)" % ", ".join(mod._repr_term(mod.cartesian_projection(i)(elem)) for (mod,i) in zip(self._sets,self._set_keys))

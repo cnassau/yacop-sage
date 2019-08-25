@@ -159,15 +159,20 @@ class SerreCartanModule(SerreCartanModuleBase):
         items = []
         for itm in basis:
             edeg = 0
+            sdeg = 0
             if len(itm)==2:
                 elem,tdeg = itm
             elif len(itm)==3:
                 elem,tdeg,edeg = itm
+            elif len(itm)==4:
+                elem,tdeg,edeg,sdeg = itm
+            else:
+                raise ValueError, "item %s to understood" % itm
             if elem in items:
                 raise ValueError, "duplicate item in basis"
             items.append(elem)
-            grades[elem] = (tdeg,edeg,0)
-            reg = region(s=0,e=edeg,t=tdeg)
+            grades[elem] = (tdeg,edeg,sdeg)
+            reg = region(s=sdeg,e=edeg,t=tdeg)
             try:
                 u = dct[reg]
             except KeyError:
