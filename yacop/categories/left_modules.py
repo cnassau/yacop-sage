@@ -44,6 +44,8 @@ from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 
 from yacop.categories.differential_modules import YacopDifferentialModules
 from yacop.categories.graded_objects import YacopGradedObjects
+from yacop.categories.utils import SteenrodAlgebraAction, steenrod_antipode
+import operator
 
 class YacopLeftModules(Category_over_base_ring):
     """
@@ -52,7 +54,7 @@ class YacopLeftModules(Category_over_base_ring):
     EXAMPLES::
 
         sage: from yacop.categories import *
-        sage: YacopLeftModules(SteenrodAlgebra(7),is_right=True,is_left=False)
+        sage: YacopLeftModules(SteenrodAlgebra(7))
         Category of right Yacop modules over mod 7 Steenrod algebra, milnor basis
     """
 
@@ -70,8 +72,8 @@ class YacopLeftModules(Category_over_base_ring):
             mod 5 cohomology of the classifying space of ZZ/5ZZ
         """
         from yacop.modules.all import RealProjectiveSpace, BZp
-        if self._R.is_generic():
-            return BZp(self._R.characteristic())
+        if self.base_ring().is_generic():
+            return BZp(self.base_ring().characteristic())
         else:
             return RealProjectiveSpace()
 
@@ -94,7 +96,7 @@ class YacopLeftModules(Category_over_base_ring):
         from yacop.categories.utils import category_meet
         return category_meet(self,other)
 
-    def __fixmecontains__(self, x):
+    def __contains__(self, x):
         """
         a hacked, hopefully safer way to test membership. the default implementation
         fails for us - we might be doing something unexpected/wrong somewhere. without this
@@ -122,6 +124,7 @@ class YacopLeftModules(Category_over_base_ring):
         """
         TESTS::
 
+            sage: from yacop.categories import YacopLeftModules
             sage: A2 = SteenrodAlgebra(2,profile=(3,2,1))
             sage: A2.rename("A2")
             sage: YacopLeftModules(A2)
@@ -171,15 +174,15 @@ class YacopLeftModules(Category_over_base_ring):
             # register actions
             Y = self.__yacop_category__()
             self._yacop_base_ring = Y.base_ring()
-            if Y._is_left:
+            if True:
                 self.register_action(SteenrodAlgebraAction(
-                    Y._R, self, self.left_steenrod_action_on_basis, is_left=True))
-                self.register_action(SteenrodAlgebraAction(Y._R, self, self.left_conj_steenrod_action_on_basis,
+                    Y.base_ring(), self, self.left_steenrod_action_on_basis, is_left=True))
+                self.register_action(SteenrodAlgebraAction(Y.base_ring(), self, self.left_conj_steenrod_action_on_basis,
                                                             is_left=True, op=operator.mod))
-            if Y._is_right:
+            if False:
                 self.register_action(SteenrodAlgebraAction(
-                    Y._R, self, self.right_steenrod_action_on_basis, is_left=False))
-                self.register_action(SteenrodAlgebraAction(Y._R, self, self.right_conj_steenrod_action_on_basis,
+                    Y.base_ring(), self, self.right_steenrod_action_on_basis, is_left=False))
+                self.register_action(SteenrodAlgebraAction(Y.base_ring(), self, self.right_conj_steenrod_action_on_basis,
                                                             is_left=False, op=operator.mod))
 
 
@@ -228,8 +231,8 @@ class YacopLeftModules(Category_over_base_ring):
                 right_steenrod_action_milnor(17,(3,))
                 0
                 sage: C.monomial(17) % Sq(3)
-                right_steenrod_action_milnor(17,(0, 1))
                 right_steenrod_action_milnor(17,(3,))
+                right_steenrod_action_milnor(17,(0, 1))
                 0
             """
 
@@ -250,8 +253,8 @@ class YacopLeftModules(Category_over_base_ring):
                 ....:          return self.zero()
                 sage: C = testclass()
                 sage: Sq(3) * C.monomial(17)
-                left_steenrod_action_milnor_conj((0, 1),17)
                 left_steenrod_action_milnor_conj((3,),17)
+                left_steenrod_action_milnor_conj((0, 1),17)
                 0
                 sage: Sq(3) % C.monomial(17)
                 left_steenrod_action_milnor_conj((3,),17)
@@ -595,9 +598,7 @@ class YacopLeftModules(Category_over_base_ring):
             Otherwise we'd get lots of problems with Homsets between Steenrod algebra algebras.
             """
             obj = self
-            if self.base_category()._is_algebra:
-                obj = self.base_category().ModuleCategory().CartesianProducts()
-            return [self.base_category().ModuleCategory(), ] + super(YacopLeftModules._CartesianProducts, obj).super_categories()
+            return [self.base_category().ModuleCategory(), ] + super(YacopLeftModules.CartesianProducts, obj).super_categories()
 
         def Subquotients(self):
             """
@@ -706,8 +707,8 @@ class YacopLeftModules(Category_over_base_ring):
         """
         TESTS::
 
-            sage: import yacop.modules
-            sage: C=yacop.modules.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
+            sage: import yacop.categories
+            sage: C=yacop.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
             sage: C.SuspendedObjects()
             Category of suspensions of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
 
@@ -728,8 +729,8 @@ class YacopLeftModules(Category_over_base_ring):
         """
         TESTS::
 
-            sage: import yacop.modules
-            sage: C=yacop.modules.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
+            sage: import yacop.categories
+            sage: C=yacop.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
             sage: C.TruncatedObjects()
             Category of truncations of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
 

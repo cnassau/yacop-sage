@@ -180,6 +180,14 @@ class YacopDifferentialModules(Category_over_base_ring):
 
     class ParentMethods:
 
+        @cached_method
+        def __yacop_category__(self):
+            for cat in self.categories():
+                if hasattr(cat,"_is_yacop_module_category"):
+                    if cat._is_yacop_module_category:
+                        return cat
+            raise ValueError("internal error: cannot detect yacop category")
+
         def differential(self,elem):
             return self.differential_morphism()(elem)
 
@@ -555,9 +563,7 @@ class YacopDifferentialModules(Category_over_base_ring):
             Otherwise we'd get lots of problems with Homsets between Steenrod algebra algebras.
             """
             obj = self
-            if self.base_category()._is_algebra:
-                obj = self.base_category().ModuleCategory().CartesianProducts()
-            return [self.base_category().ModuleCategory(),] + super(YacopDifferentialModules._CartesianProducts,obj).super_categories()
+            return [self.base_category().ModuleCategory(),] + super(YacopDifferentialModules.CartesianProducts,obj).super_categories()
 
         def Subquotients(self):
              """
