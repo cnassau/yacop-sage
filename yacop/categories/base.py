@@ -199,6 +199,8 @@ class SteenrodAlgebraModules(Category_over_base_ring):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopLeftModules(SteenrodAlgebra(2)))
                 ....:     def left_steenrod_action_milnor(self,ak,mk):
+                ....:          k = list(ak) + list(mk)
+                ....:          return self.monomial(k)
                 ....:          print("left_steenrod_action_milnor(%s,%s)"%(ak,mk))
                 ....:          return self.zero()
                 sage: C = testclass()
