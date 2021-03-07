@@ -927,8 +927,13 @@ class YacopRightModuleAlgebras(Category_over_base_ring):
         return YacopRightModules(self.base_ring())
 
     def super_categories(self):
-        return [self.ModuleCategory(),]
+        """
+        TESTS::
 
+            sage: from yacop.categories import *
+            sage: YacopRightModuleAlgebras(SteenrodAlgebra(5)).super_categories()
+        """
+        return [self.ModuleCategory(), AlgebrasWithBasis(self.base_ring().base_ring()).Super()]
 
 
 # Local Variables:

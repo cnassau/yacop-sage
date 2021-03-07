@@ -933,7 +933,7 @@ class SteenrodAlgebraModulesAlgebras(Category_over_base_ring):
             sage: from yacop.categories import *
             sage: SteenrodAlgebraModulesAlgebras(SteenrodAlgebra(5)).super_categories()
         """
-        return [self.ModuleCategory(), AlgebrasWithBasis(self.base_ring().base_ring())]
+        return [self.ModuleCategory(), AlgebrasWithBasis(self.base_ring().base_ring()).Super()]
 
 
 # Local Variables:
