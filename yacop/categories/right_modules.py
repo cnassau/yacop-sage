@@ -199,16 +199,16 @@ class YacopRightModules(Category_over_base_ring):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopLeftModules(SteenrodAlgebra(2)))
                 ....:     def left_steenrod_action_milnor(self,ak,mk):
-                ....:          print("left_steenrod_action_milnor(%s,%s)"%(ak,mk))
-                ....:          return self.zero()
+                ....:          return self.monomial((ak,mk))
+                ....:     def _repr_term(self,k):
+                ....:          a,b = k
+                ....:          return "%s*[%d]" % (SteenrodAlgebra(2).monomial(a),b)
                 sage: C = testclass()
                 sage: Sq(3) * C.monomial(17)
-                left_steenrod_action_milnor((3,),17)
-                0
+                Sq(3)*[17]
                 sage: Sq(3) % C.monomial(17)
-                left_steenrod_action_milnor((0, 1),17)
-                left_steenrod_action_milnor((3,),17)
-                0
+                Sq(0,1)*[17] + Sq(3)*[17]
+
             """
 
         @abstract_method(optional=True)
@@ -223,17 +223,17 @@ class YacopRightModules(Category_over_base_ring):
                 sage: class testclass(CombinatorialFreeModule):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopRightModules(SteenrodAlgebra(2)))
-                ....:     def right_steenrod_action_milnor(self,ak,mk):
-                ....:          print("right_steenrod_action_milnor(%s,%s)"%(ak,mk))
-                ....:          return self.zero()
+                ....:     def right_steenrod_action_milnor(self,mk,ak):
+                ....:          return self.monomial((ak,mk))
+                ....:     def _repr_term(self,k):
+                ....:          a,b = k
+                ....:          return "[%d]*%s" % (b,SteenrodAlgebra(2).monomial(a))
                 sage: C = testclass()
                 sage: C.monomial(17) * Sq(3)
-                right_steenrod_action_milnor(17,(3,))
-                0
+                [17]*Sq(3)
                 sage: C.monomial(17) % Sq(3)
-                right_steenrod_action_milnor(17,(3,))
-                right_steenrod_action_milnor(17,(0, 1))
-                0
+                [17]*Sq(0,1) + [17]*Sq(3)
+
             """
 
         @abstract_method(optional=True)
@@ -249,16 +249,15 @@ class YacopRightModules(Category_over_base_ring):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopLeftModules(SteenrodAlgebra(2)))
                 ....:     def left_steenrod_action_milnor_conj(self,ak,mk):
-                ....:          print("left_steenrod_action_milnor_conj(%s,%s)"%(ak,mk))
-                ....:          return self.zero()
+                ....:          return self.monomial((ak,mk))
+                ....:     def _repr_term(self,k):
+                ....:          a,b = k
+                ....:          return "%s%%[%d]" % (SteenrodAlgebra(2).monomial(a),b)
                 sage: C = testclass()
                 sage: Sq(3) * C.monomial(17)
-                left_steenrod_action_milnor_conj((3,),17)
-                left_steenrod_action_milnor_conj((0, 1),17)
-                0
+                Sq(0,1)%[17] + Sq(3)%[17]
                 sage: Sq(3) % C.monomial(17)
-                left_steenrod_action_milnor_conj((3,),17)
-                0
+                Sq(3)%[17]
             """
 
         @abstract_method(optional=True)
@@ -274,16 +273,15 @@ class YacopRightModules(Category_over_base_ring):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopRightModules(SteenrodAlgebra(2)))
                 ....:     def right_steenrod_action_milnor_conj(self,ak,mk):
-                ....:          print("right_steenrod_action_milnor_conj(%s,%s)"%(ak,mk))
-                ....:          return self.zero()
+                ....:          return self.monomial((mk,ak))
+                ....:     def _repr_term(self,k):
+                ....:          a,b = k
+                ....:          return "[%d]%%%s" % (b,SteenrodAlgebra(2).monomial(a))
                 sage: C = testclass()
                 sage: C.monomial(17) * Sq(3)
-                right_steenrod_action_milnor_conj(17,(0, 1))
-                right_steenrod_action_milnor_conj(17,(3,))
-                0
+                [17]%Sq(0,1) + [17]%Sq(3)
                 sage: C.monomial(17) % Sq(3)
-                right_steenrod_action_milnor_conj(17,(3,))
-                0
+                [17]%Sq(3)
             """
 
         @lazy_attribute
