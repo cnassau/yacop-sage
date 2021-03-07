@@ -95,7 +95,7 @@ class MorphModule(SteenrodModuleBase):
          from itertools import islice
          return list(islice(fam,5))
       b.some_elements = types.MethodType(some_elements,b,None)
-      k = b.keys()
+      k = list(b.keys())
       k.rename("<<private and inefficient key family: don't use this>>")
       k.max_test_enumerated_set_loop = 5
       def some_elements(fam):
@@ -123,7 +123,7 @@ class MorphModule(SteenrodModuleBase):
            break
         if len(ans)>2: break
       if len(ans) == 0:
-         raise ValueError, "cannot find a nontrivial element"
+         raise ValueError("cannot find a nontrivial element")
       return self.linear_combination(ans)
 
    @cached_method
@@ -133,7 +133,7 @@ class MorphModule(SteenrodModuleBase):
       M = self.ambient()
       bas = [t for t in M.graded_basis(region)]
       for vec in self._module(region).basis():
-         ans.append( M.linear_combination(zip(bas,vec)) )
+         ans.append( M.linear_combination(list(zip(bas,vec))) )
       return ans
 
    def _compute_basis_keys(self,region=None):
@@ -153,7 +153,7 @@ class MorphModule(SteenrodModuleBase):
       for deg in self.nontrivial_degrees(region):
          cnt = cnt+1
          if cnt>attempts:
-            raise ValueError, "no basis key found after %s attempts" % attempts
+            raise ValueError("no basis key found after %s attempts" % attempts)
          for key in self._compute_basis_keys(deg):
             yield key
 
@@ -174,11 +174,11 @@ class MorphModule(SteenrodModuleBase):
             self.xbas = []
          def __iter__(self):
             return momobasis_walker(self.mod,self.reg,self._card)
-         def next(self):
+         def __next__(self):
             if len(self.xbas)>0:
                return self.xbas.pop()
-            self.xbas = self.mod._compute_basis(self.degiter.next())
-            return self.next()
+            self.xbas = self.mod._compute_basis(next(self.degiter))
+            return next(self)
          def _repr_(self):
             return "basis walker in %s of %s" % (self.reg, self.mod)
          @cached_method
@@ -197,7 +197,7 @@ class MorphModule(SteenrodModuleBase):
          self.__bkit = self.__basis_key_iterator()
          self.__bklist = []
       self.__bknum = self.__bknum + 1
-      nxt = self.__bkit.next()
+      nxt = next(self.__bkit)
       self.__bklist.append(nxt)
       return self.__bknum, nxt
 
@@ -246,7 +246,7 @@ class MorphModule(SteenrodModuleBase):
    def suspend_element(self,elem,**options):
       sp = suspension(self,**options)
       offset = region(**options)
-      ans = [((reg+offset,idx),cf) for ((reg,idx),cf) in elem.monomial_coefficients().iteritems()]
+      ans = [((reg+offset,idx),cf) for ((reg,idx),cf) in elem.monomial_coefficients().items()]
       return sp._from_dict(dict(ans))
 
    class Element(SteenrodModuleBase.Element):
@@ -311,7 +311,7 @@ class KernelImpl(MorphModule):
       """
       M = self.ambient()
       ans = []
-      for (key,v) in elem.monomial_coefficients().iteritems():
+      for (key,v) in elem.monomial_coefficients().items():
          rg,idx = key
          ans.append( (self._module_basis(rg)[idx], v) )
       return M.linear_combination(ans)
@@ -327,10 +327,10 @@ class KernelImpl(MorphModule):
          kvec = k(vec)
       except:
          if not self._f(elem) == 0:
-            raise ValueError, "%s is not in kernel" % elem
-         raise ValueError, "internal error: cannot cast %s to kernel" % elem
+            raise ValueError("%s is not in kernel" % elem)
+         raise ValueError("internal error: cannot cast %s to kernel" % elem)
       coeffs = k.echelon_coordinates(kvec)
-      return self.linear_combination(zip(self._compute_basis(deg),coeffs))
+      return self.linear_combination(list(zip(self._compute_basis(deg),coeffs)))
 
    @cached_method
    def _module(self,region=None):
@@ -412,7 +412,7 @@ class ImageImpl(MorphModule):
       """
       M = self.ambient()
       ans = []
-      for (key,v) in elem.monomial_coefficients().iteritems():
+      for (key,v) in elem.monomial_coefficients().items():
          rg,idx = key
          ans.append( (self._module_basis(rg)[idx], v) )
       return M.linear_combination(ans)
@@ -428,10 +428,10 @@ class ImageImpl(MorphModule):
          kvec = k(vec)
       except:
          if not self._f(elem) == 0:
-            raise ValueError, "%s is not in kernel" % elem
-         raise ValueError, "internal error: cannot cast %s to kernel" % elem
+            raise ValueError("%s is not in kernel" % elem)
+         raise ValueError("internal error: cannot cast %s to kernel" % elem)
       coeffs = k.echelon_coordinates(kvec)
-      return self.linear_combination(zip(self._compute_basis(deg),coeffs))
+      return self.linear_combination(list(zip(self._compute_basis(deg),coeffs)))
 
 
    @cached_method
@@ -449,13 +449,13 @@ class ImageImpl(MorphModule):
       s = m.solve_right(Z)
       ans = []
       for vec in s.columns():
-         ans.append(M.linear_combination(zip(b,vec)))
+         ans.append(M.linear_combination(list(zip(b,vec))))
       return ans
 
    def preimage(self,elem):
       ans=[]
       M=self._f.domain()
-      for (k,v) in elem.monomial_coefficients().iteritems():
+      for (k,v) in elem.monomial_coefficients().items():
          reg,idx = k
          ans.append( (self._preimages(reg)[idx],v) )
       return M.linear_combination(ans)
@@ -598,7 +598,7 @@ class CokerImpl(MorphModule):
       """
       M = self.ambient()
       ans = []
-      for (key,v) in elem.monomial_coefficients().iteritems():
+      for (key,v) in elem.monomial_coefficients().items():
          rg,idx = key
          ans.append( (self._module_basis(rg)[idx], v) )
       return M.linear_combination(ans)
@@ -614,10 +614,10 @@ class CokerImpl(MorphModule):
          kvec = k(vec)
       except:
          if not self._f(elem) == 0:
-            raise ValueError, "%s is not in kernel" % elem
-         raise ValueError, "internal error: cannot cast %s to kernel" % elem
+            raise ValueError("%s is not in kernel" % elem)
+         raise ValueError("internal error: cannot cast %s to kernel" % elem)
       coeffs = k.echelon_coordinates(kvec)
-      return self.linear_combination(zip(self._compute_basis(deg),coeffs))
+      return self.linear_combination(list(zip(self._compute_basis(deg),coeffs)))
 
 
    @cached_method
@@ -636,7 +636,7 @@ class CokerImpl(MorphModule):
       lmap = sm.lift_map()
       for vec in sm.basis():
          v = lmap(vec)
-         ans.append( M.linear_combination(zip(bas,v)) )
+         ans.append( M.linear_combination(list(zip(bas,v))) )
       return ans
 
    @cached_method
@@ -649,13 +649,13 @@ class CokerImpl(MorphModule):
       s = m.solve_right(Z)
       ans = []
       for vec in s.columns():
-         ans.append(M.linear_combination(zip(b,vec)))
+         ans.append(M.linear_combination(list(zip(b,vec))))
       return ans
 
    def preimage(self,elem):
       ans=[]
       M=self._f.domain()
-      for (k,v) in elem.monomial_coefficients().iteritems():
+      for (k,v) in elem.monomial_coefficients().items():
          reg,idx = k
          ans.append( (self._preimages(reg)[idx],v) )
       return M.linear_combination(ans)

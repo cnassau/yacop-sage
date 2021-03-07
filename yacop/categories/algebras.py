@@ -17,7 +17,6 @@ AUTHORS:
 #******************************************************************************
 #pylint: disable=E0213
 
-from sage.misc.lazy_import import LazyImport, lazy_import
 from sage.rings.infinity import Infinity
 from sage.misc.abstract_method import abstract_method
 from sage.misc.cachefunc import cached_method
@@ -138,6 +137,10 @@ class YacopObjects(Category_singleton):
         @cached_method
         def TensorProducts(self):
             return TensorProductsCategory.category_of(self)
+
+        @cached_method
+        def SuspendedObjects(self):
+            return SuspendedObjectsCategory.category_of(self)
 
 class YacopGradedObjects(Category_singleton):
     """
@@ -533,14 +536,14 @@ def steenrod_antipode(x):
     """
     return x.antipode()
 
-class SteenrodAlgebraModules(Category_over_base_ring):
+class YacopDifferentialModules(Category_over_base_ring):
     """
     The category of Yacop modules over the Steenrod algebra.
 
     EXAMPLES::
 
         sage: from yacop.modules.categories import *
-        sage: SteenrodAlgebraModules(SteenrodAlgebra(7),is_right=True,is_left=False)
+        sage: YacopDifferentialModules(SteenrodAlgebra(7),is_right=True,is_left=False)
         Category of right Yacop modules over mod 7 Steenrod algebra, milnor basis
     """
 
@@ -553,7 +556,7 @@ class SteenrodAlgebraModules(Category_over_base_ring):
        if is_bimod:
            is_left = True
            is_right = True
-       return super(cls,SteenrodAlgebraModules).__classcall__(cls,R,is_left,is_right,is_bimod,is_algebra)
+       return super(cls,YacopDifferentialModules).__classcall__(cls,R,is_left,is_right,is_bimod,is_algebra)
 
     def __init__(self,R,is_left,is_right,is_bimod,is_algebra):
         self._R = R
@@ -607,7 +610,7 @@ class SteenrodAlgebraModules(Category_over_base_ring):
             oR = other._R
             R = steenrod_algebra_intersect((self._R,oR))
         except:
-            return super(SteenrodAlgebraModules,self)._meet_(other)
+            return super(YacopDifferentialModules,self)._meet_(other)
 
         is_algebra = self._is_algebra and other._is_algebra
         is_bimod   = self._is_bimod   and other._is_bimod
@@ -648,7 +651,7 @@ class SteenrodAlgebraModules(Category_over_base_ring):
             sage: [X in cat for cat in [SC, XC, MC]]
             [False, True, True]
         """
-        ans = super(SteenrodAlgebraModules, self).__contains__(x)
+        ans = super(YacopDifferentialModules, self).__contains__(x)
         if not ans:
             ans = self in x.categories()
         return ans
@@ -690,7 +693,7 @@ class SteenrodAlgebraModules(Category_over_base_ring):
         for scat in self.super_categories():
             if scat.is_subcategory(other):
                 return True
-        return super(SteenrodAlgebraModules,self).is_subcategory(other)
+        return super(YacopDifferentialModules,self).is_subcategory(other)
 
     @cached_method
     def super_categories(self):
@@ -727,7 +730,7 @@ class SteenrodAlgebraModules(Category_over_base_ring):
         @cached_method
         def __yacop_category__(self):
             for cat in self.categories():
-               if isinstance(cat,SteenrodAlgebraModules):
+               if isinstance(cat,YacopDifferentialModules):
                   return cat
             raise ValueError("internal error: cannot detect yacop category")
 
@@ -987,8 +990,8 @@ class SteenrodAlgebraModules(Category_over_base_ring):
             adct = a.monomial_coefficients()
             mdct = m.monomial_coefficients()
             res = []
-            for ak,cf1 in adct.items():
-                for mk,cf2 in mdct.items():
+            for ak,cf1 in list(adct.items()):
+                for mk,cf2 in list(mdct.items()):
                     d = actfunc(ak,mk)
                     res.append((d,cf1*cf2))
             return self.linear_combination(res)
@@ -1047,20 +1050,20 @@ class SteenrodAlgebraModules(Category_over_base_ring):
                 for i in range(0,odeg+1):
                     for op1 in abasis(i):
                         for j in range(0,odeg+1-i):
-                            if verbose: print(mode, b, i, j, cnt)
+                            if verbose: print((mode, b, i, j, cnt))
                             for op2 in abasis(j):
                                 val = LHS(op1,op2,b)
                                 if val != RHS(op1,op2,b):
-                                    print("ERROR (%s):" % mode)
-                                    print("op1",op1)
-                                    print("op2",op2)
-                                    print("  b",b)
-                                    print("LHS = ", LHS(op1,op2,b))
-                                    print("RHS = ", RHS(op1,op2,b))
+                                    print(("ERROR (%s):" % mode))
+                                    print(("op1",op1))
+                                    print(("op2",op2))
+                                    print(("  b",b))
+                                    print(("LHS = ", LHS(op1,op2,b)))
+                                    print(("RHS = ", RHS(op1,op2,b)))
                                     raise ValueError("mismatch")
                                 if not val.is_zero():
                                     cnt += 1
-            print("%d non-zero multiplications checked" % cnt)
+            print(("%d non-zero multiplications checked" % cnt))
 
         def differential(self,elem):
             return self.differential_morphism()(elem)
@@ -1195,7 +1198,7 @@ class SteenrodAlgebraModules(Category_over_base_ring):
                         for key in A.homogeneous_component(maxdeg-deg+1).basis():
                             yield A(key)
                 n = self.zero()
-                for (deg,m) in self.an_element().homogeneous_decomposition().items():
+                for (deg,m) in list(self.an_element().homogeneous_decomposition().items()):
                     if not m.is_zero():
                         for a in testops(self._yacop_base_ring):
                             n = a*m
@@ -1540,7 +1543,7 @@ class SteenrodAlgebraModules(Category_over_base_ring):
             obj = self
             if self.base_category()._is_algebra:
                 obj = self.base_category().ModuleCategory().CartesianProducts()
-            return [self.base_category().ModuleCategory(),] + super(SteenrodAlgebraModules._CartesianProducts,obj).super_categories()
+            return [self.base_category().ModuleCategory(),] + super(YacopDifferentialModules._CartesianProducts,obj).super_categories()
 
         def Subquotients(self):
              """
@@ -1641,10 +1644,10 @@ class SteenrodAlgebraModules(Category_over_base_ring):
             return [Coalgebras(self.base_category().base_ring())]
 
         def Subquotients(self):
-             """
-             A subobject or quotient of a direct sum is no longer a direct sum
-             """
-             return self.base_category().Subquotients()
+            """
+            A subobject or quotient of a direct sum is no longer a direct sum
+            """
+            return self.base_category().Subquotients()
 
     class SuspendedObjects(SuspendedObjectsCategory):
 
@@ -1839,7 +1842,7 @@ class SteenrodAlgebraModules(Category_over_base_ring):
          This default implementation delegates its work to self._lift_homogeneous.
          """
          ans=[]
-         for (deg,smd) in elem.homogeneous_decomposition().items():
+         for (deg,smd) in list(elem.homogeneous_decomposition().items()):
             ans.append(self._lift_homogeneous(deg,smd))
          return self.parent().ambient().sum(ans)
 
@@ -1850,50 +1853,52 @@ class SteenrodAlgebraModules(Category_over_base_ring):
          This default implementation delegates its work to self._retract_homogeneous.
          """
          ans=[]
-         for (deg,smd) in elem.homogeneous_decomposition().items():
+         for (deg,smd) in list(elem.homogeneous_decomposition().items()):
             ans.append(self._retract_homogeneous(deg,smd))
          return self.parent().sum(ans)
 
     # thanks to a recently introduced Sage hack we have to provide a few dummy assignments
     CartesianProducts = 1
-    #SuspendedObjects  = LazyImport('yacop.modules.categories',SteenrodAlgebraModules._SuspendedObjects)
     TensorProducts = 1
     DualObjects = 1
     TruncatedObjects = 1
     Subquotients = 1
     Homsets = 1
+    #xSuspendedObjects = _SuspendedObjects
+    #SuspendedObjects = type("SuspendedObjects",(_SuspendedObjects,),dict(_SuspendedObjects.__dict__))
+#SteenrodAlgebrSuspendedObjects  = YacopDifferentialModules._SuspendedObjects
 
 def SubquotientsImpl(self):
    if self._is_algebra:
       return self.ModuleCategory().Subquotients()
-   return SteenrodAlgebraModules._Subquotients(self)
+   return YacopDifferentialModules._Subquotients(self)
 
-#SteenrodAlgebraModules._Subquotients = SubquotientsImpl
+#YacopDifferentialModules._Subquotients = SubquotientsImpl
 
-class YacopLeftModules(SteenrodAlgebraModules):
+class YacopLeftModules(YacopDifferentialModules):
     def __init__(self,R):
         super(YacopLeftModules,self).__init__(R,is_left=True,is_right=False,is_bimod=False,is_algebra=False)
-    class SuspendedObjects(SteenrodAlgebraModules.SuspendedObjects):
-        def __init__(self):
-            del(self._base_category_class)
+    #class xSuspendedObjects(YacopDifferentialModules._SuspendedObjects):
+    #    pass
 
-class YacopRightModules(SteenrodAlgebraModules):
+
+class YacopRightModules(YacopDifferentialModules):
     def __init__(self,R):
         super(YacopRightModules,self).__init__(R,is_left=False,is_right=True,is_bimod=False,is_algebra=False)
 
-class YacopBiModules(SteenrodAlgebraModules):
+class YacopBiModules(YacopDifferentialModules):
     def __init__(self,R):
         super(YacopBiModules,self).__init__(R,is_left=True,is_right=True,is_bimod=True,is_algebra=False)
 
-class YacopLeftModuleAlgebras(SteenrodAlgebraModules):
+class YacopLeftModuleAlgebras(YacopDifferentialModules):
     def __init__(self,R):
         super(YacopLeftModuleAlgebras,self).__init__(R,is_left=True,is_right=False,is_bimod=False,is_algebra=True)
 
-class YacopRightModuleAlgebras(SteenrodAlgebraModules):
+class YacopRightModuleAlgebras(YacopDifferentialModules):
     def __init__(self,R):
         super(YacopRightModuleAlgebras,self).__init__(R,is_left=True,is_right=True,is_bimod=False,is_algebra=True)
 
-class YacopBiModuleAlgebras(SteenrodAlgebraModules):
+class YacopBiModuleAlgebras(YacopDifferentialModules):
     def __init__(self,R):
         super(YacopBiModuleAlgebras,self).__init__(R,is_left=True,is_right=True,is_bimod=True,is_algebra=True)
 
@@ -1901,35 +1906,35 @@ class YacopBiModuleAlgebras(SteenrodAlgebraModules):
    HACK: the __classget__ method of CovariantConstructionCategory tries to look behind the
    functor category (eg. CartesianProducts) and retrieve a hidden method of the same
    name underneath (from class Category). This fails if there is another such class in the
-   class hierarchy. For this reason we cannot have "SteenrodAlgebraModules.CartesianProducts"
+   class hierarchy. For this reason we cannot have "YacopDifferentialModules.CartesianProducts"
    between "Category.CartesianProducts" and "YacopRightModuleAlgebras.CartesianProducts".
 """
 
 def make_functor_class(cls,fname,tmpl):
-    from types import MethodType
-    #ncls=type("%s_%s"%(cls.__name__,fname),  (tmpl,), {})
-    ncls = type("%s_%s"%(cls.__name__,fname), tmpl.__bases__, dict(tmpl.__dict__))
+    # make a copy of the class with the right _base_category_class to
+    # satisfy the check in covariant_functorial_construction's __classget__
+    ncls=type("%s_%s"%(cls.__name__,fname),  tmpl.__bases__, dict(tmpl.__dict__))
+    print("class copy = ",ncls)
     globals()[ncls.__name__] = ncls # required for pickling
     ncls._base_category_class = (cls,)
     return ncls
-    return MethodType(ncls,None,cls)
 
-for cls in (YacopLeftModules, YacopRightModules, YacopBiModules,
-            YacopLeftModuleAlgebras, YacopRightModuleAlgebras, YacopBiModuleAlgebras):
-    cls.CartesianProducts = make_functor_class(cls,"CartesianProducts",SteenrodAlgebraModules._CartesianProducts)
-    #cls.SuspendedObjects  = make_functor_class(cls,"SuspendedObjects",SteenrodAlgebraModules._SuspendedObjects)
-    cls.TensorProducts = make_functor_class(cls,"TensorProducts",SteenrodAlgebraModules._TensorProducts)
-    cls.DualObjects = make_functor_class(cls,"DualObjects",SteenrodAlgebraModules._DualObjects)
-    cls.TruncatedObjects = make_functor_class(cls,"TruncatedObjects",SteenrodAlgebraModules._TruncatedObjects)
-    cls.Subquotients = make_functor_class(cls,"Subquotients",SteenrodAlgebraModules._Subquotients)
-    cls.Homsets = make_functor_class(cls,"Homsets",SteenrodAlgebraModules._Homsets)
+#for cls in (YacopLeftModules, YacopRightModules, YacopBiModules,
+#            YacopLeftModuleAlgebras, YacopRightModuleAlgebras, YacopBiModuleAlgebras):
+#cls.CartesianProducts = make_functor_class(cls,"CartesianProducts",YacopDifferentialModules._CartesianProducts)
+#cls.SuspendedObjects,make_functor_class(cls,"SuspendedObjects",YacopDifferentialModules._SuspendedObjects))
+#cls.TensorProducts = make_functor_class(cls,"TensorProducts",YacopDifferentialModules._TensorProducts)
+#cls.DualObjects = make_functor_class(cls,"DualObjects",YacopDifferentialModules._DualObjects)
+#cls.TruncatedObjects = make_functor_class(cls,"TruncatedObjects",YacopDifferentialModules._TruncatedObjects)
+#cls.Subquotients = make_functor_class(cls,"Subquotients",YacopDifferentialModules._Subquotients)
+#cls.Homsets = make_functor_class(cls,"Homsets",YacopDifferentialModules._Homsets)
 
 """
   TESTS::
 
       sage: import __main__
       sage: from yacop.modules.categories import *
-      sage: __main__.SteenrodAlgebraModules = SteenrodAlgebraModules
+      sage: __main__.YacopDifferentialModules = YacopDifferentialModules
       sage: __main__.YacopLeftModules = YacopLeftModules
       sage: __main__.YacopRightModules = YacopRightModules
       sage: __main__.YacopBiModules = YacopBiModules
@@ -2004,6 +2009,10 @@ def steenrod_algebra_intersect(algebras):
         return res
     raise ValueError("algebras not compatible")
 
+
+# fix module_morphism doc string
+#C = ModulesWithBasis(GF(2)).parent_class
+#YacopDifferentialModules.ParentMethods.module_morphism.__func__.__doc__ = C.module_morphism.__doc__
 
 # Local Variables:
 # eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)

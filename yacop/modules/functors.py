@@ -101,7 +101,7 @@ class SuspendFunctorialConstruction(CovariantFunctorialConstruction):
 
         if hasattr(module, self._functor_category):
             return getattr(module, self._functor_category)(module,*args,**kwargs)
-        raise ValueError, "%s is not suspendable" % module
+        raise ValueError("%s is not suspendable" % module)
 
     @cached_method
     def factory(self,module,grading):
@@ -206,7 +206,7 @@ class TruncatedFunctorialConstruction(CovariantFunctorialConstruction):
 
         if hasattr(module, self._functor_category):
             return getattr(module, self._functor_category)(module,*args,**kwargs)
-        raise ValueError, "%s cannot be truncated" % module
+        raise ValueError("%s cannot be truncated" % module)
 
     @cached_method
     def factory(self,module,grading):

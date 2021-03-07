@@ -165,5 +165,5 @@ class AdmissibleMatrices(Parent):
         def __init__(self, admat):
             self.gen = admat.enumerate()
 
-        def next(self):
-            return self.gen.next()
+        def __next__(self):
+            return next(self.gen)

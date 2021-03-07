@@ -37,7 +37,7 @@ class PsiMap(Parent,UniqueRepresentation):
     @staticmethod
     def __classcall_private__(cls,resolution,filename=None,memory=None):
         if not isinstance(resolution,MinimalResolution):
-            raise ValueError, "first argument must be a minimal resolution"
+            raise ValueError("first argument must be a minimal resolution")
         if filename is None:
             filename = ""
         if memory:
@@ -256,7 +256,7 @@ class PsiMap(Parent,UniqueRepresentation):
                }] ,
             """ % c ) + "]"
         except TclError as e:
-            raise TclError, "query failed: %s\n%s" % (c,e.message)
+            raise TclError("query failed: %s\n%s" % (c,e.message))
         return eval(res)
 
     def an_element(self):
@@ -302,9 +302,9 @@ class PsiMap(Parent,UniqueRepresentation):
         #print reg,extracondition
         lst = self.generators(reg,extracondition)
         if len(lst) < 1:
-            raise ValueError, "no such generator"
+            raise ValueError("no such generator")
         if len(lst) > 1:
-            raise ValueError, "more than one generator in that region"
+            raise ValueError("more than one generator in that region")
         return lst[0]
 
     def diff(self, src, target=None, opdeg=None, ptsonly=False):
@@ -423,7 +423,7 @@ class Subset(Parent,UniqueRepresentation):
 
     def an_element(self):
         it = iter(self)
-        return it.next()
+        return next(it)
 
     def bbox(self):
         return self._reg.intersect(region(smin=0,tmin=0,emin=0))
@@ -441,7 +441,7 @@ class Subset(Parent,UniqueRepresentation):
             self.id = -1
         def __iter__(self):
             return self.__class__(self.owner)
-        def next(self):
+        def __next__(self):
             owner = self.owner
             id = self.id
             self.id += 1
@@ -469,7 +469,7 @@ class Subset(Parent,UniqueRepresentation):
         while cnt<10:
             cnt += 1
             try:
-                yield it.next()
+                yield next(it)
             except StopIteration:
                 break
 

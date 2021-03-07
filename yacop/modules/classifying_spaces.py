@@ -195,7 +195,7 @@ class BZpGeneric(SteenrodModuleBase):
               return yv
            else:
               return "1"
-        raise ValueError, "internal error"
+        raise ValueError("internal error")
 
     def _repr_term(self,elem):
        return self._repr_term_impl(elem,"%s","*")

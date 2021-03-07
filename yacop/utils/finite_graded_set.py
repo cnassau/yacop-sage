@@ -97,7 +97,7 @@ class InfiniteGradedSet(Parent):
       c = self.cardinality()
       if c < Infinity:
          return c
-      raise ValueError, "infinite set has no len"
+      raise ValueError("infinite set has no len")
 
    def an_element(self):
       x = list(islice(self,5))
@@ -204,7 +204,7 @@ class FiniteGradedSet(Parent,UniqueRepresentation):
       if reg is None:
          reg = region()
       ans = []
-      for (i,e,s) in self._domain._gb.keys():
+      for (i,e,s) in list(self._domain._gb.keys()):
          r = region(t=i,e=e,s=s)
          if reg.contains(r):
             ans.append(r)
@@ -235,7 +235,7 @@ class FiniteGradedSet(Parent,UniqueRepresentation):
       if x in self:
          return x
       else:
-         raise ValueError, "%s not in %s" % (x,self)
+         raise ValueError("%s not in %s" % (x,self))
 
 FiniteGradedSet.__doc__ = __doc__
 

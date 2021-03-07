@@ -232,27 +232,27 @@ class Gradings(Category_singleton):
                 self.dct = dict()
                 self.xdegs = []
                 return self
-             def next(self):
+             def __next__(self):
                 if len(self.xdegs)>0:
                    return self.xdegs.pop()
                 # the next line will eventually raise our StopIteration
-                x = self.basis_iter.next()
-                for k in self.gr.split_element(x).keys():
+                x = next(self.basis_iter)
+                for k in list(self.gr.split_element(x).keys()):
                    if k not in self.dct:
                       self.dct[k] = 1
                       self.xdegs.append(k)
-                return self.next()
+                return next(self)
              def _repr_(self):
                 return "nontrivial degree walker of %s" % self.gr
           return Family(nontrivdeg_walker(self),lambda x:x,lazy=True)
 
        def degree(self,elem):
-          degs = self.split_element(elem).keys()
+          degs = list(self.split_element(elem).keys())
           if len(degs) == 0:
-              raise ValueError, "degree of zero is undefined"
+              raise ValueError("degree of zero is undefined")
           if len(degs) == 1:
               return degs[0]
-          raise ValueError, "element is not homogeneous"
+          raise ValueError("element is not homogeneous")
 
        def _format_(self,other):
           return "%s" % other
@@ -308,9 +308,7 @@ class Gradings(Category_singleton):
         def extra_super_categories(self):
             return [self.base_category()]
 
-class SampleGrading(Parent):
-
-    __metaclass__ = ClasscallMetaclass
+class SampleGrading(Parent, metaclass=ClasscallMetaclass):
 
     def __init__(self,range,modulus):
        self._range = range
@@ -378,7 +376,7 @@ class SampleGrading_SuspendedObjects(SampleGrading):
           return self._other.basis(oreg)
 
        def split_element(self,lst):
-          l = [(k+self._off,v) for (k,v) in self._other.split_element(lst).items()]
+          l = [(k+self._off,v) for (k,v) in list(self._other.split_element(lst).items())]
           return dict(l)
 
 class SampleGrading_SuspendedObjects2(SampleGrading_SuspendedObjects):
@@ -421,7 +419,7 @@ class YacopGrading(UniqueRepresentation,Parent):
           except NotImplementedError:
              pass
        for b in gb:
-          (k,v), = b.monomial_coefficients().items()
+          (k,v), = list(b.monomial_coefficients().items())
           ans.append(elem[k]/v)
        return ans
 
@@ -463,16 +461,16 @@ class SubquotientGrading(YacopGrading):
          def __iter__(self):
             self.degiter = self.amg.nontrivial_degrees(self.reg).__iter__()
             return self
-         def next(self):
-            deg = self.degiter.next()
+         def __next__(self):
+            deg = next(self.degiter)
             b = self.gr.basis(deg)
             # len(b) might not be implemented
             try:
-              x = b.__iter__().next()
+              x = next(b.__iter__())
               return deg
             except StopIteration:
               pass
-            return self.next()
+            return next(self)
          def _repr_(self):
             return "nontrivial degree walker of %s" % self.gr
       return Family(sqg_walker(self,region),lambda u:u,lazy=True)
@@ -481,7 +479,7 @@ class SubquotientGrading(YacopGrading):
       X = self._am
       Y = self._sq
       ans = dict()
-      for (key,val) in X.grading().split_element(Y.lift(elem)).iteritems():
+      for (key,val) in X.grading().split_element(Y.lift(elem)).items():
          ans[key] = Y.retract(val)
       return ans
 
@@ -531,14 +529,14 @@ class YacopGrading_SuspendedObjects(YacopGrading):
           b = self._other.basis(reg + self._neg)
           if b.cardinality() == 0:
              return FiniteEnumeratedSet(())
-          x = iter(b).next()
+          x = next(iter(b))
           dom = suspension(x.parent(),**self._kwargs)
           mapfunc = lambda x: x.suspend(**self._kwargs)
           unmapfunc = lambda x: x.suspend(t=self._neg.t,e=self._neg.e,s=self._neg.s)
           return SetOfElements(dom,b,b.cardinality(),mapfunc,unmapfunc)
 
        def split_element(self,lst):
-          l = [(k+self._off,v) for (k,v) in self._other.split_element(lst).items()]
+          l = [(k+self._off,v) for (k,v) in list(self._other.split_element(lst).items())]
           try:
              # suspend the elements - for some gradings this is not necessary/possible
              l = [(k,v.suspend(**self._kwargs)) for (k,v) in l]
@@ -669,7 +667,7 @@ class YacopGrading_CartesianProduct(YacopGrading):
            for i in range(0,len(self._summands)):
                g = self._summands[i]
                p = elem.cartesian_projection(i)
-               for k,v in g.split_element(p).iteritems():
+               for k,v in g.split_element(p).items():
                    v2 = M.summand_embedding(i)(v)
                    try:
                        res[k] += v2
@@ -793,7 +791,7 @@ class YacopGrading_TensorProduct(YacopGrading):
                 tsgn,toffs = -1,[g.max(var) for g in bxs]
             else:
                 # need SmashResolution ( dual-steenrod-algebra * minimal resolution ) for the psi-map
-                print "WARNING: tensor product not locally finite in the %s-direction" % var
+                print("WARNING: tensor product not locally finite in the %s-direction" % var)
                 tsgn,toffs = 0,[0 for g in bxs] # not sure if this is a good idea ...
             sgns.append(tsgn)
             offs.append(toffs)
@@ -860,7 +858,7 @@ class YacopGrading_TensorProduct(YacopGrading):
 
         if reg is None: reg = region()
         reg = reg.intersect(self.bbox())
-        reg2 = (reg + self._totaloff).var_mult(dict(zip(('t','e','s'),self._signs)))
+        reg2 = (reg + self._totaloff).var_mult(dict(list(zip(('t','e','s'),self._signs))))
         iterfunc = partial(self.__degree_walker_tc,
                            idx = len(self._factors)-1,
                            elems = [],
@@ -931,7 +929,7 @@ class YacopGradingFromDict(YacopGrading):
         self._dct = {}
         for k,v in tple:
             self._dct[k] = v
-        self._bbox = region.span(*(self._dct.keys()))
+        self._bbox = region.span(*(list(self._dct.keys())))
 
     def _repr_(self):
         return "dictionary grading %s" % (self._dct)
@@ -940,14 +938,14 @@ class YacopGradingFromDict(YacopGrading):
         return self._bbox
 
     def basis(self,reg=region()):
-        g = [set(v) for (k,v) in self._dct.items() if reg.contains(k)]
+        g = [set(v) for (k,v) in list(self._dct.items()) if reg.contains(k)]
         if len(g) > 0:
             return set.union(*g)
         return set()
 
     def split_element(self,lst):
         res = {}
-        for (k,v) in self._dct.items():
+        for (k,v) in list(self._dct.items()):
             for l in lst:
                 if l in v:
                     try:

@@ -94,13 +94,13 @@ class Testclass1(SteenrodAlgebraBase):
         if 1&idx:
             # coact(a) = sum tau_k x^(p^k)
             yield this._coaction_tensor(this.gens()[idx],0,())
-            for (i,digit) in zip(range(0,1000),reversed(bin(maxq)[2:])):
+            for (i,digit) in zip(list(range(0,1000)),reversed(bin(maxq)[2:])):
                 if digit=='1':
                     res = this.gens()[idx-1]**(this._prime**i)
                     yield this._coaction_tensor(res,1<<i,())
         else:
             # coact(x) = sum xi_k x^(p^k)
-            for (i,exp) in zip(range(0,1000),[1,]+list(maxp)):
+            for (i,exp) in zip(list(range(0,1000)),[1,]+list(maxp)):
                 if exp>0:
                     res = this.gens()[idx]**(this._prime**i)
                     yield this._coaction_tensor(res,0,Delta(i))

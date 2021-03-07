@@ -27,35 +27,6 @@ def __startup__():
         return SmashResolution(M,algebra.resolution(),filename=filename).Homology()
     setattr(sage.algebras.steenrod.steenrod_algebra.SteenrodAlgebra_generic,"Ext",Ext)
 
-    # fix antipode sign #25603
-    A=sage.algebras.steenrod.steenrod_algebra.SteenrodAlgebra(3)
-    if (A.Q(0)*A.Q(1)).antipode() == 2*A.Q(0)*A.Q(1):
-        def antipode25603(self,t):
-            p = self.prime()
-            if self.basis_name() == 'serre-cartan':
-                antipode = self.one()
-                if not self._generic:
-                    for n in t:
-                        antipode = self(sum(SteenrodAlgebra().basis(n))) * antipode
-                else:
-                    from sage.misc.functional import is_even
-                    for index, n in enumerate(t):
-                        if is_even(index):
-                            if n != 0:
-                                antipode = -self.Q(0) * antipode * (-1)**antipode.degree()
-                        else:
-                            B = SteenrodAlgebra(p=p,generic=self._generic).basis(n * 2 * (p-1))
-                            s = self(0)
-                            for b in B:
-                                if len(b.leading_support()[0]) == 0:
-                                    s += self(b)
-                            antipode = (-1)**n * s * antipode
-                return antipode
-            return self(self._change_basis_on_basis(t, 'serre-cartan').antipode())
-        antipode25603.__doc__ = sage.algebras.steenrod.steenrod_algebra.SteenrodAlgebra_generic.antipode_on_basis.__doc__
-        method = types.MethodType(antipode25603,None,sage.algebras.steenrod.steenrod_algebra.SteenrodAlgebra_generic)
-        setattr(sage.algebras.steenrod.steenrod_algebra.SteenrodAlgebra_generic,"antipode_on_basis",method)
-
     # there are known issues in Sage with pickling of morphisms
     # and we dont want to document the same failures in our test
     # suite.
@@ -97,21 +68,18 @@ def __startup__():
                 return self._contains_(x)
             except AttributeError:
                 return super(LazyFamily,self).__contains__(x)
-        method = types.MethodType(__contains__,None,LazyFamily)
-        setattr(LazyFamily,"__contains__",method)
+        LazyFamily.__contains__ = __contains__
 
     # workaround for #13811
     from sage.sets.family import AbstractFamily
     def __copy__(self):
         return self
-    method = types.MethodType(__copy__,None,AbstractFamily)
-    setattr(AbstractFamily,"__copy__",method)
+    AbstractFamily.__copy__ = __copy__
 
     # LazyFamilies cannot be pickled... turn off the resulting noise
     def _test_pickling(self,tester=None,**options):
         pass
-    method = types.MethodType(_test_pickling,None,LazyFamily)
-    setattr(LazyFamily,"_test_pickling",method)
+    LazyFamily._test_pickling = _test_pickling
 
     # workaround for Sage ticket #13833
     from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
@@ -129,46 +97,15 @@ def __startup__():
             x = args[self._position]
             nargs = before + (self.domain()(x),) + after
             return origcall(self,*nargs)
-        method = types.MethodType(call,None,ModuleMorphismByLinearity)
-        setattr(ModuleMorphismByLinearity,"__call__",method)
-
-    # workaround for Sage ticket #13979
-    from sage.categories.cartesian_product import cartesian_product
-    from sage.rings.integer_ring import ZZ
-    from sage.rings.infinity import Infinity
-    C = cartesian_product([ZZ,ZZ])
-    try:
-        c = C.cardinality()
-    except:
-        cls = C.__class__
-        def cardinality(self):
-            total = 1
-            for it in self.iters:
-                try:
-                    itlen = it.cardinality()
-                except AttributeError:
-                    itlen = len(it) # may not work when it is a CClass.
-                if itlen == Infinity: return Infinity
-                if itlen == 0: return 0
-                total *= itlen
-            return Integer(total)
-        method = types.MethodType(cardinality,None,cls)
-        setattr(cls,"cardinality",method)
-
-    C = cartesian_product([ZZ,ZZ])
-    from sage.misc.sage_unittest import TestSuite
-    TestSuite(C).run()
-    try:
-        c = C.cardinality()
-        TestSuite(C).run()
-    except:
-        raise NotImplementedError, "need fix for #13979: workaround failed"
+        ModuleMorphismByLinearity.__call__ = call
 
     # workaround for Sage ticket #18449
     from sage.sets.set_from_iterator import EnumeratedSetFromIterator
     from sage.categories.finite_enumerated_sets import FiniteEnumeratedSets
     from sage.categories.infinite_enumerated_sets import InfiniteEnumeratedSets
     from sage.categories.enumerated_sets import EnumeratedSets
+    from sage.rings.integer_ring import ZZ
+
     C = CombinatorialFreeModule(ZZ,EnumeratedSetFromIterator(Integers))
     if False and sage.categories.tensor.tensor((C,)).basis() in FiniteEnumeratedSets():
         def __init_18449__(self, set, function, name=None):
@@ -196,7 +133,7 @@ def __startup__():
             self.set = copy(set)
             self.function = function
             self.function_name = name
-        LazyFamily.__init__ = types.MethodType(__init_18449__,None,LazyFamily)
+        LazyFamily.__init__ = __init_18449__
 
     # use a lower max_runs value for the TestSuite
     from sage.misc.sage_unittest import InstanceTester
@@ -204,45 +141,20 @@ def __startup__():
     def newinit(self,*args,**kwds):
         self.__init_original__(*args,**kwds)
         self._max_runs = 40
-    method = types.MethodType(newinit,None,InstanceTester)
-    setattr(InstanceTester,"__init__",method)
-
-    from sage.combinat.permutation import Permutations
-    from sage.categories.finite_enumerated_sets import FiniteEnumeratedSets
-    F=LazyFamily(cartesian_product([ZZ,ZZ]),lambda x:x)
-    G=LazyFamily(Permutations(),lambda x:x)
-    if F in FiniteEnumeratedSets() or G in FiniteEnumeratedSets():
-        # need to fix ticket 14541
-        C = FiniteEnumeratedSets()
-        def _do_nothing(self,*args,**kwargs):
-            pass
-        method = types.MethodType(_do_nothing,C.parent_class,None)
-        setattr(C.parent_class,"_test_enumerated_set_iter_cardinality",method)
-    try:
-        F.cardinality()
-    except TypeError:
-        # fix ticket 14541
-        car = LazyFamily.cardinality
-        def cardinality_14541(self):
-            try:
-                return car(self)
-            except TypeError:
-                return self.set.cardinality()
-        method = types.MethodType(cardinality_14541,None,LazyFamily)
-        setattr(LazyFamily,"cardinality",method)
+    InstanceTester.__init__ = newinit
 
 def __print_banner__():
     import yacop
     from sage.env import SAGE_BANNER
     if SAGE_BANNER.lower() == "no":
        return
-    bars = u"─"*68
+    bars = "─"*68
     s = []
     a = s.append
-    a(u'┌' + bars + u'┐')
-    a(u"\n│ %-66s │\n" % ("Imported package Yacop (version %s)" % yacop.__version__))
-    a(u'└' + bars + u'┘')
-    print u"".join(s)
+    a('┌' + bars + '┐')
+    a("\n│ %-66s │\n" % ("Imported package Yacop (version %s)" % yacop.__version__))
+    a('└' + bars + '┘')
+    print("".join(s))
 
 # Local Variables:
 # eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)

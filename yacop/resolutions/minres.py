@@ -82,11 +82,11 @@ def resfilename(algebra,flavour="regular"):
         'motc-steenrod-2-E0R3-2-1.db'
     """
     if flavour == "regular":
-        basename = "gfr" 
+        basename = "gfr"
     elif flavour == "motivic":
         basename = "motc"
     else:
-        raise ValueError, "flavour '%s' not understood" % flavour 
+        raise ValueError("flavour '%s' not understood" % flavour)
     filename = Yacop.main.eval("""
       set p %d
       set a {%s}
@@ -173,7 +173,7 @@ class GFR(Parent,UniqueRepresentation):
         if flavour is None:
             flavour = "regular"
         if flavour not in ["regular", "motivic"]:
-            raise ValueError, "flavour must be regular or motivic"
+            raise ValueError("flavour must be regular or motivic")
         if filename is None:
             filename = resfilename(algebra,flavour)
             filename = 'file:' + os.path.join(Yacop.data_dir(),filename)
@@ -192,7 +192,7 @@ class GFR(Parent,UniqueRepresentation):
         if os.getenv('YACOP_FORCE_PRIVATE_CACHE') == 'Y':
             # used for parallel doctesting to avoid conflicts
             # between doctest processes
-            filename = filename.replace('cache=shared','cache=private') 
+            filename = filename.replace('cache=shared','cache=private')
 
         self.tcl = Yacop.Interpreter()
         self._filename = filename
@@ -211,9 +211,9 @@ class GFR(Parent,UniqueRepresentation):
         self._flavour = flavour
         if flavour == "motivic":
             if algebra.prime() != 2:
-                raise ValueError, "motivic resolution only supported for p=2"
+                raise ValueError("motivic resolution only supported for p=2")
             if algebra.is_generic():
-                raise ValueError, "algebra must not be generic for motivic computations"
+                raise ValueError("algebra must not be generic for motivic computations")
 
             self._viewtype = "odd"
 
@@ -230,8 +230,7 @@ class GFR(Parent,UniqueRepresentation):
                  resolution viewtype $resinfo(viewtype)
             """ % (self._filename,self._flavour, self._viewtype))
 
-        from string import atoi
-        self._prime = atoi(self.tcl.eval("set resinfo(prime)"))
+        self._prime = int(self.tcl.eval("set resinfo(prime)"))
         self._profile = self.tcl.eval("set resinfo(algebra)")
         self._viewtype = self.tcl.eval("set resinfo(viewtype)")
         self._quiet = True
@@ -412,7 +411,7 @@ class GFR(Parent,UniqueRepresentation):
                }] ,
             """ % c ) + "]"
         except TclError as e:
-            raise TclError, "query failed: %s\n%s" % (c,e.message)
+            raise TclError("query failed: %s\n%s" % (c,e.message))
         return eval(res)
 
     def an_element(self):
@@ -458,9 +457,9 @@ class GFR(Parent,UniqueRepresentation):
         #print reg,extracondition
         lst = self.generators(reg,extracondition)
         if len(lst) < 1:
-            raise ValueError, "no such generator"
+            raise ValueError("no such generator")
         if len(lst) > 1:
-            raise ValueError, "more than one generator in that region"
+            raise ValueError("more than one generator in that region")
         return lst[0]
 
     def diff(self, src, target=None, opdeg=None, ptsonly=False):
@@ -581,7 +580,7 @@ class Subset(Parent,UniqueRepresentation):
 
     def an_element(self):
         it = iter(self)
-        return it.next()
+        return next(it)
 
     def bbox(self):
         return self._reg.intersect(region(smin=0,tmin=0,emin=0))
@@ -599,7 +598,7 @@ class Subset(Parent,UniqueRepresentation):
             self.id = -1
         def __iter__(self):
             return self.__class__(self.owner)
-        def next(self):
+        def __next__(self):
             owner = self.owner
             id = self.id
             self.id += 1
@@ -616,7 +615,7 @@ class Subset(Parent,UniqueRepresentation):
                 self.id = elems[0]['id']
                 ans = owner.element_class(owner,elems[0])
                 if owner._reg.contains(owner.degree(ans)):
-                    return ans 
+                    return ans
 
     def __iter__(self):
         """
@@ -641,7 +640,7 @@ class Subset(Parent,UniqueRepresentation):
         while cnt<10:
             cnt += 1
             try:
-                yield it.next()
+                yield next(it)
             except StopIteration:
                 break
 
@@ -655,7 +654,7 @@ class Subset(Parent,UniqueRepresentation):
 
     def dump_element(self,el):
         return el._dct["id"]
-        
+
     def load_element(self,el):
         return self.element_class(self,self._res.g(id=el))
 
@@ -771,7 +770,7 @@ class MinimalResolution(FreeModuleImpl):
             sage: M.category()
             Category of left Yacop modules over mod 3 Steenrod algebra, milnor basis
             sage: TestSuite(M).run()
-            
+
         """
 
         self._worker = GFR(algebra,filename=filename,flavour=flavour,memory=memory)
@@ -801,7 +800,7 @@ class MinimalResolution(FreeModuleImpl):
         X = self._worker.Chart()
         X.rename("Chart of %s" % self);
         return X
-        
+
     def compute(self,quiet=False,**kwargs):
         """
         TESTS::
@@ -835,7 +834,7 @@ class MinimalResolution(FreeModuleImpl):
             sage: d(A.Q(1)*g) - A.Q(1)*d(g)
             0
             sage: A=SteenrodAlgebra(2,generic=True,profile=((1,),(2,2)))
-            sage: M=MinimalResolution(A,memory=True) 
+            sage: M=MinimalResolution(A,memory=True)
             sage: M.g(2,4).differential()
             P(1)*g(1,2)
             sage: sorted(M.g(2,6).differential())
@@ -899,10 +898,10 @@ class MinimalResolution(FreeModuleImpl):
 
     def _dump_term(self,el):
         return self.dump_element(self.monomial(el))
-        
+
     def _load_term(self,el):
         return list(self.load_element(el)._monomial_coefficients)[0]
-        
+
     class Element(FreeModuleImpl.Element):
         pass
 

@@ -31,11 +31,11 @@ class FormalSumOfDict(FormalSum):
         for (cf,gen) in list(self):
             if not res is None:
                 if gen[key] != res:
-                    raise KeyError, "inconsistent entries for key %s" % key
+                    raise KeyError("inconsistent entries for key %s" % key)
             else:
                 res = gen[key]
         if res is None:
-            raise KeyError, "cannot determine '%s' because sum is zero" % key
+            raise KeyError("cannot determine '%s' because sum is zero" % key)
         return res
 
 

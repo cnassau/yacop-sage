@@ -131,13 +131,13 @@ class region(SageObject):
         kws = {}
         if dct is None:
             dct = {}
-        for (k,v) in dct.items():
+        for (k,v) in list(dct.items()):
             if len(k) == 1 or (len(k) == 4 and k[1:] in ["max","min"]):
                 kws[k] = v
-        for (k,v) in kwargs.items():
+        for (k,v) in list(kwargs.items()):
             if len(k) == 1 or (len(k) == 4 and k[1:] in ["max","min"]):
                 kws[k] = v
-        for (k,v) in kws.items():
+        for (k,v) in list(kws.items()):
             if v is None:
                 del kws[k]
             if k[1:] == "min" and v == -Infinity:
@@ -151,7 +151,7 @@ class region(SageObject):
         if isinstance(dct,region):
             dct = dct.as_dict()
         self._dct = {}
-        for k,v in region._normalize_vars(dct=dct,**kwargs).items():
+        for k,v in list(region._normalize_vars(dct=dct,**kwargs).items()):
             self.__setattr__(k,v)
    
     def _fmtrange(self,v1,v2,val,op1,op2):
@@ -174,7 +174,7 @@ class region(SageObject):
         return self._getdict()
 
     def as_tcl(self):
-        return " ".join("%s %s" % (a,b) for (a,b) in self.as_dict().iteritems())
+        return " ".join("%s %s" % (a,b) for (a,b) in self.as_dict().items())
 
     def __mod__(self,vars):
         d = [self._getrange(v) for v in vars]
@@ -358,7 +358,7 @@ class region(SageObject):
         min,max = self._getrange(var)
         if min==max:
             return min
-        raise ValueError, "range has no fixed %s-coordinate" % var
+        raise ValueError("range has no fixed %s-coordinate" % var)
 
     def __getattribute__(self,nm):
         if not region._is_range_attribute(self,nm):
@@ -375,7 +375,7 @@ class region(SageObject):
                 return min
             if min==max:
                 return min
-            raise ValueError, "range has no fixed %s-coordinate" % nm
+            raise ValueError("range has no fixed %s-coordinate" % nm)
         val = None
         try:
             val = dct[nm]

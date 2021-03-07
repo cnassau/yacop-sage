@@ -231,7 +231,7 @@ class GenericProjectiveSpace(SteenrodModuleBase):
         self._field = fielddim
         self._prefix = prefix
         if self._top < Infinity:
-            n = Set(range(self._bot,self._top))
+            n = Set(list(range(self._bot,self._top)))
         else:
             n = IntegerRange(Integer(self._bot),self._top)
 
@@ -287,7 +287,7 @@ class GenericProjectiveSpace(SteenrodModuleBase):
         if s > self._top:
            cf = 0
         if s < self._bot:
-           raise ValueError, "product out of parent"
+           raise ValueError("product out of parent")
         return self.linear_combination( ((self.monomial(left+right), cf),) )
 
     def left_steenrod_action_milnor(self,a,m):

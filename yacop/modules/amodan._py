@@ -113,7 +113,7 @@ class AModAn(SteenrodAlgebraSmashable):
            return Set(res)
         i0 = max(0,reg['tmin'])
         if reg['tmax'] == +Infinity:
-           raise ValueError, "module is unbounded"
+           raise ValueError("module is unbounded")
         for i in range(i0,reg['tmax']):
            res = self._append_basis(res,i)
         # multiply with topclass

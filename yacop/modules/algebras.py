@@ -264,7 +264,7 @@ class SteenrodAlgebraBasis(InfiniteGradedSet, UniqueRepresentation):
         effdegrees = self.module._t_degrees(max(abs(tmin), abs(tmax)))
         negeffdegrees = [-x for x in effdegrees]
         it = iter(self.module._max_exponents())
-        maxexpos = [it.next() for x in zip(effdegrees)]
+        maxexpos = [next(it) for x in zip(effdegrees)]
         ans = []
         for t in range(tmin, tmax + 1):
             if t >= 0:
@@ -428,9 +428,9 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
                                        mon_right),
                 coeff_left * coeff_right) 
                 for (mon_left,
-                    coeff_left) in left.monomial_coefficients().iteritems() 
+                    coeff_left) in left.monomial_coefficients().items() 
                 for (mon_right,
-                    coeff_right) in right.monomial_coefficients().iteritems())
+                    coeff_right) in right.monomial_coefficients().items())
         )
 
     def _is_sorted_by_t_degrees(self):
@@ -518,7 +518,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
         return ()
 
     def gens(self):
-        rge = range(0, len(self._gens))
+        rge = list(range(0, len(self._gens)))
         return (
             [self.monomial(tuple((0 if u != v else 1) for u in rge))
              for v in rge]
@@ -598,7 +598,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
         # and use sign-adjusted methods there.
         # TODO: create a doctest that illustrates/tests this problem
         x = self._R.sum(cf * self.__to_R(exponents)
-                        for (exponents, cf) in elem.monomial_coefficients().iteritems())
+                        for (exponents, cf) in elem.monomial_coefficients().items())
         y = self._Q(x).lift()
         ans = []
         for (m, c) in zip(y.exponents(), y.coefficients()):
@@ -833,7 +833,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
 
     def _ppower(self, elem, expo):
         ans = []
-        for (k, v) in elem.monomial_coefficients().iteritems():
+        for (k, v) in elem.monomial_coefficients().items():
             ans.append((tuple(u * expo for u in k), v))
         return self._from_dict(dict(ans))
 
@@ -885,7 +885,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
 
     def _multinomials(self, smds, prime, total):
         try:
-            cursmd = smds.next()
+            cursmd = next(smds)
             r, q, p = cursmd
         except StopIteration:
             yield self._coaction_tensor(self.one(), 0, ()), total, []
@@ -980,9 +980,9 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
                 except TypeError:
                     return -1
             else:
-                print(
+                print((
                     type(left._monomial_coefficients),
-                    type(right._monomial_coefficients))
+                    type(right._monomial_coefficients)))
                 left, right = left.reduce(), right.reduce()
                 return super(SteenrodAlgebraBase.Element, left).__cmp__(right)
 

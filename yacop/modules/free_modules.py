@@ -300,7 +300,7 @@ class FreeModuleBasis(Parent,UniqueRepresentation):
         if elem in self._gens:
             one = self._algebra.one_basis()
             return self._make_element(one,elem)
-        raise ValueError, "%s not in %s" % (elem,self._gens)
+        raise ValueError("%s not in %s" % (elem,self._gens))
 
     def _make_element(self,a,b):
        return self.element_class(self,a,b)
@@ -326,8 +326,8 @@ class FreeModuleBasis(Parent,UniqueRepresentation):
              self.it = self.o.__iter__(reg)
           def __iter__(self):
              return walker(self.o,self.r)
-          def next(self):
-             return self.it.next()
+          def __next__(self):
+             return next(self.it)
        return walker(self,reg)
 
     def _is_signature_allowed(self,key):
@@ -493,13 +493,13 @@ class FreeModuleImpl(SteenrodModuleBase):
                     if right_action:
                         category = YacopRightModules(algebra)
                     else:
-                        raise ValueError, "neither left_action, nor right_action specified"
+                        raise ValueError("neither left_action, nor right_action specified")
 
         else:
             if left_action:
                 category = YacopLeftModules(algebra)
             else:
-                raise NotImplementedError, "left quotient (B\\\\A) not implemented"
+                raise NotImplementedError("left quotient (B\\\\A) not implemented")
 
         self.A = algebra
         self.B = subalgebra
@@ -519,7 +519,7 @@ class FreeModuleImpl(SteenrodModuleBase):
                     elem = self._gens(elem)
                 except:
                     pass
-                return self.monomial(self.basis().keys()(elem))
+                return self.monomial(list(self.basis().keys())(elem))
             except:
                 raise
 
@@ -621,13 +621,13 @@ class FreeModuleImpl(SteenrodModuleBase):
         Note: with PEP 472 we could enhance indexing with more arguments.
         """
         if not isinstance(x,tuple) or len(x) != 2:
-            raise ValueError, "index not understood: %s" % x
+            raise ValueError("index not understood: %s" % x)
         dct = {}
         for (l,v) in zip(('s','n'),x):
             if isinstance(v,slice):
                 a,b = v.start, v.stop
                 if not v.step is None:
-                    raise ValueError, "stride slices not supported"
+                    raise ValueError("stride slices not supported")
                 mi = min(a,b)
                 ma = max(a,b)
             else:
@@ -650,7 +650,7 @@ class FreeModuleImpl(SteenrodModuleBase):
         a = self.Am.monomial(a)
         ec = self.indices()._make_element
         ans = []
-        for (key,cf) in (a*b).monomial_coefficients().iteritems():
+        for (key,cf) in (a*b).monomial_coefficients().items():
             if self.indices()._is_signature_allowed(key):
                 ans.append( (self.monomial(ec(key,gen)), cf) )
         return self.linear_combination(ans)
@@ -663,17 +663,17 @@ class FreeModuleImpl(SteenrodModuleBase):
         a = self.Am.monomial(a)
         ec = self.indices()._make_element
         ans = []
-        for (key,cf) in (b*a).monomial_coefficients().iteritems():
+        for (key,cf) in (b*a).monomial_coefficients().items():
             ans.append( (self.monomial(ec(key,gen)), cf) )
         return self.linear_combination(ans)
 
     def dump_element(self,el):
-        bas = self.basis().keys()
+        bas = list(self.basis().keys())
         dct = dict(el)
         return "%s" % [(bas.dump_element(k),dct[k]) for k in sorted(dct) if dct[k] != 0]
 
     def load_element(self,str):
-        bas = self.basis().keys()
+        bas = list(self.basis().keys())
         return self._from_dict(dict([(bas.load_element(k),cf) for (k,cf) in eval(str)]))
 
     class Element(SteenrodModuleBase.Element):

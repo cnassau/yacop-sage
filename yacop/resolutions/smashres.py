@@ -139,7 +139,7 @@ class Smasher(Parent,UniqueRepresentation):
         resolution = resolution._worker
         
         if not isinstance(resolution,GFR):
-            raise ValueError, "first argument is not a resolution"
+            raise ValueError("first argument is not a resolution")
 
         self._resolution = resolution
         self._viewtype = resolution._viewtype
@@ -156,11 +156,11 @@ class Smasher(Parent,UniqueRepresentation):
         self._mtmin = modbbox.tmin
         self._memin = modbbox.emin
         if self._msmin is -Infinity:
-            raise ValueError, "module not bounded from below: smin=%s" % self._msmin
+            raise ValueError("module not bounded from below: smin=%s" % self._msmin)
         if self._mtmin is -Infinity:
-            raise ValueError, "module not bounded from below: tmin=%s" % self._mtmin
+            raise ValueError("module not bounded from below: tmin=%s" % self._mtmin)
         if self._memin is -Infinity:
-            raise ValueError, "module not bounded from below: emin=%s" % self._memin
+            raise ValueError("module not bounded from below: emin=%s" % self._memin)
 
         if self._viewtype == "even":
             self._tfactor = 2
@@ -247,7 +247,7 @@ class Smasher(Parent,UniqueRepresentation):
             algebra = self._resolution._algebra
             fac = self._tfactor ;# 1 if algebra.is_generic() else 2
             x = args[0].split(" ")
-            reg = region(dict(zip(x[::2],(string.atoi(u) for u in x[1::2]))))
+            reg = region(dict(list(zip(x[::2],(string.atoi(u) for u in x[1::2])))))
             #r2 = region(smax=reg.smax,
             #            tmax=(reg.smax+reg.nmax+(fac-1))/fac,
             #            emax=reg.emax)
@@ -261,7 +261,7 @@ class Smasher(Parent,UniqueRepresentation):
             #print "basis of %s in %s = %s" % (self._module,r2,B)
             if not B.is_finite():
                 #print "b not finite",r2
-                raise ValueError, "module not finite in region %s" % r2
+                raise ValueError("module not finite in region %s" % r2)
             for g in B:
                 res += " {name {%s} sdeg %d ideg %d edeg %d}" % (self._module.dump_element(g),g.s,fac*g.t,g.e)
             #print res
@@ -272,7 +272,7 @@ class Smasher(Parent,UniqueRepresentation):
         if action == 'init':
             return
         #print action
-        raise TclError, "action %s not implemented" % action
+        raise TclError("action %s not implemented" % action)
 
     def _repr_(self):
         return "Smasher (%s) * (%s), filename='%s'" % (self._module, self._resolution, self._filename)
@@ -377,7 +377,7 @@ class Smasher(Parent,UniqueRepresentation):
         mnmin, mnmax = mbbox.nrange
 
         if mtmin == -Infinity:
-            raise ValueError, "module not bounded from below in the t-direction"
+            raise ValueError("module not bounded from below in the t-direction")
 
         if reg.tmax < +Infinity:
             # we can infer an s-bound from tmax and mtmin
@@ -385,10 +385,10 @@ class Smasher(Parent,UniqueRepresentation):
             reg = region.intersect(reg,region(smax=smaxfromtmax)) 
 
         if reg.smax == +Infinity:
-            raise ValueError, "no upper s-bound given"
+            raise ValueError("no upper s-bound given")
         
         if msmin == -Infinity:
-            raise ValueError, "module not bounded from below in the s-direction"
+            raise ValueError("module not bounded from below in the s-direction")
 
         if reg.is_empty():
             return region(), []
@@ -448,9 +448,9 @@ class Smasher(Parent,UniqueRepresentation):
 
         mtrunc, sranges = self._find_region(reg)
         if dbg: 
-            print "reg",reg
-            print "mtrunc",mtrunc
-            print "sranges",sranges
+            print("reg",reg)
+            print("mtrunc",mtrunc)
+            print("sranges",sranges)
 
         for (s,n) in sranges:
             self._resolution.extend(reg=region(s=s,n=n),quiet=quiet)
@@ -596,7 +596,7 @@ class Smasher(Parent,UniqueRepresentation):
         try:
             res = "[" + self.tcl.eval(code) + "]"
         except TclError as e:
-            raise TclError, "query failed: %s\n%s" % (c,e.message)
+            raise TclError("query failed: %s\n%s" % (c,e.message))
         return eval(res)
 
 
@@ -834,7 +834,7 @@ class SmashResolution(SteenrodModuleBase_Tensor,UniqueRepresentation):
 
         """
         if not isinstance(resolution, MinimalResolution):
-            raise ValueError, "second argument must be a MinimalResolution"
+            raise ValueError("second argument must be a MinimalResolution")
         if category is None:
             category = resolution.category().TensorProducts()
         SteenrodModuleBase_Tensor.__init__(self,(module,resolution),category=category)
@@ -915,11 +915,11 @@ class SmashResolution(SteenrodModuleBase_Tensor,UniqueRepresentation):
     def _errorhandler(self,location):
         """
         """
-        print "internal error:", location
+        print("internal error:", location)
         for msg in self._worker._errors:
-            print msg
+            print(msg)
         self._check_smash_fragments(location)
-        raise RuntimeError, "internal error: inconsistency detected"
+        raise RuntimeError("internal error: inconsistency detected")
 
     def _check_smash_fragments(self,location):
         """
@@ -932,11 +932,11 @@ class SmashResolution(SteenrodModuleBase_Tensor,UniqueRepresentation):
         for (sg,sm,op,tg,tm) in frags:
             s = self.make_tensor(sm,sg)
             t = self.make_tensor(tm,tg)
-            print "fragments: ",s, "->",op,"*",t
-            print "  diff(src) =", self.differential(s)
-            print "     op*dst =", op*t
-            print "     d(%s) =" % sg, self.resolution().differential(sg)
-            print ""
+            print("fragments: ",s, "->",op,"*",t)
+            print("  diff(src) =", self.differential(s))
+            print("     op*dst =", op*t)
+            print("     d(%s) =" % sg, self.resolution().differential(sg))
+            print("")
 
     def _getmatrix(self,what,reg):
         cond = self._worker.getmatrix(what,reg)
@@ -952,7 +952,7 @@ class SmashResolution(SteenrodModuleBase_Tensor,UniqueRepresentation):
         C=self._sets[1]
         G=C._gens
         gen = G.load_element(gid)
-        bk=C.basis().keys()
+        bk=list(C.basis().keys())
         return (mkey,bk.element_class(bk,ael,gen))
 
     def tensor_constructor(self,modules):
@@ -1038,7 +1038,7 @@ class SmashResolution(SteenrodModuleBase_Tensor,UniqueRepresentation):
 
         """
         if self._worker is None:
-            raise ValueError, "Smash resolution does not have database backing"
+            raise ValueError("Smash resolution does not have database backing")
         reg = region(kwargs)
         self._worker.extend(reg=reg,quiet=quiet)
 
@@ -1175,9 +1175,9 @@ class SmashResolutionHomology(FreeModuleImpl,UniqueRepresentation):
         for dct in self._res._worker.generators(region(s=s,t=t),"basid=%d"%num):
             ans.append(dct)
             if len(ans)>1:
-                raise ValueError, "internal error: more than one generator with (s,n,num)=(%d,%d,%d)" % (s,n,num)
+                raise ValueError("internal error: more than one generator with (s,n,num)=(%d,%d,%d)" % (s,n,num))
         if len(ans) ==0:
-            raise ValueError, "no such generator"
+            raise ValueError("no such generator")
         return self(self._gens.element_class(self._gens,ans[0]))
 
     def smash_basis(self,deg):
@@ -1189,7 +1189,7 @@ class SmashResolutionHomology(FreeModuleImpl,UniqueRepresentation):
         ba = self._res._worker.smash_basis(deg)
         (_,mat), = bi
         par = self.ambient()
-        return par.linear_combination((par.linear_combination(zip(ba,mat.row(g.split()[1]._dct["num"]))),cf) for (g,cf) in list(smd))
+        return par.linear_combination((par.linear_combination(list(zip(ba,mat.row(g.split()[1]._dct["num"])))),cf) for (g,cf) in list(smd))
 
     def _retract_homogeneous(self,deg,smd):
         sb = self.smash_basis(deg)

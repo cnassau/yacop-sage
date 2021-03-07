@@ -157,7 +157,7 @@ class Charter(SageObject):
         c = " and ".join(cond)
         with self.tcl.coroutine("chartgens {%s}" %c) as cor:
             for x in cor:
-                yield dict(zip(["id","s","n","e","num","crwd"],(int(_) for _ in x.split("|"))))
+                yield dict(list(zip(["id","s","n","e","num","crwd"],(int(_) for _ in x.split("|")))))
                 
     def chartlines(self):
         self.tcl.eval("clear_ptsops")
@@ -166,7 +166,7 @@ class Charter(SageObject):
             self.tcl.eval("add_ptsop %d {%s} %d" % (self.p, k, n))
         with self.tcl.coroutine("chartlines") as cor:
             for x in cor:
-                z = dict(zip(["tar","opdeg","info","src"],x.split("|")))
+                z = dict(list(zip(["tar","opdeg","info","src"],x.split("|"))))
                 for u in z["info"].split(","):
                     z["name"],z["cf"] = u.split("@")
                     if int(z["cf"]) != 0:
@@ -178,7 +178,7 @@ class Charter(SageObject):
             $db eval { select rowid,sdeg,ndeg,edeg,basid,dim from chart_generators cg
                          join chart_crowdiness cc on cg.ndeg = cc.n where cg.rowid = %d }
         """ % id)
-        return dict(zip(["id","s","n","e","num","crwd"],(int(_) for _ in x.split(" "))))
+        return dict(list(zip(["id","s","n","e","num","crwd"],(int(_) for _ in x.split(" ")))))
     
     def get_coords(self,pt):
         crowdiness = pt["crwd"]
@@ -209,7 +209,7 @@ class Charter(SageObject):
                 x2,y2 = self.get_coords(self.geninfo(int(l["tar"])))
                 G += line2d([(x1,y1),(x2,y2)],**lineargs)
             except:
-                print "line not understood:",l
+                print("line not understood:",l)
         off=0.5
         G.ymin(smin[0]-off)
         G.ymax(smax[0]+off)

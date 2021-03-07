@@ -164,7 +164,7 @@ class XiTauRing(CombinatorialFreeModule, UniqueRepresentation):
         def __iter__(self):
             return XiTauRing.GeneratorList(self.r)
 
-        def next(self):
+        def __next__(self):
             r = self.r
             i = self.idx
             self.idx = i + 1
@@ -174,11 +174,11 @@ class XiTauRing(CombinatorialFreeModule, UniqueRepresentation):
                 raise StopIteration
             if i & 1:
                 if num>=r.numtau:
-                    return self.next()
+                    return next(self)
                 return r.monomial((1 << num, ()))
             else:
                 if num>=r.numxi:
-                    return self.next()
+                    return next(self)
                 d = tuple([0 if x < num else 1 for x in range(0, num + 1)])
                 return r.monomial((0, d))
 

@@ -366,7 +366,7 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
                 stop = max if val.stop is None else val.stop
                 step = 1 if val.step is None else val.step
                 if start < 0:
-                    raise ValueError, "no such generator"
+                    raise ValueError("no such generator")
                 if stop > max: 
                     stop = max
                 return [self[u] for u in range(start, stop, step)]
@@ -377,11 +377,11 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
                 if idx == 0:
                     return self.par.one()
                 elif idx < 0:
-                    raise ValueError, "no such generator"
+                    raise ValueError("no such generator")
                 idx = idx - 2
             idx = idx ^ 1
             if idx >= 2*self.par._index:
-                raise ValueError, "no such generator"
+                raise ValueError("no such generator")
             if 0 == numtau:
                 idx = idx>>1
                 return self.par._monomial_gen(idx+1)
@@ -628,7 +628,7 @@ class DicksonAlgebra(DicksonBase):
             key = []
             for e in expos:
                 if e%pow != 0:
-                    raise ValueError, "Peterson element %d not in %s" % (idx, self)
+                    raise ValueError("Peterson element %d not in %s" % (idx, self))
                 key.append(0)
                 key.append(e//pow)
                 pow //= self._prime
@@ -653,7 +653,7 @@ class DicksonAlgebra(DicksonBase):
             y[2*(self._index-idx)-1] += pow
             x = tuple(y)
         elif idx > self._index:
-            raise ValueError, "zeta%d not in %s" % (idx, self)
+            raise ValueError("zeta%d not in %s" % (idx, self))
         return self._from_dict({x:1})
 
     def _xipower(self, idx, pow=1):
@@ -680,7 +680,7 @@ class DicksonAlgebra(DicksonBase):
         if idx == 0:
             return self.one()
         elif idx > self._index:
-            raise ValueError, "xi%d not in %s" % (idx, self)
+            raise ValueError("xi%d not in %s" % (idx, self))
         if pow > 1:
             return self.product(self.__xi(idx,pow-1),self.__xi(idx,1))
         p = self._prime
@@ -698,29 +698,29 @@ class DicksonAlgebra(DicksonBase):
             if isgen:
                 (epart, expos) = key
                 if len(epart) > 0:
-                    raise ValueError, "exterior multiplications not implemented yet"
+                    raise ValueError("exterior multiplications not implemented yet")
             else:
                 expos = key
             #print "redpow contains", (key,cf), "expos=",expos
             for (c, a, cols, diag) in AdmissibleMatrices(self._prime, expos, maxn=self._index).enumerate():
-                if debug: print "admissible matrix, coeff=%d\n%s" % (c,a)
+                if debug: print("admissible matrix, coeff=%d\n%s" % (c,a))
                 for (dkey, dcf) in elem:
                     ncf = c*dcf*cf
                     for _ in [0,]:
                         dkey = list(dkey) + zpad + zpad
                         if max(dkey[0::2]) != 0:
-                            raise ValueError, "exterior part not implemented yet"
+                            raise ValueError("exterior part not implemented yet")
                         rexpos = dkey[1::2]
                         zexpos = list(reversed(rexpos[0:self._index-1]))
                         zexpos = [-1-_ for _ in zexpos] + [-1+sum(zexpos)+rexpos[self._index-1]]
-                        if debug: print "%s = zeta(%s)" % (self._from_dict({tuple(dkey):dcf}), zexpos)
+                        if debug: print("%s = zeta(%s)" % (self._from_dict({tuple(dkey):dcf}), zexpos))
                         zrems = [a-b for (a,b) in zip(zexpos,cols[1:]+zpad)]
-                        if debug: print "zeta-remainder = ", zrems
+                        if debug: print("zeta-remainder = ", zrems)
                         for (dterm,zterm) in zip(diag, zrems):
                             ncf *= binom_modp(self._prime,dterm+zterm,dterm)
                             if ncf.is_zero():
                                 break
-                        if debug: print "coefficient=", ncf
+                        if debug: print("coefficient=", ncf)
                         if ncf.is_zero():
                             continue
                         newzeta = [a+b for (a,b) in zip(diag+zpad,zrems)]
@@ -965,18 +965,18 @@ class DicksonAlgebra(DicksonBase):
 
         """
         if not isinstance(other, DicksonAlgebra):
-            raise ValueError, "Dickson algebra instance expected"
+            raise ValueError("Dickson algebra instance expected")
         if not other._prime == self._prime:
-            raise ValueError, "prime mismatch"
+            raise ValueError("prime mismatch")
         if other._index > self._index:
-            raise ValueError, "restriction from %s to %s not defined" % (self, other)
+            raise ValueError("restriction from %s to %s not defined" % (self, other))
         ans = self.module_morphism(codomain=other,
                                    on_basis=lambda x: self._restriction_basis(other, x))
         ans.rename("restriction from %s to %s" % (self, other))
         return ans
 
     def _transfer_basis(self, dest, key):
-        raise NotImplementedError, "not implemented"
+        raise NotImplementedError("not implemented")
 
     @cached_method
     def transfer(self, other):
@@ -990,11 +990,11 @@ class DicksonAlgebra(DicksonBase):
 
         """
         if not isinstance(other, DicksonAlgebra):
-            raise ValueError, "Dickson algebra instance expected"
+            raise ValueError("Dickson algebra instance expected")
         if not other._prime == self._prime:
-            raise ValueError, "prime mismatch"
+            raise ValueError("prime mismatch")
         if other._index < self._index:
-            raise ValueError, "transfer from %s to %s not defined" % (self, other)
+            raise ValueError("transfer from %s to %s not defined" % (self, other))
         ans = self.module_morphism(codomain=other,
                                    on_basis=lambda x: self._transfer_basis(other, x))
         ans.rename("transfer from %s to %s" % (self, other))

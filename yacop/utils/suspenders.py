@@ -97,7 +97,7 @@ class YacopSuspender(CombinatorialFreeModule):
              return self._from_dict({0:t,1:e,2:s})
           except:
              ar2 = ["%s" % u for u in args]
-             raise ValueError, "suspender not recognized: %s" % ", ".join(ar2)
+             raise ValueError("suspender not recognized: %s" % ", ".join(ar2))
         try:
           r = region(**kwargs)
           dct = {0:0,1:0,2:0}
@@ -116,8 +116,8 @@ class YacopSuspender(CombinatorialFreeModule):
         if len(args) == 1 and args[0] == 0:
            return self.zero()
         ar2 = ["%s" % x for x in args]
-        kw2 = ["%s=%s" % (a,b) for (a,b) in kwargs.iteritems()]
-        raise ValueError, "cannot make suspender from %s" % ", ".join(ar2 + kw2)
+        kw2 = ["%s=%s" % (a,b) for (a,b) in kwargs.items()]
+        raise ValueError("cannot make suspender from %s" % ", ".join(ar2 + kw2))
 
     def an_element(self):
        return self._element_constructor_(2,0,1)
@@ -158,7 +158,7 @@ class YacopSuspender(CombinatorialFreeModule):
               if not self_is_left or (self[0]&1)==0:
                  return othr.suspend(**dct)
               ans = []
-              for (deg,elem) in othr.homogeneous_decomposition().iteritems():
+              for (deg,elem) in othr.homogeneous_decomposition().items():
                  e = elem.suspend(**dct)
                  tmin,tmax=deg.trange
                  if tmin&1:
@@ -170,7 +170,7 @@ class YacopSuspender(CombinatorialFreeModule):
               pass
            if othr in YacopGradedObjects():
               return suspension(othr,**self.suspension_args())
-           raise ValueError, "do not know how to suspend %s" % othr
+           raise ValueError("do not know how to suspend %s" % othr)
 
 YacopSuspender.__doc__ = __doc__
 

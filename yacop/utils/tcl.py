@@ -175,7 +175,7 @@ class Yacop:
             def __iter__(self):
                 return self
             
-            def next(self):
+            def __next__(self):
                 x = self.tcl.eval(self._cor)
                 if len(x) == 0:
                     raise StopIteration

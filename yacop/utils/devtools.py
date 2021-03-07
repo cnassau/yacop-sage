@@ -32,9 +32,9 @@ import yacop.modules.classifying_spaces
 doattach(yacop.modules.classifying_spaces)
 
 def mro(M):
-    print("MRO ",M)
+    print(("MRO ",M))
     for u in M.__class__.mro():
-        print("  ",u)
+        print(("  ",u))
 
 # Local Variables:
 # eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
