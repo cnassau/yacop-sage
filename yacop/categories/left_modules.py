@@ -3,14 +3,9 @@ Steenrod algebra modules
 
 The Yacop base category for modules over the Steenrod algebra.
 
-
-AUTHORS:
-
- - Christian Nassau (2011): initial revision
-
 """
 # *****************************************************************************
-#  Copyright (C) 2011      Christian Nassau <nassau@nullhomotopie.de>
+#  Copyright (C) 2011-      Christian Nassau <nassau@nullhomotopie.de>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
@@ -37,11 +32,11 @@ from sage.misc.cachefunc import cached_method
 from sage.structure.sage_object import SageObject
 from sage.structure.element import have_same_parent
 from yacop.utils.region import region
-from yacop.modules.functors import SuspendedObjectsCategory
-from yacop.modules.functors import TruncatedObjectsCategory
+from yacop.categories.functors import SuspendedObjectsCategory
+from yacop.categories.functors import TruncatedObjectsCategory
 from sage.misc.cachefunc import cached_function
 from sage.misc.classcall_metaclass import typecall, ClasscallMetaclass
-from yacop.modules.functors import suspension
+from yacop.categories.functors import suspension
 from sage.misc.lazy_attribute import lazy_attribute
 from sage.rings.all import GF
 from sage.categories.homset import Homset
@@ -56,7 +51,7 @@ class YacopLeftModules(Category_over_base_ring):
 
     EXAMPLES::
 
-        sage: from yacop.modules.categories import *
+        sage: from yacop.categories import *
         sage: YacopLeftModules(SteenrodAlgebra(7),is_right=True,is_left=False)
         Category of right Yacop modules over mod 7 Steenrod algebra, milnor basis
     """
@@ -68,7 +63,7 @@ class YacopLeftModules(Category_over_base_ring):
         """
         EXAMPLE::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: YacopLeftModules(SteenrodAlgebra(2)).an_instance()
             mod 2 cohomology of real projective space P^{+Infinity}
             sage: YacopLeftModules(SteenrodAlgebra(5)).an_instance()
@@ -86,8 +81,8 @@ class YacopLeftModules(Category_over_base_ring):
 
         TESTS::
 
-           sage: from yacop.modules.categories import *
-           sage: YacopLeftModulesAlgebras(SteenrodAlgebra(3)).ModuleCategory() is YacopLeftModules(SteenrodAlgebra(3))
+           sage: from yacop.categories import *
+           sage: YacopLeftModuleAlgebras(SteenrodAlgebra(3)).ModuleCategory() is YacopLeftModules(SteenrodAlgebra(3))
            True
 
         """
@@ -106,7 +101,7 @@ class YacopLeftModules(Category_over_base_ring):
         hack the following fails::
 
             sage: from yacop.modules.projective_spaces import RealProjectiveSpace
-            sage: from yacop.modules.functors import suspension
+            sage: from yacop.categories.functors import suspension
             sage: M=RealProjectiveSpace()
             sage: S=suspension(M,s=2)
             sage: X=cartesian_product((S,S))
@@ -140,7 +135,7 @@ class YacopLeftModules(Category_over_base_ring):
 
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: YacopLeftModules(SteenrodAlgebra(2)).is_subcategory(ModulesWithBasis(GF(2)))
             True
 
@@ -155,7 +150,7 @@ class YacopLeftModules(Category_over_base_ring):
         """
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: YacopLeftModules(SteenrodAlgebra(2)).is_subcategory(ModulesWithBasis(GF(2)))
             True
 
@@ -196,7 +191,7 @@ class YacopLeftModules(Category_over_base_ring):
 
             TESTS::
 
-                sage: from yacop.modules.categories import YacopLeftModules
+                sage: from yacop.categories import YacopLeftModules
                 sage: class testclass(CombinatorialFreeModule):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopLeftModules(SteenrodAlgebra(2)))
@@ -221,7 +216,7 @@ class YacopLeftModules(Category_over_base_ring):
 
             TESTS::
 
-                sage: from yacop.modules.categories import YacopRightModules
+                sage: from yacop.categories import YacopRightModules
                 sage: class testclass(CombinatorialFreeModule):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopRightModules(SteenrodAlgebra(2)))
@@ -246,7 +241,7 @@ class YacopLeftModules(Category_over_base_ring):
 
             TESTS::
 
-                sage: from yacop.modules.categories import YacopLeftModules
+                sage: from yacop.categories import YacopLeftModules
                 sage: class testclass(CombinatorialFreeModule):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopLeftModules(SteenrodAlgebra(2)))
@@ -271,7 +266,7 @@ class YacopLeftModules(Category_over_base_ring):
 
             TESTS::
 
-                sage: from yacop.modules.categories import YacopRightModules
+                sage: from yacop.categories import YacopRightModules
                 sage: class testclass(CombinatorialFreeModule):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopRightModules(SteenrodAlgebra(2)))
@@ -293,7 +288,7 @@ class YacopLeftModules(Category_over_base_ring):
             """
             TESTS::
 
-                sage: from yacop.modules.categories import YacopLeftModules
+                sage: from yacop.categories import YacopLeftModules
                 sage: class testclass(CombinatorialFreeModule):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopLeftModules(SteenrodAlgebra(2)))
@@ -330,7 +325,7 @@ class YacopLeftModules(Category_over_base_ring):
             """
             TESTS::
 
-                sage: from yacop.modules.categories import YacopRightModules
+                sage: from yacop.categories import YacopRightModules
                 sage: class testclass(CombinatorialFreeModule):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopRightModules(SteenrodAlgebra(2)))
@@ -583,7 +578,7 @@ class YacopLeftModules(Category_over_base_ring):
 
             TESTS::
 
-                sage: from yacop.modules.categories import *
+                sage: from yacop.categories import *
                 sage: D=YacopLeftModuleAlgebras(SteenrodAlgebra(3)).CartesianProducts() ; D
                 Category of Cartesian products of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
                 sage: D.super_categories()
@@ -754,7 +749,7 @@ class YacopLeftModules(Category_over_base_ring):
         """
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: C = YacopLeftModules(SteenrodAlgebra(3))
             sage: C.Homsets()
             Category of homsets of left Yacop modules over mod 3 Steenrod algebra, milnor basis
@@ -807,7 +802,7 @@ class YacopLeftModules(Category_over_base_ring):
 
                 TESTS::
 
-                   sage: from yacop.modules.functors import suspension
+                   sage: from yacop.categories.functors import suspension
                    sage: from yacop.modules.all import BZp
                    sage: M = BZp(3)
                    sage: X = cartesian_product((M,M))
@@ -838,7 +833,7 @@ class YacopLeftModules(Category_over_base_ring):
 
         TESTS::
 
-             sage: from yacop.modules.categories import *
+             sage: from yacop.categories import *
              sage: C = YacopLeftModuleAlgebras(SteenrodAlgebra(11))
              sage: D = YacopLeftModules(SteenrodAlgebra(11))
              sage: C.Subquotients()
@@ -857,7 +852,7 @@ class YacopLeftModules(Category_over_base_ring):
 
             TESTS::
 
-               sage: from yacop.modules.categories import *
+               sage: from yacop.categories import *
                sage: C = YacopLeftModules(SteenrodAlgebra(3))
                sage: D = C.Subquotients() ; D
                Category of subquotients of left Yacop modules over mod 3 Steenrod algebra, milnor basis
@@ -917,7 +912,7 @@ class YacopLeftModules(Category_over_base_ring):
                     ans.append(self._retract_homogeneous(deg, smd))
                 return self.parent().sum(ans)
 
-class YacopLeftModulesAlegbras(Category_over_base_ring):
+class YacopLeftModuleAlgebras(Category_over_base_ring):
 
     def ModuleCategory(self):
         """
@@ -925,12 +920,16 @@ class YacopLeftModulesAlegbras(Category_over_base_ring):
 
         TESTS::
 
-           sage: from yacop.modules.categories import *
-           sage: YacopLeftModulesAlgebras(SteenrodAlgebra(3)).ModuleCategory() is YacopLeftModules(SteenrodAlgebra(3))
+           sage: from yacop.categories import *
+           sage: YacopLeftModuleAlgebras(SteenrodAlgebra(3)).ModuleCategory() is YacopLeftModules(SteenrodAlgebra(3))
            True
 
         """
         return YacopLeftModules(self.base_ring())
+
+    def super_categories(self):
+        return [self.ModuleCategory(),]
+
 
 
 # Local Variables:

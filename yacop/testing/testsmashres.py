@@ -112,7 +112,7 @@ TESTS::
     sage: # check that an earlier sign problem is fixed
     sage: from yacop.resolutions.smashres import SmashResolution, __newres
     sage: from yacop.modules.classifying_spaces import BZp
-    sage: from yacop.modules.functors import truncation
+    sage: from yacop.categories.functors import truncation
     sage: C=__newres(SteenrodAlgebra(5),shared=True)
     sage: E=SmashResolution(truncation(BZp(5),tmax=12),C)
     sage: E.compute(smax=3,nmax=30,quiet=True)
@@ -137,7 +137,7 @@ TESTS::
 
     sage: from yacop.resolutions.smashres import SmashResolution, __newres
     sage: from yacop.modules.dual_steenrod_algebra import DualSteenrodAlgebra
-    sage: from yacop.modules.functors import truncation
+    sage: from yacop.categories.functors import truncation
     sage: C=__newres(SteenrodAlgebra(3),shared=True)
     sage: W=truncation(DualSteenrodAlgebra(3),tmin=-12,emin=-5)
     sage: E=SmashResolution(W,C)

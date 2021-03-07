@@ -34,11 +34,11 @@ from sage.misc.cachefunc import cached_method
 from sage.structure.sage_object import SageObject
 from sage.structure.element import have_same_parent
 from yacop.utils.region import region
-from yacop.modules.functors import SuspendedObjectsCategory
-from yacop.modules.functors import TruncatedObjectsCategory
+from yacop.categories.functors import SuspendedObjectsCategory
+from yacop.categories.functors import TruncatedObjectsCategory
 from sage.misc.cachefunc import cached_function
 from sage.misc.classcall_metaclass import typecall, ClasscallMetaclass
-from yacop.modules.functors import suspension
+from yacop.categories.functors import suspension
 from sage.misc.lazy_attribute import lazy_attribute
 from sage.rings.all import GF
 from sage.categories.homset import Homset
@@ -146,7 +146,7 @@ class YacopGradedObjects(Category_singleton):
 
     EXAMPLES::
 
-        sage: from yacop.modules.categories import *
+        sage: from yacop.categories import *
         sage: from yacop import *
         sage: X = YacopGradedObjects().example() ; X
         {1, ..., 18}
@@ -176,7 +176,7 @@ class YacopGradedObjects(Category_singleton):
 
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: YacopGradedObjects().example().grading()
             mod 7 decomposition of the range {1, ..., 18}
         """
@@ -265,7 +265,7 @@ class YacopGradedObjects(Category_singleton):
 
             EXAMPLES::
 
-                sage: from yacop.modules.categories import *
+                sage: from yacop.categories import *
                 sage: YacopGradedObjects().example().grading()
                 mod 7 decomposition of the range {1, ..., 18}
 
@@ -380,7 +380,7 @@ class YacopGradedObjects(Category_singleton):
         """
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: Y=YacopGradedObjects()
             sage: Y.SuspendedObjects()
             Category of suspensions of yacop graded objects
@@ -424,7 +424,7 @@ class YacopGradedObjects(Category_singleton):
         """
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: Y=YacopGradedObjects()
             sage: Y.Subquotients()
             Category of subquotients of yacop graded objects
@@ -441,7 +441,7 @@ class YacopGradedObjects(Category_singleton):
         """
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: Y=YacopGradedObjects()
             sage: Y.CartesianProducts()
             Category of Cartesian products of yacop graded objects
@@ -471,7 +471,7 @@ class YacopGradedObjects(Category_singleton):
         """
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: Y=YacopGradedObjects()
             sage: Y.TensorProducts()
             Category of tensor products of yacop graded objects

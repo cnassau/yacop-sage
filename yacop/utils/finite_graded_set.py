@@ -57,7 +57,7 @@ from sage.rings.infinity import Infinity
 from sage.rings.integer_ring import ZZ
 from sage.rings.integer import Integer
 from sage.misc.classcall_metaclass import ClasscallMetaclass
-from yacop.modules.categories import YacopGradedSets
+from yacop.categories import YacopGradedSets
 from yacop.utils.region import region
 from yacop.utils.gradings import YacopGrading
 from sage.structure.sage_object import SageObject

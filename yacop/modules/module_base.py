@@ -15,9 +15,9 @@ from yacop.utils.region import region
 from yacop.utils.gradings import YacopGrading
 from yacop.utils.bitstuff import N0
 from yacop.utils.set_of_elements import SetOfMonomials
-from yacop.modules.categories import YacopLeftModuleAlgebras, YacopGradedObjects
-from yacop.modules.functors import suspension, SuspendedObjectsCategory
-from yacop.modules.functors import truncation, TruncatedObjectsCategory
+from yacop.categories import YacopLeftModuleAlgebras, YacopGradedObjects
+from yacop.categories.functors import suspension, SuspendedObjectsCategory
+from yacop.categories.functors import truncation, TruncatedObjectsCategory
 from sage.rings.infinity import Infinity
 from sage.combinat.free_module import CombinatorialFreeModule
 from sage.structure.sage_object import SageObject
@@ -124,7 +124,7 @@ class SteenrodModuleBase(CombinatorialFreeModule):
         This is a dummy method to make multiplication by Suspenders work::
 
            sage: from yacop.utils.suspenders import Suspender
-           sage: from yacop.modules.functors import suspension
+           sage: from yacop.categories.functors import suspension
            sage: from yacop.modules.projective_spaces import RealProjectiveSpace
            sage: S=Suspender(t=4) ; M=RealProjectiveSpace()
            sage: S*M is suspension(M,t=4)

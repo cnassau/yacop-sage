@@ -37,9 +37,9 @@ from yacop.utils.region import region
 from yacop.utils.gradings import YacopGrading
 from yacop.utils.set_of_elements import SetOfMonomials, SetOfElements
 from yacop.modules.algebras import SteenrodAlgebraBase
-from yacop.modules.categories import YacopLeftModuleAlgebras, YacopGradedObjects
-from yacop.modules.functors import suspension, SuspendedObjectsCategory
-from yacop.modules.functors import truncation, TruncatedObjectsCategory
+from yacop.categories import YacopLeftModuleAlgebras, YacopGradedObjects
+from yacop.categories.functors import suspension, SuspendedObjectsCategory
+from yacop.categories.functors import truncation, TruncatedObjectsCategory
 from sage.rings.infinity import Infinity
 from sage.combinat.free_module import CombinatorialFreeModule
 from sage.structure.sage_object import SageObject
@@ -58,8 +58,8 @@ from sage.arith.all import is_prime
 from yacop.utils.finite_graded_set import InfiniteGradedSet
 from yacop.utils.bitstuff import N0, binom_modp
 from yacop.modules.module_base import SteenrodModuleBase
-from yacop.modules.categories import YacopLeftModules, YacopGradedObjects, YacopGradedSets
-from yacop.modules.categories import SteenrodAlgebraAction
+from yacop.categories import YacopLeftModules, YacopGradedObjects, YacopGradedSets
+from yacop.categories import SteenrodAlgebraAction
 from yacop.modules.xitauring import XiTauRing
 from sage.misc.lazy_attribute import lazy_attribute
 from sage.misc.cachefunc import cached_method

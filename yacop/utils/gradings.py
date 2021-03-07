@@ -10,7 +10,7 @@ have three natural gradings `t`, `e` and `s`:
 
 We use :meth:`YacopGrading` objects to represent such a grading::
 
-   sage: from yacop.modules.functors import *
+   sage: from yacop.categories.functors import *
    sage: from yacop.utils.gradings import YacopGradingFromDict
    sage: dct = []
    sage: dct.append((region(t=1,e=0,s=3),(1,2,3)))
@@ -113,11 +113,11 @@ from sage.sets.disjoint_union_enumerated_sets import DisjointUnionEnumeratedSets
 from sage.sets.finite_enumerated_set import FiniteEnumeratedSet
 from sage.rings.integer import Integer
 from yacop.utils.region import region
-from yacop.modules.categories import YacopObjects
-from yacop.modules.functors import suspension, SuspendedObjectsCategory
-from yacop.modules.functors import truncation, TruncatedObjectsCategory
-from yacop.modules.functors import cartesian_product, CartesianProductsCategory
-from yacop.modules.functors import tensor, TensorProductsCategory
+from yacop.categories import YacopObjects
+from yacop.categories.functors import suspension, SuspendedObjectsCategory
+from yacop.categories.functors import truncation, TruncatedObjectsCategory
+from yacop.categories.functors import cartesian_product, CartesianProductsCategory
+from yacop.categories.functors import tensor, TensorProductsCategory
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.structure.sage_object import SageObject
 from sage.combinat.free_module import CombinatorialFreeModule

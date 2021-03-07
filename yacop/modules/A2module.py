@@ -16,7 +16,7 @@ TESTS::
     sage: # create N = A2*Sq(0,0,1) as a submodule of the dual Steenrod algebra
     sage: M = A2Module(127) ; M
     A2 as a module over the mod 2 Steenrod algebra, module structure #127
-    sage: from yacop.modules.functors import suspension
+    sage: from yacop.categories.functors import suspension
     sage: f = M.module_morphism(codomain=suspension(M.ambient(),t=-7), on_basis = lambda m : M.ambient_embedding()(M.monomial(m))*Sq(0,0,1)) ; f
     Generic morphism:
       From: A2 as a module over the mod 2 Steenrod algebra, module structure #127
@@ -47,7 +47,7 @@ TESTS::
 
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 from sage.structure.unique_representation import UniqueRepresentation
-from yacop.modules.categories import YacopLeftModules
+from yacop.categories import YacopLeftModules
 from yacop.modules.free_modules import YacopFreeModule
 from yacop.modules.morph_module import SubModule
 from yacop.modules.dual_steenrod_algebra import DualSteenrodAlgebra

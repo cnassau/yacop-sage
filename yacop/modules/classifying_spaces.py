@@ -65,9 +65,9 @@ from yacop.utils.region import region
 from yacop.utils.gradings import YacopGrading
 from yacop.utils.set_of_elements import SetOfMonomials, SetOfElements
 from yacop.modules.module_base import SteenrodModuleBase
-from yacop.modules.categories import YacopLeftModuleAlgebras, YacopGradedObjects
-from yacop.modules.functors import suspension, SuspendedObjectsCategory
-from yacop.modules.functors import truncation, TruncatedObjectsCategory
+from yacop.categories import YacopLeftModuleAlgebras, YacopGradedObjects
+from yacop.categories.functors import suspension, SuspendedObjectsCategory
+from yacop.categories.functors import truncation, TruncatedObjectsCategory
 from sage.rings.infinity import Infinity
 from sage.combinat.free_module import CombinatorialFreeModule
 from sage.structure.sage_object import SageObject

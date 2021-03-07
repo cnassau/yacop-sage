@@ -3,7 +3,7 @@ Suspenders are syntactic sugar for working with suspensions::
 
    sage: from yacop.modules.classifying_spaces import BZp
    sage: from yacop.utils.suspenders import Suspender
-   sage: from yacop.modules.functors import suspension
+   sage: from yacop.categories.functors import suspension
    sage: S=Suspender(t=3) ; S
    S(3,0,0)
    sage: M=BZp(5) ; M
@@ -49,12 +49,12 @@ We suspend from the right, so Steenrod operations commute with suspensions::
 #******************************************************************************
 
 from yacop.utils.region import region
-from yacop.modules.functors import suspension
+from yacop.categories.functors import suspension
 from sage.combinat.free_module import CombinatorialFreeModule
 from sage.rings.integer_ring import ZZ
 from sage.categories.monoids import Monoids
 from sage.categories.commutative_additive_monoids import CommutativeAdditiveMonoids
-from yacop.modules.categories import YacopGradedObjects
+from yacop.categories import YacopGradedObjects
 from sage.rings.infinity import Infinity
 
 """
@@ -144,7 +144,7 @@ class YacopSuspender(CombinatorialFreeModule):
 
                 sage: from yacop.modules.projective_spaces import RealProjectiveSpace
                 sage: from yacop.utils.suspenders import Suspender
-                sage: from yacop.modules.functors import suspension
+                sage: from yacop.categories.functors import suspension
                 sage: M=RealProjectiveSpace()
                 sage: S=Suspender(s=2)
                 sage: suspension(M,s=2) is suspension(M,**S.suspension_args())

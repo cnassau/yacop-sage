@@ -15,7 +15,7 @@ from Tkynter import Tcl
 from yacop.utils.tcl import Yacop
 from yacop.utils.region import region
 from sage.structure.element import Element
-from yacop.modules.categories import YacopLeftModules, YacopGradedSets
+from yacop.categories import YacopLeftModules, YacopGradedSets
 from threading import Thread
 from yacop.modules.free_modules import FreeModuleImpl
 from sage.structure.unique_representation import UniqueRepresentation
@@ -30,9 +30,9 @@ from copy import copy
 """
 from yacop.utils.set_of_elements import SetOfMonomials
 from yacop.modules.module_base import SteenrodModuleBase
-from yacop.modules.categories import YacopLeftModuleAlgebras, YacopGradedObjects
-from yacop.modules.functors import suspension, SuspendedObjectsCategory
-from yacop.modules.functors import truncation, TruncatedObjectsCategory
+from yacop.categories import YacopLeftModuleAlgebras, YacopGradedObjects
+from yacop.categories.functors import suspension, SuspendedObjectsCategory
+from yacop.categories.functors import truncation, TruncatedObjectsCategory
 from sage.rings.infinity import Infinity
 from sage.combinat.free_module import CombinatorialFreeModule
 from sage.structure.sage_object import SageObject

@@ -36,11 +36,11 @@ from sage.misc.cachefunc import cached_method
 from sage.structure.sage_object import SageObject
 from sage.structure.element import have_same_parent
 from yacop.utils.region import region
-from yacop.modules.functors import SuspendedObjectsCategory
-from yacop.modules.functors import TruncatedObjectsCategory
+from yacop.categories.functors import SuspendedObjectsCategory
+from yacop.categories.functors import TruncatedObjectsCategory
 from sage.misc.cachefunc import cached_function
 from sage.misc.classcall_metaclass import typecall, ClasscallMetaclass
-from yacop.modules.functors import suspension
+from yacop.categories.functors import suspension
 from sage.misc.lazy_attribute import lazy_attribute
 from sage.rings.all import GF
 from sage.categories.homset import Homset
@@ -158,7 +158,7 @@ class CommonParentMethods:
         """
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: from yacop.modules.all import RealProjectiveSpace
             sage: M = RealProjectiveSpace()
             sage: X = cartesian_product((M,M))
@@ -217,7 +217,7 @@ class CommonParentMethods:
         return CokerImpl(f, **options)
 
     def _xx_test_truncation(self, tester=None, **options):
-        from yacop.modules.functors import truncation
+        from yacop.categories.functors import truncation
         from sage.misc.sage_unittest import TestSuite
         from sage.misc.lazy_format import LazyFormat
         is_sub_testsuite = (tester is not None)

@@ -15,7 +15,7 @@ from Tkynter import Tcl
 from yacop.utils.tcl import Yacop
 from yacop.utils.region import region
 from sage.structure.element import Element
-from yacop.modules.categories import YacopLeftModules, YacopGradedSets
+from yacop.categories import YacopLeftModules, YacopGradedSets
 from threading import Thread
 from yacop.modules.free_modules import FreeModuleImpl
 from sage.structure.unique_representation import UniqueRepresentation

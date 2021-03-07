@@ -139,10 +139,10 @@ from yacop.utils.region import region
 from yacop.utils.gradings import YacopGrading
 from yacop.utils.finite_graded_set import FiniteGradedSet
 from yacop.modules.module_base import SteenrodModuleBase
-from yacop.modules.categories import YacopBiModules, YacopLeftModuleAlgebras, YacopRightModuleAlgebras, \
+from yacop.categories import YacopBiModules, YacopLeftModuleAlgebras, YacopRightModuleAlgebras, \
     YacopBiModuleAlgebras, YacopGradedSets, YacopGradedObjects
-from yacop.modules.functors import suspension, SuspendedObjectsCategory
-from yacop.modules.functors import truncation, TruncatedObjectsCategory
+from yacop.categories.functors import suspension, SuspendedObjectsCategory
+from yacop.categories.functors import truncation, TruncatedObjectsCategory
 from sage.rings.infinity import Infinity
 from sage.structure.sage_object import SageObject
 from sage.rings.finite_rings.finite_field_constructor import GF

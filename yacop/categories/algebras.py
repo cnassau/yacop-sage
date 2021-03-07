@@ -36,11 +36,11 @@ from sage.misc.cachefunc import cached_method
 from sage.structure.sage_object import SageObject
 from sage.structure.element import have_same_parent
 from yacop.utils.region import region
-from yacop.modules.functors import SuspendedObjectsCategory
-from yacop.modules.functors import TruncatedObjectsCategory
+from yacop.categories.functors import SuspendedObjectsCategory
+from yacop.categories.functors import TruncatedObjectsCategory
 from sage.misc.cachefunc import cached_function
 from sage.misc.classcall_metaclass import typecall, ClasscallMetaclass
-from yacop.modules.functors import suspension
+from yacop.categories.functors import suspension
 from sage.misc.lazy_attribute import lazy_attribute
 from sage.rings.all import GF
 from sage.categories.homset import Homset
@@ -148,7 +148,7 @@ class YacopGradedObjects(Category_singleton):
 
     EXAMPLES::
 
-        sage: from yacop.modules.categories import *
+        sage: from yacop.categories import *
         sage: from yacop import *
         sage: X = YacopGradedObjects().example() ; X
         {1, ..., 18}
@@ -178,7 +178,7 @@ class YacopGradedObjects(Category_singleton):
 
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: YacopGradedObjects().example().grading()
             mod 7 decomposition of the range {1, ..., 18}
         """
@@ -267,7 +267,7 @@ class YacopGradedObjects(Category_singleton):
 
             EXAMPLES::
 
-                sage: from yacop.modules.categories import *
+                sage: from yacop.categories import *
                 sage: YacopGradedObjects().example().grading()
                 mod 7 decomposition of the range {1, ..., 18}
 
@@ -382,7 +382,7 @@ class YacopGradedObjects(Category_singleton):
         """
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: Y=YacopGradedObjects()
             sage: Y.SuspendedObjects()
             Category of suspensions of yacop graded objects
@@ -426,7 +426,7 @@ class YacopGradedObjects(Category_singleton):
         """
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: Y=YacopGradedObjects()
             sage: Y.Subquotients()
             Category of subquotients of yacop graded objects
@@ -443,7 +443,7 @@ class YacopGradedObjects(Category_singleton):
         """
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: Y=YacopGradedObjects()
             sage: Y.CartesianProducts()
             Category of Cartesian products of yacop graded objects
@@ -473,7 +473,7 @@ class YacopGradedObjects(Category_singleton):
         """
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: Y=YacopGradedObjects()
             sage: Y.TensorProducts()
             Category of tensor products of yacop graded objects
@@ -542,7 +542,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
     EXAMPLES::
 
-        sage: from yacop.modules.categories import *
+        sage: from yacop.categories import *
         sage: YacopDifferentialModules(SteenrodAlgebra(7),is_right=True,is_left=False)
         Category of right Yacop modules over mod 7 Steenrod algebra, milnor basis
     """
@@ -573,7 +573,7 @@ class YacopDifferentialModules(Category_over_base_ring):
         """
         EXAMPLE::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: YacopLeftModules(SteenrodAlgebra(2)).an_instance()
             mod 2 cohomology of real projective space P^{+Infinity}
             sage: YacopLeftModules(SteenrodAlgebra(5)).an_instance()
@@ -591,7 +591,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
        TESTS::
 
-          sage: from yacop.modules.categories import *
+          sage: from yacop.categories import *
           sage: YacopRightModuleAlgebras(SteenrodAlgebra(3)).ModuleCategory() is YacopRightModules(SteenrodAlgebra(3))
           True
 
@@ -605,7 +605,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
     @cached_method
     def _meet_(self,other):
-        from yacop.modules.categories import steenrod_algebra_intersect
+        from yacop.categories import steenrod_algebra_intersect
         try:
             oR = other._R
             R = steenrod_algebra_intersect((self._R,oR))
@@ -639,7 +639,7 @@ class YacopDifferentialModules(Category_over_base_ring):
         hack the following fails::
 
             sage: from yacop.modules.projective_spaces import RealProjectiveSpace
-            sage: from yacop.modules.functors import suspension
+            sage: from yacop.categories.functors import suspension
             sage: M=RealProjectiveSpace()
             sage: S=suspension(M,s=2)
             sage: X=cartesian_product((S,S))
@@ -685,7 +685,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: YacopLeftModules(SteenrodAlgebra(2)).is_subcategory(ModulesWithBasis(GF(2)))
             True
 
@@ -700,7 +700,7 @@ class YacopDifferentialModules(Category_over_base_ring):
         """
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: YacopLeftModules(SteenrodAlgebra(2)).is_subcategory(ModulesWithBasis(GF(2)))
             True
 
@@ -792,7 +792,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
             TESTS::
 
-                sage: from yacop.modules.categories import YacopLeftModules
+                sage: from yacop.categories import YacopLeftModules
                 sage: class testclass(CombinatorialFreeModule):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopLeftModules(SteenrodAlgebra(2)))
@@ -817,7 +817,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
             TESTS::
 
-                sage: from yacop.modules.categories import YacopRightModules
+                sage: from yacop.categories import YacopRightModules
                 sage: class testclass(CombinatorialFreeModule):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopRightModules(SteenrodAlgebra(2)))
@@ -842,7 +842,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
             TESTS::
 
-                sage: from yacop.modules.categories import YacopLeftModules
+                sage: from yacop.categories import YacopLeftModules
                 sage: class testclass(CombinatorialFreeModule):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopLeftModules(SteenrodAlgebra(2)))
@@ -867,7 +867,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
             TESTS::
 
-                sage: from yacop.modules.categories import YacopRightModules
+                sage: from yacop.categories import YacopRightModules
                 sage: class testclass(CombinatorialFreeModule):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopRightModules(SteenrodAlgebra(2)))
@@ -889,7 +889,7 @@ class YacopDifferentialModules(Category_over_base_ring):
             """
             TESTS::
 
-                sage: from yacop.modules.categories import YacopLeftModules
+                sage: from yacop.categories import YacopLeftModules
                 sage: class testclass(CombinatorialFreeModule):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopLeftModules(SteenrodAlgebra(2)))
@@ -926,7 +926,7 @@ class YacopDifferentialModules(Category_over_base_ring):
             """
             TESTS::
 
-                sage: from yacop.modules.categories import YacopRightModules
+                sage: from yacop.categories import YacopRightModules
                 sage: class testclass(CombinatorialFreeModule):
                 ....:     def __init__(self):
                 ....:          CombinatorialFreeModule.__init__(self,GF(2),ZZ,category=YacopRightModules(SteenrodAlgebra(2)))
@@ -1125,7 +1125,7 @@ class YacopDifferentialModules(Category_over_base_ring):
             """
             TESTS::
 
-               sage: from yacop.modules.categories import *
+               sage: from yacop.categories import *
                sage: from yacop.modules.all import RealProjectiveSpace
                sage: M = RealProjectiveSpace()
                sage: X = cartesian_product((M,M))
@@ -1182,7 +1182,7 @@ class YacopDifferentialModules(Category_over_base_ring):
             return CokerImpl(f,**options)
 
         def _xx_test_truncation(self,tester = None,**options):
-            from yacop.modules.functors import truncation
+            from yacop.categories.functors import truncation
             from sage.misc.sage_unittest import TestSuite
             from sage.misc.lazy_format import LazyFormat
             is_sub_testsuite = (tester is not None)
@@ -1524,7 +1524,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
             TESTS::
 
-                sage: from yacop.modules.categories import *
+                sage: from yacop.categories import *
                 sage: D=YacopLeftModuleAlgebras(SteenrodAlgebra(3)).CartesianProducts() ; D
                 Category of Cartesian products of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
                 sage: D.super_categories()
@@ -1697,7 +1697,7 @@ class YacopDifferentialModules(Category_over_base_ring):
         """
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: C = YacopLeftModules(SteenrodAlgebra(3))
             sage: C.Homsets()
             Category of homsets of left Yacop modules over mod 3 Steenrod algebra, milnor basis
@@ -1747,7 +1747,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
                TESTS::
 
-                  sage: from yacop.modules.functors import suspension
+                  sage: from yacop.categories.functors import suspension
                   sage: from yacop.modules.all import BZp
                   sage: M = BZp(3)
                   sage: X = cartesian_product((M,M))
@@ -1778,7 +1778,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
      TESTS::
 
-          sage: from yacop.modules.categories import *
+          sage: from yacop.categories import *
           sage: C = YacopLeftModuleAlgebras(SteenrodAlgebra(11))
           sage: D = YacopLeftModules(SteenrodAlgebra(11))
           sage: C.Subquotients()
@@ -1797,7 +1797,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
       TESTS::
 
-         sage: from yacop.modules.categories import *
+         sage: from yacop.categories import *
          sage: C = YacopLeftModules(SteenrodAlgebra(3))
          sage: D = C.Subquotients() ; D
          Category of subquotients of left Yacop modules over mod 3 Steenrod algebra, milnor basis
@@ -1933,7 +1933,7 @@ def make_functor_class(cls,fname,tmpl):
   TESTS::
 
       sage: import __main__
-      sage: from yacop.modules.categories import *
+      sage: from yacop.categories import *
       sage: __main__.YacopDifferentialModules = YacopDifferentialModules
       sage: __main__.YacopLeftModules = YacopLeftModules
       sage: __main__.YacopRightModules = YacopRightModules
@@ -1954,7 +1954,7 @@ Test Category.meet: this should automatically restrict the Steenrod algebra acti
 
 TESTS::
 
-    sage: from yacop.modules.categories import *
+    sage: from yacop.categories import *
     sage: A = SteenrodAlgebra(3)
     sage: B = SteenrodAlgebra(3,profile=((1,),(2,2)))
     sage: C = SteenrodAlgebra(3,profile=((),(1,2)))
@@ -1983,7 +1983,7 @@ def steenrod_algebra_intersect(algebras):
     """
     TESTS::
 
-         sage: from yacop.modules.categories import *
+         sage: from yacop.categories import *
          sage: A = SteenrodAlgebra(3)
          sage: B = SteenrodAlgebra(3,profile=((1,),(2,2)))
          sage: C = SteenrodAlgebra(3,profile=((),(1,2)))

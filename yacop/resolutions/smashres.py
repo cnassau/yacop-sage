@@ -29,7 +29,7 @@ from Tkynter import Tcl, TclError
 from yacop.utils.tcl import Yacop
 from yacop.utils.region import region
 from sage.structure.element import Element
-from yacop.modules.categories import YacopLeftModules, YacopGradedSets
+from yacop.categories import YacopLeftModules, YacopGradedSets
 from threading import Thread
 from yacop.modules.free_modules import FreeModuleImpl
 from yacop.resolutions.minres import GFR, MinimalResolution, Subset
@@ -37,7 +37,7 @@ from sage.structure.parent import Parent
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.rings.integer import Integer
 from sage.rings.infinity import Infinity
-from yacop.modules.functors import suspension
+from yacop.categories.functors import suspension
 from sage.misc.cachefunc import cached_method
 from sage.combinat.free_module import CombinatorialFreeModule
 from sage.categories.category import Category
@@ -318,7 +318,7 @@ class Smasher(Parent,UniqueRepresentation):
             sage: P = RealProjectiveSpace(botexp=0,topexp=0)
             sage: P.bbox()
             region(e = 0, s = 0, t = 0)
-            sage: from yacop.modules.functors import suspension
+            sage: from yacop.categories.functors import suspension
 
             sage: R=SmashResolution(P,C) ; R = R._worker
             sage: R._find_region(region(n=30))
@@ -806,7 +806,7 @@ class SmashResolution(SteenrodModuleBase_Tensor,UniqueRepresentation):
             sage: from yacop.resolutions.minres import MinimalResolution
             sage: from yacop.resolutions.smashres import SmashResolution
             sage: from yacop.modules.classifying_spaces import BZp
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: A=SteenrodAlgebra(3,profile=((1,),(2,2)))
             sage: D=BZp(3)
             sage: C=MinimalResolution(A,memory=True)

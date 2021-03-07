@@ -36,11 +36,11 @@ from sage.misc.cachefunc import cached_method
 from sage.structure.sage_object import SageObject
 from sage.structure.element import have_same_parent
 from yacop.utils.region import region
-from yacop.modules.functors import SuspendedObjectsCategory
-from yacop.modules.functors import TruncatedObjectsCategory
+from yacop.categories.functors import SuspendedObjectsCategory
+from yacop.categories.functors import TruncatedObjectsCategory
 from sage.misc.cachefunc import cached_function
 from sage.misc.classcall_metaclass import typecall, ClasscallMetaclass
-from yacop.modules.functors import suspension
+from yacop.categories.functors import suspension
 from sage.misc.lazy_attribute import lazy_attribute
 from sage.rings.all import GF
 from sage.categories.homset import Homset
@@ -79,7 +79,7 @@ def steenrod_algebra_intersect(algebras):
     """
     TESTS::
 
-         sage: from yacop.modules.categories import *
+         sage: from yacop.categories import *
          sage: A = SteenrodAlgebra(3)
          sage: B = SteenrodAlgebra(3,profile=((1,),(2,2)))
          sage: C = SteenrodAlgebra(3,profile=((),(1,2)))

@@ -1,15 +1,8 @@
 r"""
-The yacop category for differential modules.
-
-The Steenrod algebra action, if present, is implemented in a subcategory.
-
-AUTHORS:
-
-    - Christian Nassau (2011): initial revision
-
+The Yacop category for differential modules.
 """
 #*****************************************************************************
-#  Copyright (C) 2011      Christian Nassau <nassau@nullhomotopie.de>
+#  Copyright (C) 2011-      Christian Nassau <nassau@nullhomotopie.de>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
@@ -35,11 +28,11 @@ from sage.misc.cachefunc import cached_method
 from sage.structure.sage_object import SageObject
 from sage.structure.element import have_same_parent
 from yacop.utils.region import region
-from yacop.modules.functors import SuspendedObjectsCategory
-from yacop.modules.functors import TruncatedObjectsCategory
+from yacop.categories.functors import SuspendedObjectsCategory
+from yacop.categories.functors import TruncatedObjectsCategory
 from sage.misc.cachefunc import cached_function
 from sage.misc.classcall_metaclass import typecall, ClasscallMetaclass
-from yacop.modules.functors import suspension
+from yacop.categories.functors import suspension
 from sage.misc.lazy_attribute import lazy_attribute
 from sage.rings.all import GF
 from sage.categories.homset import Homset
@@ -53,7 +46,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
     EXAMPLES::
 
-        sage: from yacop.modules.categories import *
+        sage: from yacop.categories import *
         sage: YacopDifferentialModules(SteenrodAlgebra(7))
         Category of Yacop differenial modules over mod 7 Steenrod algebra, milnor basis
     """
@@ -65,7 +58,7 @@ class YacopDifferentialModules(Category_over_base_ring):
         """
         EXAMPLE::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: YacopLeftModules(SteenrodAlgebra(2)).an_instance()
             mod 2 cohomology of real projective space P^{+Infinity}
             sage: YacopLeftModules(SteenrodAlgebra(5)).an_instance()
@@ -93,7 +86,7 @@ class YacopDifferentialModules(Category_over_base_ring):
     @cached_method
     def _meet_(self,other):
         "FIXME"
-        from yacop.modules.categories import steenrod_algebra_intersect
+        from yacop.categories import steenrod_algebra_intersect
         try:
             oR = other.base_ring()
             R = steenrod_algebra_intersect((self.base_ring(),oR))
@@ -127,7 +120,7 @@ class YacopDifferentialModules(Category_over_base_ring):
         hack the following fails::
 
             sage: from yacop.modules.projective_spaces import RealProjectiveSpace
-            sage: from yacop.modules.functors import suspension
+            sage: from yacop.categories.functors import suspension
             sage: M=RealProjectiveSpace()
             sage: S=suspension(M,s=2)
             sage: X=cartesian_product((S,S))
@@ -157,7 +150,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: YacopLeftModules(SteenrodAlgebra(2)).is_subcategory(ModulesWithBasis(GF(2)))
             True
 
@@ -172,7 +165,7 @@ class YacopDifferentialModules(Category_over_base_ring):
         """
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: YacopDifferentialModules(SteenrodAlgebra(2)).super_categories()
             [Category of vector spaces with basis over Finite Field of size 2,
              Category of yacop graded objects]
@@ -247,7 +240,7 @@ class YacopDifferentialModules(Category_over_base_ring):
             """
             TESTS::
 
-               sage: from yacop.modules.categories import *
+               sage: from yacop.categories import *
                sage: from yacop.modules.all import RealProjectiveSpace
                sage: M = RealProjectiveSpace()
                sage: X = cartesian_product((M,M))
@@ -304,7 +297,7 @@ class YacopDifferentialModules(Category_over_base_ring):
             return CokerImpl(f,**options)
 
         def _xx_test_truncation(self,tester = None,**options):
-            from yacop.modules.functors import truncation
+            from yacop.categories.functors import truncation
             from sage.misc.sage_unittest import TestSuite
             from sage.misc.lazy_format import LazyFormat
             is_sub_testsuite = (tester is not None)
@@ -680,7 +673,7 @@ class YacopDifferentialModules(Category_over_base_ring):
         """
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: C = YacopLeftModules(SteenrodAlgebra(3))
             sage: C.Homsets()
             Category of homsets of left Yacop modules over mod 3 Steenrod algebra, milnor basis
@@ -730,7 +723,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
                TESTS::
 
-                  sage: from yacop.modules.functors import suspension
+                  sage: from yacop.categories.functors import suspension
                   sage: from yacop.modules.all import BZp
                   sage: M = BZp(3)
                   sage: X = cartesian_product((M,M))
@@ -761,7 +754,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
         TESTS::
 
-            sage: from yacop.modules.categories import *
+            sage: from yacop.categories import *
             sage: C = YacopLeftModuleAlgebras(SteenrodAlgebra(11))
             sage: D = YacopLeftModules(SteenrodAlgebra(11))
             sage: C.Subquotients()
@@ -780,7 +773,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
             TESTS::
 
-                sage: from yacop.modules.categories import *
+                sage: from yacop.categories import *
                 sage: C = YacopLeftModules(SteenrodAlgebra(3))
                 sage: D = C.Subquotients() ; D
                 Category of subquotients of left Yacop modules over mod 3 Steenrod algebra, milnor basis
