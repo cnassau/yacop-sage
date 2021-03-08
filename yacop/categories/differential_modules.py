@@ -48,7 +48,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
         sage: from yacop.categories import *
         sage: YacopDifferentialModules(SteenrodAlgebra(7))
-        Category of Yacop differenial modules over mod 7 Steenrod algebra, milnor basis
+        Category of yacop differential modules over mod 7 Steenrod algebra, milnor basis
     """
 
     def __init__(self,R):
@@ -140,7 +140,7 @@ class YacopDifferentialModules(Category_over_base_ring):
         return ans
 
     def _repr_object_names(self):
-        return "Yacop differential modules over %s" % self.base_ring()
+        return "yacop differential modules over %s" % self.base_ring()
 
     @cached_method
     def is_subcategory(self,other):

@@ -269,20 +269,21 @@ class SteenrodModuleBase_Tensor(CombinatorialFreeModule.Tensor,SteenrodModuleBas
         return super(SteenrodModuleBase_Tensor,cls).__classcall__(cls,modules,**options)
 
     def __init__(self,modules,**options):
-       CombinatorialFreeModule.Tensor.__init__(self,modules,**options)
-       # with sage 5.7.beta4 the basis has the wrong category
-       try:
-          from sage.sets.family import Family
-          cc = list(self.basis().keys()).cc # the CartesianProduct
-          self._indices = Family(cc,lambda u:tuple(u))
-          def contains(self,x):
-              return x in cc
-          import types
-          self._indices._contains_ = types.MethodType(contains,self.indices())
-          self.basis.clear_cache()
-       except AttributeError:
-          pass
-       self._fix_basis_tests()
+        CombinatorialFreeModule.Tensor.__init__(self,modules,**options)
+        # with sage 5.7.beta4 the basis has the wrong category
+        if False:
+            try:
+                from sage.sets.family import Family
+                cc = list(self.basis().keys()).cc # the CartesianProduct
+                self._indices = Family(cc,lambda u:tuple(u))
+                def contains(self,x):
+                    return x in cc
+                import types
+                self._indices._contains_ = types.MethodType(contains,self.indices())
+                self.basis.clear_cache()
+            except AttributeError:
+                pass
+        self._fix_basis_tests()
 
     def _repr_term(self,term):
           # hack because our elements have a custom _repr_ and

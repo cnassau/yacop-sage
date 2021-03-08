@@ -55,7 +55,7 @@ class YacopRightModules(Category_over_base_ring):
 
         sage: from yacop.categories import *
         sage: YacopRightModules(SteenrodAlgebra(7))
-        Category of right Yacop modules over mod 7 Steenrod algebra, milnor basis
+        Category of yacop right modules over mod 7 Steenrod algebra, milnor basis
     """
 
     def __init__(self, R):
@@ -128,9 +128,9 @@ class YacopRightModules(Category_over_base_ring):
             sage: A2 = SteenrodAlgebra(2,profile=(3,2,1))
             sage: A2.rename("A2")
             sage: YacopRightModules(A2)
-            Category of right Yacop modules over A2
+            Category of yacop right modules over A2
         """
-        return "right Yacop modules over %s" % (self.base_ring())
+        return "yacop right modules over %s" % (self.base_ring())
 
     @cached_method
     def is_subcategory(self, other):
@@ -936,6 +936,26 @@ class YacopRightModuleAlgebras(Category_over_base_ring):
         """
         return [self.ModuleCategory(), AlgebrasWithBasis(self.base_ring().base_ring())]
 
+
+    def __contains__(self, x):
+        """
+        a hacked, hopefully safer way to test membership. the default implementation
+        fails for us - we might be doing something unexpected/wrong somewhere. without this
+        hack the following fails::
+
+            sage: from yacop.modules.projective_spaces import RealProjectiveSpace
+            sage: M=RealProjectiveSpace()
+            sage: M.category()
+            Category of yacop left module algebras over mod 2 Steenrod algebra, milnor basis
+            sage: M in M.category()
+            True
+
+        """
+        ans = super(YacopRightModuleAlgebras, self).__contains__(x)
+        if not ans:
+            ans = self in x.categories()
+        return ans
+
     class ParentMethods:
         pass
 
@@ -995,10 +1015,10 @@ class YacopRightModuleAlgebras(Category_over_base_ring):
     class Homsets(HomsetsCategory):
 
         def _repr_object_names(self):
-            return "hom sets of %s" % self.base_category()._repr_object_names()
+            return "homsets of %s" % self.base_category()._repr_object_names()
 
         def extra_super_categories(self):
-            return [self.base_category().ModuleCategory()]
+            return []
 
 
 
