@@ -625,7 +625,7 @@ class YacopDifferentialModules(Category_over_base_ring):
         TESTS::
 
             sage: import yacop.modules
-            sage: C=yacop.modules.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
+            sage: C=yacop.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
             sage: C.SuspendedObjects()
             Category of suspensions of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
 
@@ -647,7 +647,7 @@ class YacopDifferentialModules(Category_over_base_ring):
         TESTS::
 
             sage: import yacop.modules
-            sage: C=yacop.modules.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
+            sage: C=yacop.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
             sage: C.TruncatedObjects()
             Category of truncations of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
 
@@ -813,7 +813,7 @@ class YacopDifferentialModules(Category_over_base_ring):
   TESTS::
 
       sage: import __main__
-      sage: from yacop.categories import *
+      sage: from yacop.categories.differential_modules import YacopDifferentialModules
       sage: __main__.YacopDifferentialModules = YacopDifferentialModules
       sage: TestSuite(YacopDifferentialModules(SteenrodAlgebra(3))).run()
 """
