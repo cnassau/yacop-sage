@@ -55,7 +55,7 @@ class SteenrodAlgebraModules(Category_over_base_ring):
 
         sage: from yacop.categories import *
         sage: SteenrodAlgebraModules(SteenrodAlgebra(7))
-        Category of right Yacop modules over mod 7 Steenrod algebra, milnor basis
+        Category of LEFT Yacop modules over mod 7 Steenrod algebra, milnor basis
     """
 
     def __init__(self, R):
@@ -128,8 +128,9 @@ class SteenrodAlgebraModules(Category_over_base_ring):
             sage: A2 = SteenrodAlgebra(2,profile=(3,2,1))
             sage: A2.rename("A2")
             sage: SteenrodAlgebraModules(A2)
+            Category of LEFT Yacop modules over A2
         """
-        return "Yacop left modules over %s" % (self.base_ring())
+        return "LEFT Yacop modules over %s" % (self.base_ring())
 
     @cached_method
     def is_subcategory(self, other):
@@ -189,7 +190,7 @@ class SteenrodAlgebraModules(Category_over_base_ring):
         @abstract_method(optional=True)
         def left_steenrod_action_milnor(self, ak, mk):
             """
-            Compute the left action a*m where ak, mk are the basis keys of monomials
+            Compute the LEFT action a*m where ak, mk are the basis keys of monomials
             in the Milnor basis version of the Steenrod algebra, resp. the module.
 
             TESTS::
@@ -581,9 +582,9 @@ class SteenrodAlgebraModules(Category_over_base_ring):
 
                 sage: from yacop.categories import *
                 sage: D=YacopLeftModuleAlgebras(SteenrodAlgebra(3)).CartesianProducts() ; D
-                Category of Cartesian products of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
+                Category of Cartesian products of LEFT Yacop module algebras over mod 3 Steenrod algebra, milnor basis
                 sage: D.super_categories()
-                [Category of left Yacop modules over mod 3 Steenrod algebra, milnor basis,
+                [Category of LEFT Yacop modules over mod 3 Steenrod algebra, milnor basis,
                  Category of Cartesian products of vector spaces with basis over Finite Field of size 3,
                  Category of Cartesian products of yacop graded objects]
                 sage: D=YacopRightModules(SteenrodAlgebra(3)).CartesianProducts() ; D
@@ -708,7 +709,7 @@ class SteenrodAlgebraModules(Category_over_base_ring):
             sage: import yacop.categories
             sage: C=yacop.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
             sage: C.SuspendedObjects()
-            Category of suspensions of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
+            Category of suspensions of LEFT Yacop module algebras over mod 3 Steenrod algebra, milnor basis
 
         """
 
@@ -730,7 +731,7 @@ class SteenrodAlgebraModules(Category_over_base_ring):
             sage: import yacop.categories
             sage: C=yacop.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
             sage: C.TruncatedObjects()
-            Category of truncations of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
+            Category of truncations of LEFT Yacop module algebras over mod 3 Steenrod algebra, milnor basis
 
         """
 
@@ -751,7 +752,7 @@ class SteenrodAlgebraModules(Category_over_base_ring):
             sage: from yacop.categories import *
             sage: C = YacopLeftModules(SteenrodAlgebra(3))
             sage: C.Homsets()
-            Category of homsets of left Yacop modules over mod 3 Steenrod algebra, milnor basis
+            Category of homsets of LEFT Yacop modules over mod 3 Steenrod algebra, milnor basis
         """
 
         def _repr_object_names(self):
@@ -836,9 +837,9 @@ class SteenrodAlgebraModules(Category_over_base_ring):
              sage: C = YacopLeftModuleAlgebras(SteenrodAlgebra(11))
              sage: D = YacopLeftModules(SteenrodAlgebra(11))
              sage: C.Subquotients()
-             Category of subquotients of left Yacop module algebras over mod 11 Steenrod algebra, milnor basis
+             Category of subquotients of LEFT Yacop module algebras over mod 11 Steenrod algebra, milnor basis
              sage: D.Subquotients()
-             Category of subquotients of left Yacop modules over mod 11 Steenrod algebra, milnor basis
+             Category of subquotients of LEFT Yacop modules over mod 11 Steenrod algebra, milnor basis
         """
 
         def _repr_object_names(self):
@@ -854,12 +855,12 @@ class SteenrodAlgebraModules(Category_over_base_ring):
                sage: from yacop.categories import *
                sage: C = YacopLeftModules(SteenrodAlgebra(3))
                sage: D = C.Subquotients() ; D
-               Category of subquotients of left Yacop modules over mod 3 Steenrod algebra, milnor basis
+               Category of subquotients of LEFT Yacop modules over mod 3 Steenrod algebra, milnor basis
                sage: C in D.all_super_categories()
                True
                sage: E = YacopLeftModuleAlgebras(SteenrodAlgebra(3))
                sage: F = E.Subquotients() ; F
-               Category of subquotients of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
+               Category of subquotients of LEFT Yacop module algebras over mod 3 Steenrod algebra, milnor basis
                sage: C in F.all_super_categories()
                True
                sage: E in F.all_super_categories()
@@ -933,7 +934,72 @@ class SteenrodAlgebraModulesAlgebras(Category_over_base_ring):
             sage: from yacop.categories import *
             sage: SteenrodAlgebraModulesAlgebras(SteenrodAlgebra(5)).super_categories()
         """
-        return [self.ModuleCategory(), AlgebrasWithBasis(self.base_ring().base_ring()).Super()]
+        return [self.ModuleCategory(), AlgebrasWithBasis(self.base_ring().base_ring())]
+
+    class ParentMethods:
+        pass
+
+    class ElementMethods:
+        pass
+
+    # fixme: is it right to add these functor categories ?
+
+    class SuspendedObjects(SuspendedObjectsCategory):
+
+        def _repr_object_names(self):
+            return "suspensions of %s" % self.base_category()._repr_object_names()
+
+        def extra_super_categories(self):
+            return [self.base_category().ModuleCategory()]
+
+    class Subquotients(SubquotientsCategory):
+
+        def _repr_object_names(self):
+            return "subquotients of %s" % self.base_category()._repr_object_names()
+
+        def extra_super_categories(self):
+            return [self.base_category().ModuleCategory()]
+
+    class CartesianProducts(CartesianProductsCategory):
+
+        def _repr_object_names(self):
+            return "cartesian products of %s" % self.base_category()._repr_object_names()
+
+        def extra_super_categories(self):
+            return [self.base_category().ModuleCategory()]
+
+    class TensorProducts(TensorProductsCategory):
+
+        def _repr_object_names(self):
+            return "tensor products of %s" % self.base_category()._repr_object_names()
+
+        def extra_super_categories(self):
+            return [self.base_category()]
+
+    class DualObjects(DualObjectsCategory):
+
+        def _repr_object_names(self):
+            return "duals of %s" % self.base_category()._repr_object_names()
+
+        def extra_super_categories(self):
+            return [self.base_category().ModuleCategory()]
+
+    class TruncatedObjects(TruncatedObjectsCategory):
+
+        def _repr_object_names(self):
+            return "truncations of %s" % self.base_category()._repr_object_names()
+
+        def extra_super_categories(self):
+            return [self.base_category().ModuleCategory()]
+
+    class Homsets(HomsetsCategory):
+
+        def _repr_object_names(self):
+            return "hom sets of %s" % self.base_category()._repr_object_names()
+
+        def extra_super_categories(self):
+            return [self.base_category().ModuleCategory()]
+
 
 
 # Local Variables:

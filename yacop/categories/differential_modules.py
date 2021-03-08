@@ -465,18 +465,6 @@ class YacopDifferentialModules(Category_over_base_ring):
 
     class ElementMethods:
 
-        @lazy_attribute
-        def t(self):
-            return self.degree().tmin
-
-        @lazy_attribute
-        def e(self):
-            return self.degree().emin
-
-        @lazy_attribute
-        def s(self):
-            return self.degree().smin
-
         def _can_test_pickling(self):
             return self.parent()._can_test_pickling()
 

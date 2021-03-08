@@ -55,7 +55,7 @@ class YacopLeftModules(Category_over_base_ring):
 
         sage: from yacop.categories import *
         sage: YacopLeftModules(SteenrodAlgebra(7))
-        Category of right Yacop modules over mod 7 Steenrod algebra, milnor basis
+        Category of left Yacop modules over mod 7 Steenrod algebra, milnor basis
     """
 
     def __init__(self, R):
@@ -128,8 +128,9 @@ class YacopLeftModules(Category_over_base_ring):
             sage: A2 = SteenrodAlgebra(2,profile=(3,2,1))
             sage: A2.rename("A2")
             sage: YacopLeftModules(A2)
+            Category of left Yacop modules over A2
         """
-        return "Yacop left modules over %s" % (self.base_ring())
+        return "left Yacop modules over %s" % (self.base_ring())
 
     @cached_method
     def is_subcategory(self, other):
@@ -933,7 +934,72 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
             sage: from yacop.categories import *
             sage: YacopLeftModuleAlgebras(SteenrodAlgebra(5)).super_categories()
         """
-        return [self.ModuleCategory(), AlgebrasWithBasis(self.base_ring().base_ring()).Super()]
+        return [self.ModuleCategory(), AlgebrasWithBasis(self.base_ring().base_ring())]
+
+    class ParentMethods:
+        pass
+
+    class ElementMethods:
+        pass
+
+    # fixme: is it right to add these functor categories ?
+
+    class SuspendedObjects(SuspendedObjectsCategory):
+
+        def _repr_object_names(self):
+            return "suspensions of %s" % self.base_category()._repr_object_names()
+
+        def extra_super_categories(self):
+            return [self.base_category().ModuleCategory()]
+
+    class Subquotients(SubquotientsCategory):
+
+        def _repr_object_names(self):
+            return "subquotients of %s" % self.base_category()._repr_object_names()
+
+        def extra_super_categories(self):
+            return [self.base_category().ModuleCategory()]
+
+    class CartesianProducts(CartesianProductsCategory):
+
+        def _repr_object_names(self):
+            return "cartesian products of %s" % self.base_category()._repr_object_names()
+
+        def extra_super_categories(self):
+            return [self.base_category().ModuleCategory()]
+
+    class TensorProducts(TensorProductsCategory):
+
+        def _repr_object_names(self):
+            return "tensor products of %s" % self.base_category()._repr_object_names()
+
+        def extra_super_categories(self):
+            return [self.base_category()]
+
+    class DualObjects(DualObjectsCategory):
+
+        def _repr_object_names(self):
+            return "duals of %s" % self.base_category()._repr_object_names()
+
+        def extra_super_categories(self):
+            return [self.base_category().ModuleCategory()]
+
+    class TruncatedObjects(TruncatedObjectsCategory):
+
+        def _repr_object_names(self):
+            return "truncations of %s" % self.base_category()._repr_object_names()
+
+        def extra_super_categories(self):
+            return [self.base_category().ModuleCategory()]
+
+    class Homsets(HomsetsCategory):
+
+        def _repr_object_names(self):
+            return "hom sets of %s" % self.base_category()._repr_object_names()
+
+        def extra_super_categories(self):
+            return [self.base_category().ModuleCategory()]
+
 
 
 # Local Variables:

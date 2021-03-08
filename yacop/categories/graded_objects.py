@@ -44,6 +44,13 @@ from sage.rings.all import GF
 from sage.categories.homset import Homset
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 
+def is_yacop_category(C):
+    # fixme: this is slow code, used for debugging & testing only
+    import re
+    if re.search("(?i)yacop",str(C)):
+        return True
+    return False
+
 class YacopGradedSets(Category_singleton):
     """
     Category of sets with a (t,e,s)-grading.
@@ -106,7 +113,7 @@ class YacopObjects(Category_singleton):
     """
 
     def _repr_object_names(self):
-       return "yacop graded objects"
+       return "yacop objects"
 
     def super_categories(self):
        from sage.categories.objects import Objects
@@ -121,6 +128,9 @@ class YacopObjects(Category_singleton):
             return parents[0].CartesianProduct(
                 parents,
                 category = cartesian_product.category_from_parents(parents))
+
+        def yacop_categories(self):
+            return [C for C in self.categories() if is_yacop_category(C)]
 
     class SubcategoryMethods:
 
@@ -416,6 +426,18 @@ class YacopGradedObjects(Category_singleton):
 
         def suspend(self,*args,**kwargs):
            return self.parent().suspend_element(self,*args,**kwargs)
+
+        @lazy_attribute
+        def t(self):
+            return self.degree().tmin
+
+        @lazy_attribute
+        def e(self):
+            return self.degree().emin
+
+        @lazy_attribute
+        def s(self):
+            return self.degree().smin
 
     class SubcategoryMethods:
         pass
