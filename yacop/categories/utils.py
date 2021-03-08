@@ -105,6 +105,39 @@ def steenrod_algebra_intersect(algebras):
         return res
     raise ValueError("algebras not compatible")
 
+
+def category_meet(self,other):
+
+    import yacop.categories
+    oR = other.base_ring()
+    R = steenrod_algebra_intersect((self.base_ring(),oR))
+
+    G = R.base_ring()
+    A = AlgebrasWithBasis(G)
+    L = LeftModules(G)
+    R = RightModules(G)
+
+    is_algebra = self in A and other in A
+    is_right   = self in R and other in R
+    is_left    = self in L and other in L
+    is_bimod   = is_left and is_right
+
+    if is_algebra:
+        if is_bimod:
+            return yacop.categories.bimodules.YacopBiModuleAlgebras(R)
+        elif is_right:
+            return yacop.categories.right_modules.YacopRightModuleAlgebras(R)
+        else:
+            return yacop.categories.left_modules.YacopLeftModuleAlgebras(R)
+    else:
+        if is_bimod:
+            return yacop.categories.bimodules.YacopBiModules(R)
+        elif is_right:
+            return yacop.categories.right_modules.YacopRightModules(R)
+        else:
+            return yacop.categories.left_modules.YacopLeftModules(R)
+
+
 # Local Variables:
 # eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
 # End:

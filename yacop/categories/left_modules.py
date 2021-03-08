@@ -45,6 +45,7 @@ from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 from yacop.categories.differential_modules import YacopDifferentialModules
 from yacop.categories.graded_objects import YacopGradedObjects
 from yacop.categories.utils import SteenrodAlgebraAction, steenrod_antipode
+from yacop.categories.utils import category_meet
 import operator
 
 class YacopLeftModules(Category_over_base_ring):
@@ -93,7 +94,6 @@ class YacopLeftModules(Category_over_base_ring):
 
     @cached_method
     def _meet_(self, other):
-        from yacop.categories.utils import category_meet
         return category_meet(self,other)
 
     def __contains__(self, x):
@@ -956,6 +956,23 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
             ans = self in x.categories()
         return ans
 
+    @cached_method
+    def is_subcategory(self, other):
+        """
+        Subcategory detection was broken by Trac #16618. This is a hack to fix some of those problems.
+
+        TESTS::
+
+            sage: from yacop.categories import *
+            sage: YacopLeftModules(SteenrodAlgebra(2)).is_subcategory(ModulesWithBasis(GF(2)))
+            True
+
+        """
+        for scat in self.super_categories():
+            if scat.is_subcategory(other):
+                return True
+        return super(YacopLeftModuleAlgebras, self).is_subcategory(other)
+
     class ParentMethods:
         pass
 
@@ -970,7 +987,7 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
             return "suspensions of %s" % self.base_category()._repr_object_names()
 
         def extra_super_categories(self):
-            return [self.base_category().ModuleCategory()]
+            return []
 
     class Subquotients(SubquotientsCategory):
 
@@ -978,7 +995,7 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
             return "subquotients of %s" % self.base_category()._repr_object_names()
 
         def extra_super_categories(self):
-            return [self.base_category().ModuleCategory()]
+            return []
 
     class CartesianProducts(CartesianProductsCategory):
 
@@ -986,7 +1003,7 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
             return "cartesian products of %s" % self.base_category()._repr_object_names()
 
         def extra_super_categories(self):
-            return [self.base_category().ModuleCategory()]
+            return []
 
     class TensorProducts(TensorProductsCategory):
 
@@ -994,7 +1011,7 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
             return "tensor products of %s" % self.base_category()._repr_object_names()
 
         def extra_super_categories(self):
-            return [self.base_category()]
+            return []
 
     class DualObjects(DualObjectsCategory):
 
@@ -1002,7 +1019,7 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
             return "duals of %s" % self.base_category()._repr_object_names()
 
         def extra_super_categories(self):
-            return [self.base_category().ModuleCategory()]
+            return []
 
     class TruncatedObjects(TruncatedObjectsCategory):
 
@@ -1010,7 +1027,7 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
             return "truncations of %s" % self.base_category()._repr_object_names()
 
         def extra_super_categories(self):
-            return [self.base_category().ModuleCategory()]
+            return []
 
     class Homsets(HomsetsCategory):
 
