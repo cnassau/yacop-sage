@@ -550,8 +550,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
             Otherwise we'd get lots of problems with Homsets between Steenrod algebra algebras.
             """
-            obj = self
-            return [self.base_category().ModuleCategory(),] + super(YacopDifferentialModules.CartesianProducts,obj).super_categories()
+            return [self.base_category().ModuleCategory(),]
 
         def Subquotients(self):
              """

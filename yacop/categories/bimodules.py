@@ -1005,6 +1005,17 @@ class YacopBiModuleAlgebras(Category_over_base_ring):
         def extra_super_categories(self):
             return []
 
+        def super_categories(self):
+            """
+            We override the default super_categories method because Sage will
+            otherwise pretend that cartesian_products of Steenrod algebra algebras
+            are themselves algebras.
+
+            Among other things, this would add the Rings._Hom_ method in front of
+            our customized version.
+            """
+            return [self.base_category().ModuleCategory().CartesianProducts()]
+
     class TensorProducts(TensorProductsCategory):
 
         def _repr_object_names(self):
