@@ -81,18 +81,6 @@ class YacopRightModules(Category_over_base_ring):
         else:
             return RealProjectiveSpace()
 
-    def ModuleCategory(self):
-        """
-        Forget the algebra structure if present:
-
-        TESTS::
-
-           sage: from yacop.categories import *
-           sage: YacopRightModuleAlgebras(SteenrodAlgebra(3)).ModuleCategory() is YacopRightModules(SteenrodAlgebra(3))
-           True
-
-        """
-        return self
 
 
     @cached_method
@@ -875,20 +863,8 @@ class YacopRightModules(Category_over_base_ring):
                     ans.append(self._retract_homogeneous(deg, smd))
                 return self.parent().sum(ans)
 
+@yacop_category(right_action=True,is_algebra=True,module_category=YacopRightModules)
 class YacopRightModuleAlgebras(Category_over_base_ring):
-
-    def ModuleCategory(self):
-        """
-        Forget the algebra structure if present:
-
-        TESTS::
-
-           sage: from yacop.categories import *
-           sage: YacopRightModuleAlgebras(SteenrodAlgebra(3)).ModuleCategory() is YacopRightModules(SteenrodAlgebra(3))
-           True
-
-        """
-        return YacopRightModules(self.base_ring())
 
     def super_categories(self):
         """

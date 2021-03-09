@@ -48,35 +48,51 @@ from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 
 from yacop.categories.utils import steenrod_antipode
 
+def module_method(f):
+    f.yacop_module_method = True
+    return f
+
+
 # a decorator with arguments to refactor common code from
 # the yacop module categories
 class yacop_category:
 
-    def __init__(self,left_action=False,right_action=False,is_algebra=False):
+    def __init__(self,left_action=False,right_action=False,is_algebra=False,module_category=None):
         self.left = left_action
         self.right = right_action
         self.algebra = is_algebra
+        self.modules = module_category
 
     def __call__(self,cls):
-        cls._yacop_category = (self.left, self.right)
-        def myhuhu(self):
-            return("huhu %s" % self)
-        cls.ParentMethods.huhu = myhuhu
+        cls._yacop_category = (self.left, self.right, self.algebra)
+        for (name,meth) in CommonParentMethods.__dict__.items():
+            if hasattr(meth,"yacop_module_method") and getattr(meth,"yacop_module_method"):
+                setattr(cls.ParentMethods,name,meth)
+        for (name,meth) in CommonCategoryMethods.__dict__.items():
+            if hasattr(meth,"yacop_module_method") and getattr(meth,"yacop_module_method"):
+                setattr(cls,name,meth)
+        cls._yacop_modules_class = self.modules if not self.modules is None else cls
         return cls
+
+class CommonCategoryMethods:
+
+    @module_method
+    def ModuleCategory(self):
+        """
+        Forget the algebra structure if present:
+
+        TESTS::
+
+           sage: from yacop.categories import *
+           sage: SteenrodAlgebraModulesAlgebras(SteenrodAlgebra(3)).ModuleCategory() is SteenrodAlgebraModules(SteenrodAlgebra(3))
+           True
+
+        """
+        return self._yacop_modules_class(self.base_ring())
 
 class CommonParentMethods:
 
-    @cached_method
-    def __yacop_category__(self):
-        # the list of categories should contain at most one yacop module category
-        for cat in self.categories():
-            try:
-                if cat._is_yacop_module_category:
-                    return cat
-            except:
-                pass
-        raise ValueError("internal error: cannot detect yacop category")
-
+    @module_method
     def _test_steenrod_action(self, tester=None, **options):
         from sage.misc.sage_unittest import TestSuite
         from sage.misc.lazy_format import LazyFormat
@@ -118,6 +134,7 @@ class CommonParentMethods:
             tester.assertTrue(bbox.__class__ == region,
                                 LazyFormat("bounding box of %s is not a region") % (self,))
 
+    @module_method
     def _manual_test_action(self, reg, opdeg=None, mode='left', verbose=False):
         """
         a check of the associativity of the steenrod algebra action
@@ -170,6 +187,28 @@ class CommonParentMethods:
                                 cnt += 1
         print("%d non-zero multiplications checked" % cnt)
 
+    @module_method
+    def _check_adem_relations(self, region=None, act_left=True):
+        pass
+
+    @module_method
+    def _check_action(self, region=None, act_left=True):
+        pass
+
+
+
+class notused:
+
+    @cached_method
+    def __yacop_category__(self):
+        # the list of categories should contain at most one yacop module category
+        for cat in self.categories():
+            try:
+                if cat._is_yacop_module_category:
+                    return cat
+            except:
+                pass
+        raise ValueError("internal error: cannot detect yacop category")
     def _Hom_(X, Y, category):
         # here we overwrite the Rings._Hom_ implementation
         return Homset(X, Y, category=category)
@@ -398,16 +437,8 @@ class CommonParentMethods:
         """
         return True
 
-    def _check_adem_relations(self, region=None, act_left=True):
-        pass
-
-    def _check_action(self, region=None, act_left=True):
-        pass
-
-
 class CommonElementMethods:
     pass
-
 
 # Local Variables:
 # eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
