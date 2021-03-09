@@ -534,25 +534,6 @@ class YacopRightModules(Category_over_base_ring):
                                         c = -c
                                     yield k+[k1, ], c
 
-            def _differential_on_basis(self, keys):
-                """
-                Internal differential of a tensor product of modules
-
-                TESTS::
-
-                    sage: fix me!
-                """
-                ans = []
-                for (i, mod) in enumerate(self._sets):
-                    a = keys[:i]
-                    b = mod.differential(mod.monomial(keys[i]))
-                    c = keys[i+1:]
-                    for (key, cf) in b:
-                        if 0 != (i & 1):
-                            cf = -cf
-                        ans.append((tuple(list(a)+[key, ]+list(c)), cf))
-                return self._from_dict(dict(ans))
-
             @staticmethod
             def SuspendedObjectsFactory(module, *args, **kwopts):
                 from sage.categories.tensor import tensor
@@ -572,32 +553,7 @@ class YacopRightModules(Category_over_base_ring):
         """
 
         def extra_super_categories(self):
-            return []
-
-        def super_categories(self):
-            """
-            Sage thinks the cartesian product of algebras is an algebra, but we disagree:
-
-            TESTS::
-
-                sage: from yacop.categories import *
-                sage: D=YacopLeftModuleAlgebras(SteenrodAlgebra(3)).CartesianProducts() ; D
-                Category of Cartesian products of right Yacop module algebras over mod 3 Steenrod algebra, milnor basis
-                sage: D.super_categories()
-                [Category of right Yacop modules over mod 3 Steenrod algebra, milnor basis,
-                 Category of Cartesian products of vector spaces with basis over Finite Field of size 3,
-                 Category of Cartesian products of yacop graded objects]
-                sage: D=YacopRightModules(SteenrodAlgebra(3)).CartesianProducts() ; D
-                Category of Cartesian products of right Yacop modules over mod 3 Steenrod algebra, milnor basis
-                sage: D.super_categories()
-                [Category of right Yacop modules over mod 3 Steenrod algebra, milnor basis,
-                 Category of Cartesian products of vector spaces with basis over Finite Field of size 3,
-                 Category of Cartesian products of yacop graded objects]
-
-            Otherwise we'd get lots of problems with Homsets between Steenrod algebra algebras.
-            """
-            obj = self
-            return [self.base_category().ModuleCategory(), ] + super(YacopRightModules.CartesianProducts, obj).super_categories()
+            return [self.base_category()]
 
         def Subquotients(self):
             """
@@ -1000,10 +956,10 @@ class YacopRightModuleAlgebras(Category_over_base_ring):
     class CartesianProducts(CartesianProductsCategory):
 
         def _repr_object_names(self):
-            return "cartesian products of %s" % self.base_category()._repr_object_names()
+            return "Cartesian products of %s" % self.base_category()._repr_object_names()
 
         def extra_super_categories(self):
-            return []
+            return [self.base_category().ModuleCategory()]
 
         def super_categories(self):
             """
@@ -1013,6 +969,23 @@ class YacopRightModuleAlgebras(Category_over_base_ring):
 
             Among other things, this would add the Rings._Hom_ method in front of
             our customized version.
+
+            TESTS::
+
+                sage: from yacop.categories import *
+                sage: D=YacopLeftModuleAlgebras(SteenrodAlgebra(3)).CartesianProducts() ; D
+                Category of Cartesian products of right Yacop module algebras over mod 3 Steenrod algebra, milnor basis
+                sage: D.super_categories()
+                [Category of right Yacop modules over mod 3 Steenrod algebra, milnor basis,
+                 Category of Cartesian products of vector spaces with basis over Finite Field of size 3,
+                 Category of Cartesian products of yacop graded objects]
+                sage: D=YacopRightModules(SteenrodAlgebra(3)).CartesianProducts() ; D
+                Category of Cartesian products of right Yacop modules over mod 3 Steenrod algebra, milnor basis
+                sage: D.super_categories()
+                [Category of right Yacop modules over mod 3 Steenrod algebra, milnor basis,
+                 Category of Cartesian products of vector spaces with basis over Finite Field of size 3,
+                 Category of Cartesian products of yacop graded objects]
+
             """
             return [self.base_category().ModuleCategory().CartesianProducts()]
 

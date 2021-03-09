@@ -46,6 +46,16 @@ from sage.rings.all import GF
 from sage.categories.homset import Homset
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 
+def is_yacop_category(C):
+    # fixme: this is slow code, used for debugging & testing only
+    import re
+    if re.search("(?i)yacop",str(C)):
+        return True
+    return False
+
+def yacop_supercategories(C):
+    return [_ for _ in C.all_super_categories() if is_yacop_category(_)]
+
 import sage.categories.action
 import operator
 class SteenrodAlgebraAction(sage.categories.action.Action):

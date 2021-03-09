@@ -526,31 +526,20 @@ class YacopDifferentialModules(Category_over_base_ring):
         """
 
         def extra_super_categories(self):
-            return []
-
-        def super_categories(self):
             """
-            Sage thinks the cartesian product of algebras is an algebra, but we disagree:
-
             TESTS::
 
-                sage: from yacop.categories import *
-                sage: D=YacopLeftModuleAlgebras(SteenrodAlgebra(3)).CartesianProducts() ; D
-                Category of Cartesian products of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
-                sage: D.super_categories()
-                [Category of left Yacop modules over mod 3 Steenrod algebra, milnor basis,
-                 Category of Cartesian products of vector spaces with basis over Finite Field of size 3,
-                 Category of Cartesian products of yacop graded objects]
-                sage: D=YacopRightModules(SteenrodAlgebra(3)).CartesianProducts() ; D
-                Category of Cartesian products of right Yacop modules over mod 3 Steenrod algebra, milnor basis
-                sage: D.super_categories()
-                [Category of right Yacop modules over mod 3 Steenrod algebra, milnor basis,
-                 Category of Cartesian products of vector spaces with basis over Finite Field of size 3,
-                 Category of Cartesian products of yacop graded objects]
+            sage: from yacop.categories import *
+            sage: import yacop
+            sage: yacop.categories.utils.yacop_supercategories(YacopDifferentialModules(SteenrodAlgebra(3)).CartesianProducts())
+            [Category of Cartesian products of yacop differential modules over mod 3 Steenrod algebra, milnor basis,
+            Category of yacop differential modules over mod 3 Steenrod algebra, milnor basis,
+            Category of Cartesian products of yacop graded objects,
+            Category of yacop graded objects,
+            Category of yacop objects]
 
-            Otherwise we'd get lots of problems with Homsets between Steenrod algebra algebras.
             """
-            return [self.base_category().ModuleCategory(),]
+            return [self.base_category()]
 
         def Subquotients(self):
              """
