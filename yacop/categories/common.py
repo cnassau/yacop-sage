@@ -46,6 +46,7 @@ from sage.rings.all import GF
 from sage.categories.homset import Homset
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 
+from yacop.categories.utils import steenrod_antipode
 
 class CommonParentMethods:
 
@@ -75,21 +76,24 @@ class CommonParentMethods:
         except:
             pass
 
+        is_left = LeftModules(A) in Y.all_super_categories()
+        is_right = RightModules(A) in Y.all_super_categories()
+
         x = self.an_element()
         for e in elist:
-            if Y._is_left:
+            if is_left:
                 y = e*x        # does left action work?
                 tester.assertEqual(y, steenrod_antipode(e) % x,
                                     LazyFormat(
                                         "conjugate action check failed: e.antipode()%x != e*x for x=%s, e=%s")
                                     % (x, e))
-            if Y._is_right:
+            if is_right:
                 y = x*e        # does right action work?
                 tester.assertEqual(y, x % steenrod_antipode(e),
                                     LazyFormat(
                                         "conjugate action check failed: x%e.antipode() != x*e for x=%s, e=%s")
                                     % (x, e))
-            if Y._is_bimod:
+            if is_left and is_right:
                 tester.assertEqual((e*x)*e, e*(x*e),
                                     LazyFormat(
                                         "bimodule check failed: (ex)e != e(xe) for x=%s, e=%s")
