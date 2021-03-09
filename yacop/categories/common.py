@@ -48,6 +48,22 @@ from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 
 from yacop.categories.utils import steenrod_antipode
 
+# a decorator with arguments to refactor common code from
+# the yacop module categories
+class yacop_category:
+
+    def __init__(self,left_action=False,right_action=False,is_algebra=False):
+        self.left = left_action
+        self.right = right_action
+        self.algebra = is_algebra
+
+    def __call__(self,cls):
+        cls._yacop_category = (self.left, self.right)
+        def myhuhu(self):
+            return("huhu %s" % self)
+        cls.ParentMethods.huhu = myhuhu
+        return cls
+
 class CommonParentMethods:
 
     @cached_method
