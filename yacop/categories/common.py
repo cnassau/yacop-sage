@@ -386,7 +386,7 @@ class CommonParentMethods:
 
 
 class CommonElementMethods:
-
+    pass
 
 
 # Local Variables:

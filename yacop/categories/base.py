@@ -42,6 +42,8 @@ from sage.rings.all import GF
 from sage.categories.homset import Homset
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 
+from yacop.categories.common import CommonParentMethods, CommonElementMethods
+
 from yacop.categories.differential_modules import YacopDifferentialModules
 from yacop.categories.graded_objects import YacopGradedObjects
 from yacop.categories.utils import SteenrodAlgebraAction, steenrod_antipode
@@ -170,6 +172,10 @@ class SteenrodAlgebraModules(Category_over_base_ring):
     _is_yacop_module_category = True
 
     class ParentMethods:
+
+        # FIXME: use class decorators from common.py to factor out common code
+        _test_steenrod_action = CommonParentMethods._test_steenrod_action
+        _manual_test_action = CommonParentMethods._manual_test_action
 
         def __init_extra__(self):
             # register actions
