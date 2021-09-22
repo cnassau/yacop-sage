@@ -84,7 +84,7 @@ class MorphModule(SteenrodModuleBase):
          except:
             return False
          return x in self._compute_basis_keys(reg)
-      keys.__contains__ = types.MethodType(contains,keys,None)
+      keys.__contains__ = types.MethodType(contains,keys)
       SteenrodModuleBase.__init__(self,keys,grading=gr,category=category)
 
       # fix various basis issues

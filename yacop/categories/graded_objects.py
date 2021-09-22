@@ -1,7 +1,6 @@
 r"""
 The Yacop base category for graded objects
 
-
 AUTHORS:
 
  - Christian Nassau (2011): initial revision
@@ -44,12 +43,7 @@ from sage.rings.all import GF
 from sage.categories.homset import Homset
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 
-def is_yacop_category(C):
-    # fixme: this is slow code, used for debugging & testing only
-    import re
-    if re.search("(?i)yacop",str(C)):
-        return True
-    return False
+from yacop.categories.utils import is_yacop_category
 
 class YacopGradedSets(Category_singleton):
     """
@@ -281,6 +275,16 @@ class YacopGradedObjects(Category_singleton):
 
             """
             return self._yacop_grading
+
+        @abstract_method(optional=False)
+        def _yacop_clone(self,new_grading):
+            """
+            Factory function that returns a clone of self with a changed grading.
+
+            This function is used by truncations and suspensions to implement
+            operations on the grading.
+            """
+            raise NotImplementedError
 
         def _some_homogeneous_elements(self):
             el = self.an_element()

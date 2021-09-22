@@ -51,7 +51,7 @@ TESTS AND EXAMPLES::
     region(0 <= x <= 1, y = 0, -Infinity < z <= 1)
     sage: region.negative(region(jmax=9,h=6))
     region(h = -6, -9 <= j < +Infinity)
-    sage: region(tmin=4,tmax=10,k=4,smax=8) % "ts" 
+    sage: region(tmin=4,tmax=10,k=4,smax=8) % "ts"
     ([4, -Infinity], [10, 8])
     sage: r = region(xmax=5,y=4)
     sage: r.zmax, r.xmin, r.ymax
@@ -72,7 +72,7 @@ TESTS AND EXAMPLES::
     region(-Infinity < t <= 14, u = 3, -17 <= v <= 1)
 
     sage: # make sure empty regions are treated correctly
-    sage: r = region(tmin=5,tmax=10) 
+    sage: r = region(tmin=5,tmax=10)
     sage: r.intersect(region(tmax=4))
     empty region
     sage: r.var_mult({'t':-1})
@@ -85,7 +85,7 @@ TESTS AND EXAMPLES::
     empty region
     sage: r.var_mult({'t':0})
     empty region
-    sage: r + region(tmin=0,tmax=100) 
+    sage: r + region(tmin=0,tmax=100)
     empty region
     sage: r.intersect(region(tmax=0))
     empty region
@@ -146,27 +146,27 @@ class region(SageObject):
                 del kws[k]
         return kws
         #return super(region,cls).__classcall__(cls,**kws)
-       
+
     def __init__(self,dct=None,**kwargs):
         if isinstance(dct,region):
             dct = dct.as_dict()
         self._dct = {}
         for k,v in list(region._normalize_vars(dct=dct,**kwargs).items()):
             self.__setattr__(k,v)
-   
+
     def _fmtrange(self,v1,v2,val,op1,op2):
         op = op1
         if val == Infinity or val == -Infinity:
            op = op2
         return "%s %s %s" % (v1,op,v2)
-  
+
     def _getrange(self,var):
         dct = object.__getattribute__(self, '_dct')
         min = dct.get("%smin" % var,-Infinity)
         max = dct.get("%smax" % var,+Infinity)
         if min>max: min,max=+Infinity,-Infinity
         return min,max
-        
+
     def _getdict(self):
         return object.__getattribute__(self, '_dct')
 
@@ -231,7 +231,7 @@ class region(SageObject):
 
     def __eq__(r1,r2):
         return 0 == r1.__cmp__(r2)
-  
+
     def __ne__(r1,r2):
         return not r1.__eq__(r2)
 
@@ -294,7 +294,7 @@ class region(SageObject):
             min2,max2 = r2._getrange(v)
             r["%smin" % v] = min1+min2
             r["%smax" % v] = max1+max2
-        return region(**r)   
+        return region(**r)
 
     def var_mult(self,dct):
         r = {}
@@ -323,11 +323,11 @@ class region(SageObject):
                 smax = self._fmtrange('',max,max,"<=","<")
                 r.append("%s%s%s" % (smin,v,smax))
         return "region(%s)" % ", ".join(r)
-   
+
     def is_empty(self):
         for v in sorted(self.vars()):
             min,max = self._getrange(v)
-            if min>max: 
+            if min>max:
                 return True
         return False
 
@@ -339,7 +339,7 @@ class region(SageObject):
         if x == "" or x == "max" or x == "min" or x == "range":
             return True
         return False
-    
+
     def is_finite(self,*vars):
         assert len(vars)>=1 # answer for empty var list is unintuitive
         for var in vars:
@@ -354,10 +354,12 @@ class region(SageObject):
     def max(self,var):
         return self._getrange(var)[1]
 
-    def val(self,var):
+    def val(self,var,defval=None):
         min,max = self._getrange(var)
         if min==max:
             return min
+        if not defval is None:
+            return defval
         raise ValueError("range has no fixed %s-coordinate" % var)
 
     def __getattribute__(self,nm):
@@ -382,7 +384,7 @@ class region(SageObject):
         except KeyError:
             pass
         return val
-        
+
     def __setattr__(self,nm,val):
         if not region._is_range_attribute(self,nm):
             return object.__setattr__(self,nm,val)
@@ -392,7 +394,7 @@ class region(SageObject):
             dct["%smin"%nm] = val
         else:
             dct[nm] = val
-        
+
 
 
 # Local Variables:

@@ -12,7 +12,7 @@ CLASS DOCUMENTATION:
 #  Distributed under the terms of the GNU General Public License (GPL)
 #*****************************************************************************
 
-#from Tkynter import Tcl
+#from tkinter import Tcl
 from yacop.utils.tcl import Yacop
 from yacop.utils.region import region
 from sage.structure.sage_object import SageObject

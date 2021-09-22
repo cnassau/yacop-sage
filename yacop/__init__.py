@@ -4,7 +4,7 @@ __version__ = '2.0'
 from yacop.utils.region import region
 from yacop.utils.suspenders import Suspender
 
-from yacop.modules.functors import suspension
+from yacop.categories.functors import suspension
 
 def cokernel(f):
    """
@@ -12,6 +12,7 @@ def cokernel(f):
    """
    return f.cokernel()
 
+import yacop.utils
 import yacop.utils.startup
 yacop.utils.startup.__startup__()
 

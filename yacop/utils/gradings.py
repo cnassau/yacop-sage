@@ -95,6 +95,7 @@ CARTESIAN PRODUCTS::
 #                  http://www.gnu.org/licenses/
 #******************************************************************************
 
+from sage.misc.classcall_metaclass import ClasscallMetaclass
 from sage.rings.infinity import Infinity
 from sage.categories.category import Category
 from sage.categories.category_singleton import Category_singleton
@@ -118,7 +119,7 @@ from yacop.categories.functors import suspension, SuspendedObjectsCategory
 from yacop.categories.functors import truncation, TruncatedObjectsCategory
 from yacop.categories.functors import cartesian_product, CartesianProductsCategory
 from yacop.categories.functors import tensor, TensorProductsCategory
-from sage.structure.unique_representation import UniqueRepresentation
+from sage.structure.unique_representation import CachedRepresentation, UniqueRepresentation
 from sage.structure.sage_object import SageObject
 from sage.combinat.free_module import CombinatorialFreeModule
 import operator
@@ -188,7 +189,7 @@ class Gradings(Category_singleton):
 
             sage: from yacop.utils.gradings import Gradings
             sage: Gradings().super_categories()
-            [Category of yacop graded objects]
+            [Category of yacop objects]
         """
         return [YacopObjects(),]
 
@@ -209,7 +210,7 @@ class Gradings(Category_singleton):
        @abstract_method(optional=False)
        def split_element(self,elem):
           """
-          split the element `e` into homogeneous pieces `e = \sum_i e_i`
+          split the element `e` into homogeneous pieces `e = sum_i e_i`
           and return the dictionary { i : e_i }
           """
 
@@ -390,12 +391,12 @@ class SampleGrading_SuspendedObjects2(SampleGrading_SuspendedObjects):
 SampleGrading.SuspendedObjects = SampleGrading_SuspendedObjects
 SampleGrading_SuspendedObjects.SuspendedObjects = SampleGrading_SuspendedObjects2
 
-class YacopGrading(UniqueRepresentation,Parent):
+class YacopGrading(Parent):
     """
     A base class for gradings by regions as per :meth: `yacop.utils.region`.
     """
 
-    def __init__(self,suspension_symbol="S",suspension_symbol_latex="\sigma"):
+    def __init__(self,suspension_symbol="S",suspension_symbol_latex="\\sigma"):
         Parent.__init__(self,category=Gradings())
         self._susp_sym = suspension_symbol
         self._susp_sym_latex = suspension_symbol_latex
@@ -486,10 +487,11 @@ class SubquotientGrading(YacopGrading):
 
 YacopGrading.SubquotientGrading = SubquotientGrading
 
-class YacopGrading_SuspendedObjects(YacopGrading):
+
+class YacopGrading_SuspendedObjects(YacopGrading,CachedRepresentation):
 
        @staticmethod
-       def __classcall_private__(cls,other,t=0,e=0,s=0):
+       def __classcall__(cls,other,t=0,e=0,s=0):
            if t==0 and e==0 and s==0:
                return other
            return super(YacopGrading_SuspendedObjects,cls).__classcall__(cls,other,t=t,e=e,s=s)
@@ -502,8 +504,8 @@ class YacopGrading_SuspendedObjects(YacopGrading):
            self._neg = self._off.negative()
 
        def _format_(self,other):
-           return "suspension (%d,%d,%d) of %s" % (self._off.tmin,self._off.emin,
-                                                           self._off.smin,other)
+           return "suspension (%d,%d,%d) of %s" % (self._off.val('t',0),self._off.val('e',0),
+                                                           self._off.val('s',0),other)
 
        def _format_term(self,other):
            x = Suspender(t=self._off.tmin,e=self._off.emin,s=self._off.smin)
@@ -565,10 +567,10 @@ YacopGrading_SuspendedObjects.SuspendedObjects = YacopGrading_SuspendedObjects2
 ###############################################################################################
 ###############################################################################################
 
-class YacopGrading_TruncatedObjects(YacopGrading):
+class YacopGrading_TruncatedObjects(YacopGrading,CachedRepresentation):
 
        @staticmethod
-       def __classcall_private__(cls,other,**kwargs):
+       def __classcall__(cls,other,**kwargs):
            reg = region(**kwargs)
            if reg.is_full():
                return other
@@ -808,6 +810,10 @@ class YacopGrading_TensorProduct(YacopGrading):
     @lazy_attribute
     def _tc(self):
         return self._domain.tensor_constructor(self._modules)
+    def _tdc(self,*args):
+        print(self._modules,args)
+        #return args
+        return self._domain.tensor_constructor(self._modules)(*args)
 
     def __degree_walker_tc(self,idx,elems,reg):
         for x in self.__degree_walker(idx,elems,reg):
@@ -954,6 +960,11 @@ class YacopGradingFromDict(YacopGrading):
                         res[k] = val = []
                     val.append(l)
         return res
+
+def TestGrading(name,dict):
+    X = YacopGradingFromDict(dict)
+    X.rename(name)
+    return X
 
 
 # Local Variables:

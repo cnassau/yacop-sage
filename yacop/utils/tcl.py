@@ -6,7 +6,7 @@ AUTHORS: - Christian Nassau (2009-03-27: version 1.0)
 CLASS DOCUMENTATION:
 """
 
-from Tkynter import Tcl, Tk, TclError
+from tkinter import Tcl, Tk, TclError
 from sage.misc.cachefunc import cached_method
 from sage.misc.lazy_attribute import lazy_attribute
 import os

@@ -45,13 +45,14 @@ from sage.misc.lazy_attribute import lazy_attribute
 from sage.rings.all import GF
 from sage.categories.homset import Homset
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
-
-from yacop.categories.utils import steenrod_antipode
+from yacop.categories.utils import steenrod_antipode, category_meet
 
 def module_method(f):
     f.yacop_module_method = True
     return f
 
+from types import MethodType, FunctionType
+import re
 
 # a decorator with arguments to refactor common code from
 # the yacop module categories
@@ -63,13 +64,25 @@ class yacop_category:
         self.algebra = is_algebra
         self.modules = module_category
 
+    def is_yacop_method(self,name,meth):
+        if name in ["__contains__",]:
+            return True
+        if re.match("^__",name):
+            return False
+        if not isinstance(meth,FunctionType):
+            # probably a cached or abstract method
+            return True
+        if hasattr(meth,"yacop_module_method") and getattr(meth,"yacop_module_method"):
+            return True
+        return False
+
     def __call__(self,cls):
         cls._yacop_category = (self.left, self.right, self.algebra)
         for (name,meth) in CommonParentMethods.__dict__.items():
-            if hasattr(meth,"yacop_module_method") and getattr(meth,"yacop_module_method"):
+            if self.is_yacop_method(name,meth):
                 setattr(cls.ParentMethods,name,meth)
         for (name,meth) in CommonCategoryMethods.__dict__.items():
-            if hasattr(meth,"yacop_module_method") and getattr(meth,"yacop_module_method"):
+            if self.is_yacop_method(name,meth):
                 setattr(cls,name,meth)
         cls._yacop_modules_class = self.modules if not self.modules is None else cls
         return cls
@@ -89,6 +102,37 @@ class CommonCategoryMethods:
 
         """
         return self._yacop_modules_class(self.base_ring())
+
+    @cached_method
+    @module_method
+    def _meet_(self, other):
+        return category_meet(self,other)
+
+    @module_method
+    def __contains__(self, x):
+        """
+        a hacked, hopefully safer way to test membership. the default implementation
+        fails for us - we might be doing something unexpected/wrong somewhere. without this
+        hack the following fails::
+
+            sage: from yacop.modules.projective_spaces import RealProjectiveSpace
+            sage: from yacop.categories.functors import suspension
+            sage: M=RealProjectiveSpace()
+            sage: S=suspension(M,s=2)
+            sage: X=cartesian_product((S,S))
+            sage: SC = S.category()
+            sage: XC = X.category()
+            sage: MC = SC._meet_(XC)
+            sage: [S in cat for cat in [SC, XC, MC]]
+            [True, False, True]
+            sage: [X in cat for cat in [SC, XC, MC]]
+            [False, True, True]
+        """
+        ans = False
+        #ans = super(CommonCategoryMethods,self).__contains__(x) # this super does not work here
+        if not ans:
+            ans = self in x.categories()
+        return ans
 
 class CommonParentMethods:
 

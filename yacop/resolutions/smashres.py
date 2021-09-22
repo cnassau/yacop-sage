@@ -25,7 +25,7 @@ TESTS::
 #  Distributed under the terms of the GNU General Public License (GPL)
 #*****************************************************************************
 
-from Tkynter import Tcl, TclError
+from tkinter import Tcl, TclError
 from yacop.utils.tcl import Yacop
 from yacop.utils.region import region
 from sage.structure.element import Element
@@ -565,7 +565,7 @@ class Smasher(Parent,UniqueRepresentation):
             nexp = "(ideg-sdeg)"
             texp = "ideg"
 
-        from Tkynter import TclError
+        from tkinter import TclError
         def cond(var,col,fac=1):
             res = ""
             mi,ma = region.min(var), region.max(var)

@@ -42,7 +42,8 @@ from sage.rings.all import GF
 from sage.categories.homset import Homset
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 
-from yacop.categories.common import CommonParentMethods, CommonElementMethods, yacop_category
+from yacop.categories.common import CommonParentMethods, CommonElementMethods, CommonCategoryMethods
+from yacop.categories.common import yacop_category
 
 from yacop.categories.differential_modules import YacopDifferentialModules
 from yacop.categories.graded_objects import YacopGradedObjects
@@ -80,36 +81,6 @@ class SteenrodAlgebraModules(Category_over_base_ring):
             return BZp(self.base_ring().characteristic())
         else:
             return RealProjectiveSpace()
-
-
-
-    @cached_method
-    def _meet_(self, other):
-        return category_meet(self,other)
-
-    def __contains__(self, x):
-        """
-        a hacked, hopefully safer way to test membership. the default implementation
-        fails for us - we might be doing something unexpected/wrong somewhere. without this
-        hack the following fails::
-
-            sage: from yacop.modules.projective_spaces import RealProjectiveSpace
-            sage: from yacop.categories.functors import suspension
-            sage: M=RealProjectiveSpace()
-            sage: S=suspension(M,s=2)
-            sage: X=cartesian_product((S,S))
-            sage: SC = S.category()
-            sage: XC = X.category()
-            sage: MC = SC._meet_(XC)
-            sage: [S in cat for cat in [SC, XC, MC]]
-            [True, False, True]
-            sage: [X in cat for cat in [SC, XC, MC]]
-            [False, True, True]
-        """
-        ans = super(SteenrodAlgebraModules, self).__contains__(x)
-        if not ans:
-            ans = self in x.categories()
-        return ans
 
     def _repr_object_names(self):
         """
