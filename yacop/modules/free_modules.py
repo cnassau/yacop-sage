@@ -26,7 +26,7 @@ Free modules over the Steenrod algebra.
       sage: G = YacopFreeModule(A,('x'),subalgebra=A1,tdegree=lambda x:2) ; G
       free module over (A//A(1)) on [x]
       sage: G.category()
-      Category of left Yacop modules over A
+      Category of yacop left modules over A
       sage: TestSuite(G).run()
       sage: G.inject_variables()
       Defining x
@@ -41,7 +41,7 @@ Free modules over the Steenrod algebra.
       sage: F = YacopFreeModule(A,('g','h'),tesfunc = lambda g : degs[g]) ; F
       free module over A5 on [g, h]
       sage: F.category()
-      Category of left Yacop modules over A5
+      Category of yacop left modules over A5
       sage: sorted(F.graded_basis(region(tmax=9)))
       [h, P(1)*h, Q_0*h, Q_0 P(1)*h, Q_0 Q_1*h, Q_1*h, g, Q_0*g]
       sage: sorted(F.graded_basis(region(tmax=13,emax=2)))
@@ -52,7 +52,7 @@ Free modules over the Steenrod algebra.
       sage: G = YacopFreeModule(A,('g'),tesfunc = lambda g : degs[g],subalgebra=A1) ; G
       free module over (A5//A5(1)) on [g]
       sage: G.category()
-      Category of left Yacop modules over A5
+      Category of yacop left modules over A5
       sage: sorted(G.graded_basis(region(tmax=60)))
       [g, P(0,1)*g, P(5)*g, Q_2*g]
       sage: sorted(G.graded_basis(region(tmax=80,emax=1)))

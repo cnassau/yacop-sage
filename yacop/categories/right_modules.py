@@ -631,7 +631,7 @@ class YacopRightModules(Category_over_base_ring):
             sage: import yacop.categories
             sage: C=yacop.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
             sage: C.SuspendedObjects()
-            Category of suspensions of right Yacop module algebras over mod 3 Steenrod algebra, milnor basis
+            Category of suspensions of yacop right module algebras over mod 3 Steenrod algebra, milnor basis
 
         """
 
@@ -653,7 +653,7 @@ class YacopRightModules(Category_over_base_ring):
             sage: import yacop.categories
             sage: C=yacop.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
             sage: C.TruncatedObjects()
-            Category of truncations of right Yacop module algebras over mod 3 Steenrod algebra, milnor basis
+            Category of truncations of yacop right module algebras over mod 3 Steenrod algebra, milnor basis
 
         """
 
@@ -674,7 +674,7 @@ class YacopRightModules(Category_over_base_ring):
             sage: from yacop.categories import *
             sage: C = YacopLeftModules(SteenrodAlgebra(3))
             sage: C.Homsets()
-            Category of homsets of right Yacop modules over mod 3 Steenrod algebra, milnor basis
+            Category of homsets of yacop right modules over mod 3 Steenrod algebra, milnor basis
         """
 
         def _repr_object_names(self):
@@ -759,9 +759,9 @@ class YacopRightModules(Category_over_base_ring):
              sage: C = YacopLeftModuleAlgebras(SteenrodAlgebra(11))
              sage: D = YacopLeftModules(SteenrodAlgebra(11))
              sage: C.Subquotients()
-             Category of subquotients of right Yacop module algebras over mod 11 Steenrod algebra, milnor basis
+             Category of subquotients of yacop right module algebras over mod 11 Steenrod algebra, milnor basis
              sage: D.Subquotients()
-             Category of subquotients of right Yacop modules over mod 11 Steenrod algebra, milnor basis
+             Category of subquotients of yacop right modules over mod 11 Steenrod algebra, milnor basis
         """
 
         def _repr_object_names(self):
@@ -777,12 +777,12 @@ class YacopRightModules(Category_over_base_ring):
                sage: from yacop.categories import *
                sage: C = YacopLeftModules(SteenrodAlgebra(3))
                sage: D = C.Subquotients() ; D
-               Category of subquotients of right Yacop modules over mod 3 Steenrod algebra, milnor basis
+               Category of subquotients of yacop right modules over mod 3 Steenrod algebra, milnor basis
                sage: C in D.all_super_categories()
                True
                sage: E = YacopLeftModuleAlgebras(SteenrodAlgebra(3))
                sage: F = E.Subquotients() ; F
-               Category of subquotients of right Yacop module algebras over mod 3 Steenrod algebra, milnor basis
+               Category of subquotients of yacop right module algebras over mod 3 Steenrod algebra, milnor basis
                sage: C in F.all_super_categories()
                True
                sage: E in F.all_super_categories()
@@ -928,15 +928,15 @@ class YacopRightModuleAlgebras(Category_over_base_ring):
 
                 sage: from yacop.categories import *
                 sage: D=YacopLeftModuleAlgebras(SteenrodAlgebra(3)).CartesianProducts() ; D
-                Category of Cartesian products of right Yacop module algebras over mod 3 Steenrod algebra, milnor basis
+                Category of Cartesian products of yacop right module algebras over mod 3 Steenrod algebra, milnor basis
                 sage: D.super_categories()
-                [Category of right Yacop modules over mod 3 Steenrod algebra, milnor basis,
+                [Category of yacop right modules over mod 3 Steenrod algebra, milnor basis,
                  Category of Cartesian products of vector spaces with basis over Finite Field of size 3,
                  Category of Cartesian products of yacop graded objects]
                 sage: D=YacopRightModules(SteenrodAlgebra(3)).CartesianProducts() ; D
-                Category of Cartesian products of right Yacop modules over mod 3 Steenrod algebra, milnor basis
+                Category of Cartesian products of yacop right modules over mod 3 Steenrod algebra, milnor basis
                 sage: D.super_categories()
-                [Category of right Yacop modules over mod 3 Steenrod algebra, milnor basis,
+                [Category of yacop right modules over mod 3 Steenrod algebra, milnor basis,
                  Category of Cartesian products of vector spaces with basis over Finite Field of size 3,
                  Category of Cartesian products of yacop graded objects]
 

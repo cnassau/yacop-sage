@@ -703,7 +703,7 @@ class YacopGrading_TensorProduct(YacopGrading):
         sage: N = tensor((M,)) ; N
         M
         sage: N.category()
-        Category of tensor products of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
+        Category of tensor products of yacop left module algebras over mod 3 Steenrod algebra, milnor basis
         sage: for dim in (-5,..,10):
         ....:   assert( M.dimension(t=dim) == N.dimension(t=dim) )
         ....:   assert( M.dimension(t=dim,e=-1) == N.dimension(t=dim,e=-1) )
@@ -728,7 +728,7 @@ class YacopGrading_TensorProduct(YacopGrading):
         sage: Q = tensor((N,P)) ; Q
         M # M # M
         sage: N.category()
-        Category of tensor products of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
+        Category of tensor products of yacop left module algebras over mod 3 Steenrod algebra, milnor basis
         sage: TestSuite(M).run() # long time
         sage: TestSuite(N).run() # long time
         sage: TestSuite(P).run() # long time

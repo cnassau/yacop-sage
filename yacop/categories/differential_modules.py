@@ -615,7 +615,7 @@ class YacopDifferentialModules(Category_over_base_ring):
             sage: import yacop.modules
             sage: C=yacop.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
             sage: C.SuspendedObjects()
-            Category of suspensions of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
+            Category of suspensions of yacop left module algebras over mod 3 Steenrod algebra, milnor basis
 
         """
 
@@ -637,7 +637,7 @@ class YacopDifferentialModules(Category_over_base_ring):
             sage: import yacop.modules
             sage: C=yacop.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
             sage: C.TruncatedObjects()
-            Category of truncations of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
+            Category of truncations of yacop left module algebras over mod 3 Steenrod algebra, milnor basis
 
         """
 
@@ -658,7 +658,7 @@ class YacopDifferentialModules(Category_over_base_ring):
             sage: from yacop.categories import *
             sage: C = YacopLeftModules(SteenrodAlgebra(3))
             sage: C.Homsets()
-            Category of homsets of left Yacop modules over mod 3 Steenrod algebra, milnor basis
+            Category of homsets of yacop left modules over mod 3 Steenrod algebra, milnor basis
         """
 
         def _repr_object_names(self):
@@ -740,9 +740,9 @@ class YacopDifferentialModules(Category_over_base_ring):
             sage: C = YacopLeftModuleAlgebras(SteenrodAlgebra(11))
             sage: D = YacopLeftModules(SteenrodAlgebra(11))
             sage: C.Subquotients()
-            Category of subquotients of left Yacop module algebras over mod 11 Steenrod algebra, milnor basis
+            Category of subquotients of yacop left module algebras over mod 11 Steenrod algebra, milnor basis
             sage: D.Subquotients()
-            Category of subquotients of left Yacop modules over mod 11 Steenrod algebra, milnor basis
+            Category of subquotients of yacop left modules over mod 11 Steenrod algebra, milnor basis
         """
 
         def _repr_object_names(self):
@@ -758,12 +758,12 @@ class YacopDifferentialModules(Category_over_base_ring):
                 sage: from yacop.categories import *
                 sage: C = YacopLeftModules(SteenrodAlgebra(3))
                 sage: D = C.Subquotients() ; D
-                Category of subquotients of left Yacop modules over mod 3 Steenrod algebra, milnor basis
+                Category of subquotients of yacop left modules over mod 3 Steenrod algebra, milnor basis
                 sage: C in D.all_super_categories()
                 True
                 sage: E = YacopLeftModuleAlgebras(SteenrodAlgebra(3))
                 sage: F = E.Subquotients() ; F
-                Category of subquotients of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
+                Category of subquotients of yacop left module algebras over mod 3 Steenrod algebra, milnor basis
                 sage: C in F.all_super_categories()
                 True
                 sage: E in F.all_super_categories()

@@ -934,9 +934,9 @@ class YacopBiModuleAlgebras(Category_over_base_ring):
                  Category of Cartesian products of vector spaces with basis over Finite Field of size 3,
                  Category of Cartesian products of yacop graded objects]
                 sage: D=YacopRightModules(SteenrodAlgebra(3)).CartesianProducts() ; D
-                Category of Cartesian products of right Yacop modules over mod 3 Steenrod algebra, milnor basis
+                Category of Cartesian products of yacop right modules over mod 3 Steenrod algebra, milnor basis
                 sage: D.super_categories()
-                [Category of right Yacop modules over mod 3 Steenrod algebra, milnor basis,
+                [Category of yacop right modules over mod 3 Steenrod algebra, milnor basis,
                  Category of Cartesian products of vector spaces with basis over Finite Field of size 3,
                  Category of Cartesian products of yacop graded objects]
 

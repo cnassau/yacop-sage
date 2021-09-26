@@ -584,7 +584,7 @@ class MinimalResolution(FreeModuleImpl):
             sage: M=MinimalResolution(A,memory=True) ; M
             minimal resolution of mod 3 Steenrod algebra, milnor basis
             sage: M.category()
-            Category of left Yacop modules over mod 3 Steenrod algebra, milnor basis
+            Category of yacop left modules over mod 3 Steenrod algebra, milnor basis
             sage: TestSuite(M).run()
             
         """
@@ -717,7 +717,7 @@ class GeneratorSpace(MinimalResolution):
             sage: T=GeneratorSpace(A,memory=True) ; T
             generator space of minimal resolution of A
             sage: T.category()
-            Category of subquotients of left Yacop modules over F2
+            Category of subquotients of yacop left modules over F2
             sage: TestSuite(T).run()
         """
         MinimalResolution.__init__(self,algebra,memory=memory,filename=filename,category=category,istor=True)

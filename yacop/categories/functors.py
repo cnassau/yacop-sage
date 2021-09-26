@@ -46,7 +46,7 @@ class SuspendedObjectsCategory(CovariantConstructionCategory):
 
             sage: from yacop.categories import YacopLeftModules
             sage: YacopLeftModules(SteenrodAlgebra(3)).SuspendedObjects() # indirect doctest
-            Category of suspensions of left Yacop modules over mod 3 Steenrod algebra, milnor basis
+            Category of suspensions of yacop left modules over mod 3 Steenrod algebra, milnor basis
         """
         return "suspensions of %s"%(self.base_category()._repr_object_names())
 
@@ -255,7 +255,7 @@ class TruncatedObjectsCategory(CovariantConstructionCategory):
 
             sage: from yacop.categories import YacopLeftModules
             sage: YacopLeftModules(SteenrodAlgebra(3)).TruncatedObjects() # indirect doctest
-            Category of truncations of left Yacop modules over mod 3 Steenrod algebra, milnor basis
+            Category of truncations of yacop left modules over mod 3 Steenrod algebra, milnor basis
         """
         return "truncations of %s"%(self.base_category()._repr_object_names())
 

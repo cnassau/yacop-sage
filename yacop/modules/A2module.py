@@ -6,7 +6,7 @@ TESTS::
     sage: M = A2Module(56) ; M
     A2 as a module over the mod 2 Steenrod algebra, module structure #56
     sage: M.category()
-    Category of subquotients of left Yacop modules over mod 2 Steenrod algebra, milnor basis
+    Category of subquotients of yacop left modules over mod 2 Steenrod algebra, milnor basis
     sage: TestSuite(M).run() # long time
     sage: M.dimension()
     64

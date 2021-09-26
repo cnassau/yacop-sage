@@ -94,15 +94,15 @@ class MorphModule(SteenrodModuleBase):
       def some_elements(fam):
          from itertools import islice
          return list(islice(fam,5))
-      b.some_elements = types.MethodType(some_elements,b,None)
+      b.some_elements = types.MethodType(some_elements,b)
       k = list(b.keys())
       k.rename("<<private and inefficient key family: don't use this>>")
       k.max_test_enumerated_set_loop = 5
       def some_elements(fam):
          from itertools import islice
          return list(islice(fam,5))
-      k.some_elements = types.MethodType(some_elements,k,None)
-      k._contains_ = types.MethodType(contains,k,None)
+      k.some_elements = types.MethodType(some_elements,k)
+      k._contains_ = types.MethodType(contains,k)
 
    def an_element(self,region=None,attempts=30):
       """
@@ -283,7 +283,7 @@ class KernelImpl(MorphModule):
       sage: kernel(f) is kernel(f)
       True
       sage: K.category()
-      Category of subquotients of left Yacop module algebras over mod 2 Steenrod algebra, milnor basis
+      Category of subquotients of yacop left module algebras over mod 2 Steenrod algebra, milnor basis
       sage: TestSuite(K).run() # long time
 
    """
@@ -382,7 +382,7 @@ class ImageImpl(MorphModule):
       sage: n == I.preimage(n2)
       True
       sage: I.category()
-      Category of subquotients of left Yacop module algebras over mod 2 Steenrod algebra, milnor basis
+      Category of subquotients of yacop left module algebras over mod 2 Steenrod algebra, milnor basis
       sage: TestSuite(I).run()  # long time
 
    """
@@ -504,7 +504,7 @@ class SubModule(ImageImpl):
        81 : [Q_1 P(9)*a, Q_1 P(3,1)*b, Q_0 P(4,1)*b]
        82 : [Q_0 Q_1 P(9)*a, Q_0 Q_1 P(3,1)*b]
        sage: S.category()
-       Category of subquotients of left Yacop modules over mod 5 Steenrod algebra, milnor basis
+       Category of subquotients of yacop left modules over mod 5 Steenrod algebra, milnor basis
        sage: TestSuite(S).run()
 
        sage: from yacop.modules.all import DualSteenrodAlgebra
@@ -568,7 +568,7 @@ class CokerImpl(MorphModule):
       sage: len(b)
       11
       sage: C.category()
-      Category of subquotients of left Yacop module algebras over mod 7 Steenrod algebra, milnor basis
+      Category of subquotients of yacop left module algebras over mod 7 Steenrod algebra, milnor basis
       sage: TestSuite(C).run()  # long time
 
    """

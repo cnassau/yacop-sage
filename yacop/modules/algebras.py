@@ -34,7 +34,7 @@ A base class for algebras over the Steenrod algebra.
         ....:           return False # pickling not implemented
         sage: X=Testclass(3)
         sage: X.category()
-        Category of left Yacop module algebras over mod 3 Steenrod algebra, milnor basis
+        Category of yacop left module algebras over mod 3 Steenrod algebra, milnor basis
 
         sage: # a hack to fix pickling of TestClass objects
         sage: import __main__
@@ -169,6 +169,7 @@ from sage.misc.cachefunc import cached_method
 from sage.functions.generalized import sgn
 from sage.combinat.integer_vector_weighted import WeightedIntegerVectors
 from yacop.utils.bitstuff import qexp_to_bitmask, sign_correction, bitcount, Delta, N0, binom_modp
+import operator
 
 # TODO: make this a cythoned class (e.g., check speed of
 # A2Module(777).dimension())
@@ -426,9 +427,9 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
             self.linear_combination(
                 (self.product_on_basis(mon_left,
                                        mon_right),
-                coeff_left * coeff_right) 
+                coeff_left * coeff_right)
                 for (mon_left,
-                    coeff_left) in left.monomial_coefficients().items() 
+                    coeff_left) in left.monomial_coefficients().items()
                 for (mon_right,
                     coeff_right) in right.monomial_coefficients().items())
         )
@@ -747,7 +748,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
             if qmsk == e and tuple(pexp) == r and not res.is_zero():
                 bc = bitcount(e)
 
-                # sign change because we rearrange bocksteins and tau as in 
+                # sign change because we rearrange bocksteins and tau as in
                 #  Q1 ... Qn  t1 ... tn  <-> Q1t1 ... Qntn
                 sgn = -1 if (2&bc) else 1
 
@@ -791,7 +792,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
             sage: X._factor_key((7,0,3,2), 3)
             []
 
-            sage: # -7 = -1*3^2 + 2*1 
+            sage: # -7 = -1*3^2 + 2*1
             sage: X._factor_key((-7,0,3,1), 2)
             [(0, -1, 2), (0, 2, 0), (2, 1, 1), (3, 1, 0)]
 
@@ -799,7 +800,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
             sage: X._factor_key((-1,0,0,0), 2)
             [(0, -1, 2), (0, 2, 0), (0, 2, 1)]
 
-            sage: # -764 = 1*1 + 2*9 + 1*27 + 2*81 + 2*243 + 1*729 + -1*2187 
+            sage: # -764 = 1*1 + 2*9 + 1*27 + 2*81 + 2*243 + 1*729 + -1*2187
             sage: X._factor_key((-764,0,3,1), 2)
             [(0, -1, 7),
             (0, 1, 0),
@@ -848,7 +849,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
             # negative exponents: these are guaranteed to be invariant under
             # the operation, so we only care about the initial summand
             # psi(x^{p^k}) = (whatever) * 1
-            mq2, mp2 = 0, () 
+            mq2, mp2 = 0, ()
             coa = actfunc(idx, mq2, mp2)
             #print "(a,u)=",(a,u),coa.__name__,list(actfunc(idx,mq2,mp2))
             #return
@@ -950,7 +951,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
             if not have_same_parent(left, right):
                 from sage.structure.element import get_coercion_model
                 try:
-                    return 0 == get_coercion_model().bin_op(left, right, cmp)
+                    return get_coercion_model().bin_op(left, right, operator.eq)
                 except TypeError:
                     return False
             else:

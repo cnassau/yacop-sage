@@ -817,7 +817,7 @@ class SmashResolution(SteenrodModuleBase_Tensor,UniqueRepresentation):
             sage: S in YacopLeftModules(A)
             True
             sage: S.category()
-            Category of tensor products of left Yacop modules over sub-Hopf algebra of mod 3 Steenrod algebra, milnor basis, profile function ([1], [2, 2])
+            Category of tensor products of yacop left modules over sub-Hopf algebra of mod 3 Steenrod algebra, milnor basis, profile function ([1], [2, 2])
             sage: TestSuite(S).run()
 
         It is possible to create SmashResolutions without database backing. This is required, for example,
@@ -866,12 +866,12 @@ class SmashResolution(SteenrodModuleBase_Tensor,UniqueRepresentation):
             sage: C=MinimalResolution(A,memory=True)
             sage: S=SmashResolution(D,C)
             sage: S.category()
-            Category of tensor products of left Yacop modules over sub-Hopf algebra of mod 3 Steenrod algebra, milnor basis, profile function ([1], [2, 2])
+            Category of tensor products of yacop left modules over sub-Hopf algebra of mod 3 Steenrod algebra, milnor basis, profile function ([1], [2, 2])
             sage: X=suspension(S,t=4)
             sage: X is SmashResolution(suspension(D,t=4),C)
             True
             sage: X.category()
-            Category of tensor products of left Yacop modules over sub-Hopf algebra of mod 3 Steenrod algebra, milnor basis, profile function ([1], [2, 2])
+            Category of tensor products of yacop left modules over sub-Hopf algebra of mod 3 Steenrod algebra, milnor basis, profile function ([1], [2, 2])
         """
         return SmashResolution(suspension(module._sets[0],*args,**kwopts), module._sets[1])
 
@@ -1087,7 +1087,7 @@ class SmashResolutionHomology(FreeModuleImpl,UniqueRepresentation):
             Ext(M) over mod 2 Steenrod algebra, milnor basis
               M = mod 2 cohomology of quaternionic projective space P^{+Infinity}
             sage: E.category()
-            Category of subquotients of left Yacop modules over F2
+            Category of subquotients of yacop left modules over F2
             sage: E.ambient()
             Smash product resolution:
               resolution = minimal resolution of mod 2 Steenrod algebra, milnor basis

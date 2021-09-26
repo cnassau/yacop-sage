@@ -272,7 +272,7 @@ class YacopGradedObjects(Category_singleton):
             """
             return self._yacop_grading
 
-        @abstract_method(optional=False)
+        @abstract_method(optional=True) # why allow optional
         def _yacop_clone(self,new_grading):
             """
             Factory function that returns a clone of self with a changed grading.

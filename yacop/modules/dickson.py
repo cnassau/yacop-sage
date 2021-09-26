@@ -211,7 +211,7 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
         sage: D.an_element()
         2 + 3*tau[0]
         sage: D.category()
-        Category of left Yacop module algebras over mod 5 Steenrod algebra, milnor basis
+        Category of yacop left module algebras over mod 5 Steenrod algebra, milnor basis
         sage: TestSuite(D).run()
         sage: D.bbox()
         region(-3 <= e <= 0, s = 0, -Infinity < t <= 0)
