@@ -847,25 +847,6 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
         return [self.ModuleCategory(), AlgebrasWithBasis(self.base_ring().base_ring())]
 
 
-    def __contains__(self, x):
-        """
-        a hacked, hopefully safer way to test membership. the default implementation
-        fails for us - we might be doing something unexpected/wrong somewhere. without this
-        hack the following fails::
-
-            sage: from yacop.modules.projective_spaces import RealProjectiveSpace
-            sage: M=RealProjectiveSpace()
-            sage: M.category()
-            Category of yacop left module algebras over mod 2 Steenrod algebra, milnor basis
-            sage: M in M.category()
-            True
-
-        """
-        ans = super(YacopLeftModuleAlgebras, self).__contains__(x)
-        if not ans:
-            ans = self in x.categories()
-        return ans
-
     @cached_method
     def is_subcategory(self, other):
         """

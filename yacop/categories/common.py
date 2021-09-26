@@ -3,7 +3,6 @@ Steenrod algebra modules
 
 The Yacop base category for modules over the Steenrod algebra.
 
-
 AUTHORS:
 
  - Christian Nassau (2011): initial revision
@@ -85,6 +84,34 @@ class yacop_category:
             if self.is_yacop_method(name,meth):
                 setattr(cls,name,meth)
         cls._yacop_modules_class = self.modules if not self.modules is None else cls
+
+        # define a wrapper for "__contains__". this uses "super", so needs a
+        # local "__class__" in this function for context
+        # (see https://stackoverflow.com/a/43779009/2533507 )
+        __class__ = cls
+        def __contains__(self, x):
+            """
+            a hacked, hopefully safer way to test membership. without this hack
+            the following fails::
+
+                sage: from yacop.modules.projective_spaces import RealProjectiveSpace
+                sage: from yacop.categories.functors import suspension
+                sage: M=RealProjectiveSpace()
+                sage: S=suspension(M,s=2)
+                sage: X=cartesian_product((S,S))
+                sage: SC = S.category()
+                sage: XC = X.category()
+                sage: MC = SC._meet_(XC)
+                sage: [S in cat for cat in [SC, XC, MC]]
+                [True, False, True]
+                sage: [X in cat for cat in [SC, XC, MC]]
+                [False, True, True]
+            """
+            ans = super().__contains__(x)
+            if not ans:
+                ans = self in x.categories()
+            return ans
+        cls.__contains__ = __contains__
         return cls
 
 class CommonCategoryMethods:
@@ -108,33 +135,28 @@ class CommonCategoryMethods:
     def _meet_(self, other):
         return category_meet(self,other)
 
+class CommonParentMethods:
+
     @module_method
-    def __contains__(self, x):
+    def _test_category_contains(self,tester=None,**options):
         """
-        a hacked, hopefully safer way to test membership. the default implementation
-        fails for us - we might be doing something unexpected/wrong somewhere. without this
-        hack the following fails::
+        Test the implicit __contains__ method of this category::
 
             sage: from yacop.modules.projective_spaces import RealProjectiveSpace
-            sage: from yacop.categories.functors import suspension
             sage: M=RealProjectiveSpace()
-            sage: S=suspension(M,s=2)
-            sage: X=cartesian_product((S,S))
-            sage: SC = S.category()
-            sage: XC = X.category()
-            sage: MC = SC._meet_(XC)
-            sage: [S in cat for cat in [SC, XC, MC]]
-            [True, False, True]
-            sage: [X in cat for cat in [SC, XC, MC]]
-            [False, True, True]
-        """
-        ans = False
-        #ans = super(CommonCategoryMethods,self).__contains__(x) # this super does not work here
-        if not ans:
-            ans = self in x.categories()
-        return ans
+            sage: M.category()
+            Category of yacop left module algebras over mod 2 Steenrod algebra, milnor basis
+            sage: M in M.category()
+            True
+            sage: M._test_category_contains()
 
-class CommonParentMethods:
+        """
+        from sage.misc.lazy_format import LazyFormat
+        from sage.rings.finite_rings.finite_field_constructor import FiniteField
+        tester = self._tester(**options)
+        tester.assertTrue(self in self.category(), LazyFormat("%s not contained in its category %s" % (self,self.category())))
+        M = ModulesWithBasis(FiniteField(self.base_ring().characteristic()))
+        tester.assertTrue(self in M,  LazyFormat("%s not contained in %s" % (self,M)))
 
     @module_method
     def _test_steenrod_action(self, tester=None, **options):

@@ -128,19 +128,15 @@ class YacopObjects(Category_singleton):
 
     class SubcategoryMethods:
 
-        @cached_method
         def CartesianProducts(self):
             return CartesianProductsCategory.category_of(self)
 
-        @cached_method
         def Subquotients(self):
             return SubquotientsCategory.category_of(self)
 
-        @cached_method
         def TensorProducts(self):
             return TensorProductsCategory.category_of(self)
 
-        @cached_method
         def SuspendedObjects(self):
             return SuspendedObjectsCategory.category_of(self)
 
@@ -282,7 +278,8 @@ class YacopGradedObjects(Category_singleton):
             Factory function that returns a clone of self with a changed grading.
 
             This function is used by truncations and suspensions to implement
-            operations on the grading.
+            operations on the grading (unless the object implements its own factory
+            for those functors).
             """
             raise NotImplementedError
 
