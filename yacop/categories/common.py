@@ -45,6 +45,7 @@ from sage.rings.all import GF
 from sage.categories.homset import Homset
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 from yacop.categories.utils import steenrod_antipode, category_meet
+from sage.categories.category_with_axiom import CategoryWithAxiom_over_base_ring
 
 def module_method(f):
     f.yacop_module_method = True
@@ -52,6 +53,31 @@ def module_method(f):
 
 from types import MethodType, FunctionType
 import re
+
+
+class FiniteDimensional(CategoryWithAxiom_over_base_ring):
+    """
+    We want to overwrite the "kernel" (and other) methods from the MorphismMethods
+    of the finite dimensional modules with basis category. This seems not possible
+    as long as the finite dimensional modules category is a super category of
+    YacopLeftModuleAlgebras.FiniteDimensional(). We therefore get rid of those
+    functions entirely by creating our own category of finite dimensional modules.
+
+    TESTS::
+
+        sage: from yacop.categories import YacopLeftModuleAlgebras
+        sage: C=YacopLeftModuleAlgebras(SteenrodAlgebra(2))
+        sage: C._with_axiom_as_tuple('FiniteDimensional')
+        (Category of finite dimensional yacop left module algebras over mod 2 Steenrod algebra, milnor basis,)
+
+    """
+
+    def super_categories(self):
+        return [self.base_category(),]
+
+    def extra_super_categories(self):
+        return []
+
 
 # a decorator with arguments to refactor common code from
 # the yacop module categories
@@ -64,7 +90,7 @@ class yacop_category:
         self.modules = module_category
 
     def is_yacop_method(self,name,meth):
-        if name in ["__contains__",]:
+        if name in ["__contains__", "__yacop_category__"]:
             return True
         if re.match("^__",name):
             return False
@@ -81,37 +107,32 @@ class yacop_category:
             if self.is_yacop_method(name,meth):
                 setattr(cls.ParentMethods,name,meth)
         for (name,meth) in CommonCategoryMethods.__dict__.items():
-            if self.is_yacop_method(name,meth):
+            if self.is_yacop_method(name,meth) and not name in cls.__dict__:
                 setattr(cls,name,meth)
         cls._yacop_modules_class = self.modules if not self.modules is None else cls
 
-        # define a wrapper for "__contains__". this uses "super", so needs a
-        # local "__class__" in this function for context
-        # (see https://stackoverflow.com/a/43779009/2533507 )
-        __class__ = cls
-        def __contains__(self, x):
-            """
-            a hacked, hopefully safer way to test membership. without this hack
-            the following fails::
+        if not self.algebra:
+            cls.FiniteDimensional = FiniteDimensional
 
-                sage: from yacop.modules.projective_spaces import RealProjectiveSpace
-                sage: from yacop.categories.functors import suspension
-                sage: M=RealProjectiveSpace()
-                sage: S=suspension(M,s=2)
-                sage: X=cartesian_product((S,S))
-                sage: SC = S.category()
-                sage: XC = X.category()
-                sage: MC = SC._meet_(XC)
-                sage: [S in cat for cat in [SC, XC, MC]]
-                [True, False, True]
-                sage: [X in cat for cat in [SC, XC, MC]]
-                [False, True, True]
+        __class__ = cls
+        @cached_method
+        def is_subcategory(self, other):
             """
-            ans = super().__contains__(x)
-            if not ans:
-                ans = self in x.categories()
-            return ans
-        cls.__contains__ = __contains__
+            Subcategory detection was broken by Trac #16618. This is a hack to fix some of those problems.
+
+            TESTS::
+
+                sage: from yacop.categories import *
+                sage: YacopLeftModules(SteenrodAlgebra(2)).is_subcategory(ModulesWithBasis(GF(2)))
+                True
+
+            """
+            for scat in self.super_categories():
+                if scat.is_subcategory(other):
+                    return True
+            return super().is_subcategory(other)
+        cls.is_subcategory = is_subcategory
+
         return cls
 
 class CommonCategoryMethods:
@@ -133,9 +154,90 @@ class CommonCategoryMethods:
     @cached_method
     @module_method
     def _meet_(self, other):
+        """
+        TESTS::
+
+            sage: from yacop.categories import *
+            sage: A2 = SteenrodAlgebra(2,profile=(3,2,1))
+            sage: A = SteenrodAlgebra(2)
+            sage: B = SteenrodAlgebra(3)
+            sage: YacopLeftModules(A)._meet_(YacopLeftModules(A2))
+            Category of yacop left modules over sub-Hopf algebra of mod 2 Steenrod algebra, milnor basis, profile function [3, 2, 1]
+            sage: YacopLeftModules(A2)._meet_(YacopLeftModules(A))
+            Category of yacop left modules over sub-Hopf algebra of mod 2 Steenrod algebra, milnor basis, profile function [3, 2, 1]
+            sage: YacopLeftModules(A)._meet_(YacopLeftModules(A))
+            Category of yacop left modules over sub-Hopf algebra of mod 2 Steenrod algebra, milnor basis
+
+        """
         return category_meet(self,other)
 
+    @cached_method
+    @module_method
+    def super_categories(self):
+        """
+        TESTS::
+
+            sage: from yacop.categories import *
+            sage: A=SteenrodAlgebra(3)
+            sage: YacopLeftModules(A).super_categories()
+            [Category of yacop differential modules over mod 3 Steenrod algebra, milnor basis,
+             Category of vector spaces with basis over Finite Field of size 3,
+             Category of left modules over mod 3 Steenrod algebra, milnor basis]
+            sage: YacopRightModules(A).super_categories()
+            [Category of yacop differential modules over mod 3 Steenrod algebra, milnor basis,
+             Category of vector spaces with basis over Finite Field of size 3,
+             Category of right modules over mod 3 Steenrod algebra, milnor basis]
+            sage: YacopBiModules(A).super_categories()
+            [Category of yacop differential modules over mod 3 Steenrod algebra, milnor basis,
+             Category of vector spaces with basis over Finite Field of size 3,
+             Category of bimodules over mod 3 Steenrod algebra, milnor basis on the left and mod 3 Steenrod algebra, milnor basis on the right]
+            sage: YacopLeftModuleAlgebras(A).super_categories()
+            [Category of yacop differential modules over mod 3 Steenrod algebra, milnor basis,
+             Category of vector spaces with basis over Finite Field of size 3,
+             Category of left modules over mod 3 Steenrod algebra, milnor basis,
+             Category of algebras with basis over Finite Field of size 3]
+            sage: YacopRightModuleAlgebras(A).super_categories()
+            [Category of yacop differential modules over mod 3 Steenrod algebra, milnor basis,
+             Category of vector spaces with basis over Finite Field of size 3,
+             Category of right modules over mod 3 Steenrod algebra, milnor basis,
+             Category of algebras with basis over Finite Field of size 3]
+            sage: YacopBiModuleAlgebras(A).super_categories()
+            [Category of yacop differential modules over mod 3 Steenrod algebra, milnor basis,
+             Category of vector spaces with basis over Finite Field of size 3,
+             Category of bimodules over mod 3 Steenrod algebra, milnor basis on the left and mod 3 Steenrod algebra, milnor basis on the right,
+             Category of algebras with basis over Finite Field of size 3]
+
+        """
+        from sage.categories.modules_with_basis import ModulesWithBasis
+        from yacop.categories.differential_modules import YacopDifferentialModules
+
+        (left, right, algebra) = self._yacop_category
+
+        R = self.base_ring()
+        x = []
+        x.append(YacopDifferentialModules(R))
+        x.append(ModulesWithBasis(R.base_ring()))
+        if left and right:
+            x.append(Bimodules(R,R))
+        else:
+            if left: x.append(LeftModules(R))
+            if right: x.append(RightModules(R))
+        if algebra: x.append(AlgebrasWithBasis(R.base_ring()))
+        return x
+
 class CommonParentMethods:
+
+    @cached_method
+    @module_method
+    def __yacop_category__(self):
+        # the list of categories should contain at most one yacop module category
+        for cat in self.categories():
+            try:
+                if getattr(cat,"_yacop_modules_class") is not None:
+                    return cat
+            except:
+                pass
+        raise ValueError("internal error: cannot detect yacop category")
 
     @module_method
     def _test_category_contains(self,tester=None,**options):
@@ -157,6 +259,20 @@ class CommonParentMethods:
         tester.assertTrue(self in self.category(), LazyFormat("%s not contained in its category %s" % (self,self.category())))
         M = ModulesWithBasis(FiniteField(self.base_ring().characteristic()))
         tester.assertTrue(self in M,  LazyFormat("%s not contained in %s" % (self,M)))
+
+    @module_method
+    def _test_homset_sanity(self,tester=None,**options):
+        """
+        Test whether the identity can be constructed and has its kernel, coker, etc.
+        in the right category. This can fail if Sage puts the wrong "kernel" method
+        into the mro of the Homset category.
+        """
+        from sage.misc.lazy_format import LazyFormat
+        tester = self._tester(**options)
+        id = self.module_morphism(codomain=self, function = lambda x:x)
+        tester.assertTrue(id.kernel() in self.category(), LazyFormat("identity of %s has a bad kernel",(self,)))
+        tester.assertTrue(id.cokernel() in self.category(), LazyFormat("identity of %s has a bad cokernel",(self,)))
+        tester.assertTrue(id.image() in self.category(), LazyFormat("identity of %s has a bad image",(self,)))
 
     @module_method
     def _test_steenrod_action(self, tester=None, **options):
@@ -260,7 +376,6 @@ class CommonParentMethods:
     @module_method
     def _check_action(self, region=None, act_left=True):
         pass
-
 
 
 class notused:
@@ -505,6 +620,7 @@ class notused:
 
 class CommonElementMethods:
     pass
+
 
 # Local Variables:
 # eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)

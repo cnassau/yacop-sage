@@ -28,7 +28,7 @@ def __startup__():
     setattr(sage.algebras.steenrod.steenrod_algebra.SteenrodAlgebra_generic,"Ext",Ext)
 
     # there are known issues in Sage with pickling of morphisms
-    # and we dont want to document the same failures in our test
+    # and we don't want to document the same failures in our test
     # suite.
     from sage.combinat.free_module import CombinatorialFreeModule
     def p_test_pickling(self,tester=None,**options):
@@ -142,6 +142,29 @@ def __startup__():
         self.__init_original__(*args,**kwds)
         self._max_runs = 40
     InstanceTester.__init__ = newinit
+
+    # fix a problem for __contain__ in Categories_over_base_ring
+    # when more than one base is involved:
+    from sage.categories.category import Category
+    from sage.categories.category_types import Category_over_base_ring
+    from sage.categories.modules import Modules
+    from sage.categories.algebras import Algebras
+    from sage.categories.modules_with_basis import ModulesWithBasis
+    from sage.rings.finite_rings.finite_field_constructor import GF
+    C = CombinatorialFreeModule(GF(5),ZZ,category=(ModulesWithBasis(GF(5)),Algebras(ZZ)))
+    if C not in Modules(ZZ):
+        _sagecode = Category_over_base_ring.__contains__
+        Category_over_base_ring.__contains_sage__ = _sagecode
+        #__class__ = Category_over_base_ring
+        def __contains_yacop__(self,Z):
+            ans = self.__contains_sage__(Z)
+            if not ans:
+                try:
+                    ans = self in Z.categories()
+                except:
+                    pass
+            return ans
+        Category_over_base_ring.__contains__ = __contains_yacop__
 
 def __print_banner__():
     import yacop

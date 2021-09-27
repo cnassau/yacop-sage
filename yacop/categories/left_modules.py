@@ -41,6 +41,7 @@ from sage.misc.lazy_attribute import lazy_attribute
 from sage.rings.all import GF
 from sage.categories.homset import Homset
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
+from sage.categories.category_with_axiom import CategoryWithAxiom_over_base_ring, base_category_class_and_axiom
 
 from yacop.categories.common import CommonParentMethods, CommonElementMethods, CommonCategoryMethods
 from yacop.categories.common import yacop_category
@@ -54,7 +55,7 @@ import operator
 @yacop_category(left_action=True)
 class YacopLeftModules(Category_over_base_ring):
     """
-    The category of Yacop modules over the Steenrod algebra.
+    The category of Yacop left modules over the Steenrod algebra.
 
     EXAMPLES::
 
@@ -94,64 +95,26 @@ class YacopLeftModules(Category_over_base_ring):
         """
         return "yacop left modules over %s" % (self.base_ring())
 
-    @cached_method
-    def is_subcategory(self, other):
-        """
-        Subcategory detection was broken by Trac #16618. This is a hack to fix some of those problems.
-
-        TESTS::
-
-            sage: from yacop.categories import *
-            sage: YacopLeftModules(SteenrodAlgebra(2)).is_subcategory(ModulesWithBasis(GF(2)))
-            True
-
-        """
-        for scat in self.super_categories():
-            if scat.is_subcategory(other):
-                return True
-        return super(YacopLeftModules, self).is_subcategory(other)
-
-    @cached_method
-    def super_categories(self):
-        """
-        TESTS::
-
-            sage: from yacop.categories import *
-            sage: YacopLeftModules(SteenrodAlgebra(2)).is_subcategory(ModulesWithBasis(GF(2)))
-            True
-
-        """
-        from sage.categories.modules_with_basis import ModulesWithBasis
-        R = self.base_ring()
-        x = []
-        x.append(YacopDifferentialModules(R))
-        x.append(ModulesWithBasis(R.base_ring()))
-        x.append(LeftModules(R))
-        return x
-
-    _is_yacop_module_category = True
-
     class ParentMethods:
 
-        # FIXME: use class decorators from common.py to factor out common code
-        _test_steenrod_action = CommonParentMethods._test_steenrod_action
-        _manual_test_action = CommonParentMethods._manual_test_action
-
         def __init_extra__(self):
+            from yacop.categories.utils import SteenrodAlgebraAction
+            import operator
+
             # register actions
             Y = self.__yacop_category__()
             self._yacop_base_ring = Y.base_ring()
             if True:
                 self.register_action(SteenrodAlgebraAction(
                     Y.base_ring(), self, self.left_steenrod_action_on_basis, is_left=True))
-                self.register_action(SteenrodAlgebraAction(Y.base_ring(), self, self.left_conj_steenrod_action_on_basis,
-                                                            is_left=True, op=operator.mod))
+                self.register_action(SteenrodAlgebraAction(
+                    Y.base_ring(), self, self.left_conj_steenrod_action_on_basis,
+                    is_left=True, op=operator.mod))
             if False:
                 self.register_action(SteenrodAlgebraAction(
                     Y.base_ring(), self, self.right_steenrod_action_on_basis, is_left=False))
                 self.register_action(SteenrodAlgebraAction(Y.base_ring(), self, self.right_conj_steenrod_action_on_basis,
                                                             is_left=False, op=operator.mod))
-
 
         @abstract_method(optional=True)
         def left_steenrod_action_milnor(self, ak, mk):
@@ -597,7 +560,7 @@ class YacopLeftModules(Category_over_base_ring):
             def _can_test_pickling(self):
                 return all(m._can_test_pickling() for m in self._sets)
 
-    class DualObjects(DualObjectsCategory):
+    class xxDualObjects(DualObjectsCategory):
 
         def extra_super_categories(self):
             r"""
@@ -667,6 +630,33 @@ class YacopLeftModules(Category_over_base_ring):
         class ParentMethods:
             pass
 
+    class MorphismMethods:
+
+        def kernel(self):
+            M = self.domain()
+            if hasattr(M, "KernelOf"):
+                return M.KernelOf(self)
+            raise NotImplementedError(
+                "kernel of map from %s not implemented" % M)
+
+        def image(self):
+            N = self.codomain()
+            if hasattr(N, "ImageOf"):
+                return N.ImageOf(self)
+            raise NotImplementedError(
+                "image of map into %s not implemented" % N)
+
+        def cokernel(self):
+            N = self.codomain()
+            if hasattr(N, "CokernelOf"):
+                return N.CokernelOf(self)
+            raise NotImplementedError(
+                "cokernel of map into %s not implemented" % N)
+
+        def blubb(self):
+            return "wtf"
+
+
     class Homsets(HomsetsCategory):
         """
         TESTS::
@@ -694,23 +684,24 @@ class YacopLeftModules(Category_over_base_ring):
         class ElementMethods:
 
             def _test_nonzero_equal(self, **options):
+                "disabled test method"
                 pass
 
-            def kernel(self):
+            def xxkernel(self):
                 M = self.domain()
                 if hasattr(M, "KernelOf"):
                     return M.KernelOf(self)
                 raise NotImplementedError(
                     "kernel of map from %s not implemented" % M)
 
-            def image(self):
+            def xximage(self):
                 N = self.codomain()
                 if hasattr(N, "ImageOf"):
                     return N.ImageOf(self)
                 raise NotImplementedError(
                     "image of map into %s not implemented" % N)
 
-            def cokernel(self):
+            def xxcokernel(self):
                 N = self.codomain()
                 if hasattr(N, "CokernelOf"):
                     return N.CokernelOf(self)
@@ -724,19 +715,19 @@ class YacopLeftModules(Category_over_base_ring):
 
                 TESTS::
 
-                   sage: from yacop.categories.functors import suspension
-                   sage: from yacop.modules.all import BZp
-                   sage: M = BZp(3)
-                   sage: X = cartesian_product((M,M))
-                   sage: f = X.cartesian_projection(0)
-                   sage: sf = suspension(f,t=5)
-                   sage: sf.domain() is suspension(f.domain(),t=5)
-                   True
-                   sage: sf.codomain() is suspension(f.codomain(),t=5)
-                   True
-                   sage: x = X.an_element()
-                   sage: sf(x.suspend(t=5)) == f(x).suspend(t=5)
-                   True
+                    sage: from yacop.categories.functors import suspension
+                    sage: from yacop.modules.all import BZp
+                    sage: M = BZp(3)
+                    sage: X = cartesian_product((M,M))
+                    sage: f = X.cartesian_projection(0)
+                    sage: sf = suspension(f,t=5)
+                    sage: sf.domain() is suspension(f.domain(),t=5)
+                    True
+                    sage: sf.codomain() is suspension(f.codomain(),t=5)
+                    True
+                    sage: x = X.an_element()
+                    sage: sf(x.suspend(t=5)) == f(x).suspend(t=5)
+                    True
 
                 """
                 M, N = self.domain(), self.codomain()
@@ -834,6 +825,8 @@ class YacopLeftModules(Category_over_base_ring):
                     ans.append(self._retract_homogeneous(deg, smd))
                 return self.parent().sum(ans)
 
+
+
 @yacop_category(left_action=True,is_algebra=True,module_category=YacopLeftModules)
 class YacopLeftModuleAlgebras(Category_over_base_ring):
 
@@ -848,7 +841,7 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
 
 
     @cached_method
-    def is_subcategory(self, other):
+    def xxis_subcategory(self, other):
         """
         Subcategory detection was broken by Trac #16618. This is a hack to fix some of those problems.
 
@@ -888,6 +881,10 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
         def extra_super_categories(self):
             return []
 
+        def super_categories(self):
+            # subquotients of algebras (computed in modules) are not algebras
+            return [self.base_category().ModuleCategory()]
+
     class CartesianProducts(CartesianProductsCategory):
 
         def _repr_object_names(self):
@@ -922,7 +919,7 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
                  Category of Cartesian products of yacop graded objects]
 
             """
-            return [self.base_category().ModuleCategory().CartesianProducts()]
+            return [self.base_category().ModuleCategory().CartesianProducts(),]
 
     class TensorProducts(TensorProductsCategory):
 
@@ -952,6 +949,29 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
 
         def _repr_object_names(self):
             return "homsets of %s" % self.base_category()._repr_object_names()
+
+        def extra_super_categories(self):
+            return [self.base_category().ModuleCategory().Homsets(),]
+
+    class FiniteDimensional(CategoryWithAxiom_over_base_ring):
+        """
+        We want to overwrite the "kernel" (and other) methods from the MorphismMethods
+        of the finite dimensional modules with basis category. This seems not possible
+        as long as the finite dimensional modules category is a super category of
+        YacopLeftModuleAlgebras.FiniteDimensional(). We therefore get rid of those
+        functions entirely by creating our own category of finite dimensional modules.
+
+        TESTS::
+
+            sage: from yacop.categories import YacopLeftModuleAlgebras
+            sage: C=YacopLeftModuleAlgebras(SteenrodAlgebra(2))
+            sage: C._with_axiom_as_tuple('FiniteDimensional')
+            (Category of finite dimensional yacop left module algebras over mod 2 Steenrod algebra, milnor basis,)
+
+        """
+
+        def super_categories(self):
+            return [self.base_category(),]
 
         def extra_super_categories(self):
             return []

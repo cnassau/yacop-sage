@@ -127,6 +127,26 @@ class YacopObjects(Category_singleton):
             return [C for C in self.categories() if is_yacop_category(C)]
 
     class SubcategoryMethods:
+        """
+        Register functors that should be available for all yacop categories,
+        i.e. everything underneath YacopGradedObjects.
+
+        TESTS::
+
+            sage: from yacop.categories import YacopGradedObjects
+            sage: Y=YacopGradedObjects()
+            sage: Y.CartesianProducts()
+            Category of Cartesian products of yacop graded objects
+            sage: Y.Subquotients()
+            Category of subquotients of yacop graded objects
+            sage: Y.TensorProducts()
+            Category of tensor products of yacop graded objects
+            sage: Y.SuspendedObjects()
+            Category of suspensions of yacop graded objects
+            sage: Y.TruncatedObjects()
+            Category of objects
+
+        """
 
         def CartesianProducts(self):
             return CartesianProductsCategory.category_of(self)
@@ -139,6 +159,8 @@ class YacopObjects(Category_singleton):
 
         def SuspendedObjects(self):
             return SuspendedObjectsCategory.category_of(self)
+
+
 
 class YacopGradedObjects(Category_singleton):
     """
@@ -272,7 +294,7 @@ class YacopGradedObjects(Category_singleton):
             """
             return self._yacop_grading
 
-        @abstract_method(optional=True) # why allow optional
+        @abstract_method(optional=True)
         def _yacop_clone(self,new_grading):
             """
             Factory function that returns a clone of self with a changed grading.
