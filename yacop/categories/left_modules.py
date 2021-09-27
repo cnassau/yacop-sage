@@ -10,7 +10,7 @@ The Yacop base category for modules over the Steenrod algebra.
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
 # ******************************************************************************
-#pylint: disable=E0213
+# pylint: disable=E0213
 
 from sage.misc.lazy_import import LazyImport, lazy_import
 from sage.rings.infinity import Infinity
@@ -20,9 +20,23 @@ from sage.misc.lazy_attribute import lazy_attribute
 from sage.categories.category_singleton import Category_singleton
 from sage.categories.category_types import Category_over_base_ring
 from sage.categories.homsets import HomsetsCategory
-from sage.categories.all import Category, Sets, Hom, Rings, Modules, LeftModules, RightModules, Bimodules, ModulesWithBasis, AlgebrasWithBasis
+from sage.categories.all import (
+    Category,
+    Sets,
+    Hom,
+    Rings,
+    Modules,
+    LeftModules,
+    RightModules,
+    Bimodules,
+    ModulesWithBasis,
+    AlgebrasWithBasis,
+)
 from sage.categories.objects import Objects
-from sage.categories.cartesian_product import CartesianProductsCategory, cartesian_product
+from sage.categories.cartesian_product import (
+    CartesianProductsCategory,
+    cartesian_product,
+)
 from sage.categories.subquotients import SubquotientsCategory
 from sage.categories.algebra_functor import AlgebrasCategory
 from sage.categories.dual import DualObjectsCategory
@@ -41,9 +55,16 @@ from sage.misc.lazy_attribute import lazy_attribute
 from sage.rings.all import GF
 from sage.categories.homset import Homset
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
-from sage.categories.category_with_axiom import CategoryWithAxiom_over_base_ring, base_category_class_and_axiom
+from sage.categories.category_with_axiom import (
+    CategoryWithAxiom_over_base_ring,
+    base_category_class_and_axiom,
+)
 
-from yacop.categories.common import CommonParentMethods, CommonElementMethods, CommonCategoryMethods
+from yacop.categories.common import (
+    CommonParentMethods,
+    CommonElementMethods,
+    CommonCategoryMethods,
+)
 from yacop.categories.common import yacop_category
 
 from yacop.categories.differential_modules import YacopDifferentialModules
@@ -51,6 +72,7 @@ from yacop.categories.graded_objects import YacopGradedObjects
 from yacop.categories.utils import SteenrodAlgebraAction, steenrod_antipode
 from yacop.categories.utils import category_meet
 import operator
+
 
 @yacop_category(left_action=True)
 class YacopLeftModules(Category_over_base_ring):
@@ -78,6 +100,7 @@ class YacopLeftModules(Category_over_base_ring):
             mod 5 cohomology of the classifying space of ZZ/5ZZ
         """
         from yacop.modules.all import RealProjectiveSpace, BZp
+
         if self.base_ring().is_generic():
             return BZp(self.base_ring().characteristic())
         else:
@@ -96,7 +119,6 @@ class YacopLeftModules(Category_over_base_ring):
         return "yacop left modules over %s" % (self.base_ring())
 
     class ParentMethods:
-
         def __init_extra__(self):
             from yacop.categories.utils import SteenrodAlgebraAction
             import operator
@@ -105,16 +127,41 @@ class YacopLeftModules(Category_over_base_ring):
             Y = self.__yacop_category__()
             self._yacop_base_ring = Y.base_ring()
             if True:
-                self.register_action(SteenrodAlgebraAction(
-                    Y.base_ring(), self, self.left_steenrod_action_on_basis, is_left=True))
-                self.register_action(SteenrodAlgebraAction(
-                    Y.base_ring(), self, self.left_conj_steenrod_action_on_basis,
-                    is_left=True, op=operator.mod))
+                self.register_action(
+                    SteenrodAlgebraAction(
+                        Y.base_ring(),
+                        self,
+                        self.left_steenrod_action_on_basis,
+                        is_left=True,
+                    )
+                )
+                self.register_action(
+                    SteenrodAlgebraAction(
+                        Y.base_ring(),
+                        self,
+                        self.left_conj_steenrod_action_on_basis,
+                        is_left=True,
+                        op=operator.mod,
+                    )
+                )
             if False:
-                self.register_action(SteenrodAlgebraAction(
-                    Y.base_ring(), self, self.right_steenrod_action_on_basis, is_left=False))
-                self.register_action(SteenrodAlgebraAction(Y.base_ring(), self, self.right_conj_steenrod_action_on_basis,
-                                                            is_left=False, op=operator.mod))
+                self.register_action(
+                    SteenrodAlgebraAction(
+                        Y.base_ring(),
+                        self,
+                        self.right_steenrod_action_on_basis,
+                        is_left=False,
+                    )
+                )
+                self.register_action(
+                    SteenrodAlgebraAction(
+                        Y.base_ring(),
+                        self,
+                        self.right_conj_steenrod_action_on_basis,
+                        is_left=False,
+                        op=operator.mod,
+                    )
+                )
 
         @abstract_method(optional=True)
         def left_steenrod_action_milnor(self, ak, mk):
@@ -291,30 +338,46 @@ class YacopLeftModules(Category_over_base_ring):
         # wrapper functions: use conjugate if direct implementation not provided
 
         def _left_action_from_milnor_conj(self, a, m):
-            return self._action_from_milnor(self.left_steenrod_action_milnor_conj, a.antipode(), m)
+            return self._action_from_milnor(
+                self.left_steenrod_action_milnor_conj, a.antipode(), m
+            )
 
         def _right_action_from_milnor_conj(self, m, a):
-            return self._action_from_milnor(self.right_steenrod_action_milnor_conj, m, a.antipode())
+            return self._action_from_milnor(
+                self.right_steenrod_action_milnor_conj, m, a.antipode()
+            )
 
         def _left_conj_action_from_milnor(self, a, m):
-            return self._action_from_milnor(self.left_steenrod_action_milnor, a.antipode(), m)
+            return self._action_from_milnor(
+                self.left_steenrod_action_milnor, a.antipode(), m
+            )
 
         def _right_conj_action_from_milnor(self, m, a):
-            return self._action_from_milnor(self.right_steenrod_action_milnor, m, a.antipode())
+            return self._action_from_milnor(
+                self.right_steenrod_action_milnor, m, a.antipode()
+            )
 
         # direct implementations of actions and conjugate actions
 
         def _left_action_from_milnor(self, a, m):
-            return self._action_from_milnor(self.left_steenrod_action_milnor, a.milnor(), m)
+            return self._action_from_milnor(
+                self.left_steenrod_action_milnor, a.milnor(), m
+            )
 
         def _right_action_from_milnor(self, m, a):
-            return self._action_from_milnor(self.right_steenrod_action_milnor, m, a.milnor())
+            return self._action_from_milnor(
+                self.right_steenrod_action_milnor, m, a.milnor()
+            )
 
         def _left_conj_action_from_milnor_conj(self, a, m):
-            return self._action_from_milnor(self.left_steenrod_action_milnor_conj, a.milnor(), m)
+            return self._action_from_milnor(
+                self.left_steenrod_action_milnor_conj, a.milnor(), m
+            )
 
         def _right_conj_action_from_milnor_conj(self, m, a):
-            return self._action_from_milnor(self.right_steenrod_action_milnor_conj, m, a.milnor())
+            return self._action_from_milnor(
+                self.right_steenrod_action_milnor_conj, m, a.milnor()
+            )
 
         def _action_from_milnor(self, actfunc, a, m):
             adct = a.monomial_coefficients()
@@ -323,26 +386,38 @@ class YacopLeftModules(Category_over_base_ring):
             for ak, cf1 in adct.items():
                 for mk, cf2 in mdct.items():
                     d = actfunc(ak, mk)
-                    res.append((d, cf1*cf2))
+                    res.append((d, cf1 * cf2))
             return self.linear_combination(res)
 
         def _manual_test_left_action(self, reg, opdeg=None, verbose=False):
-            return self._manual_test_action(reg, opdeg=opdeg, mode='left', verbose=verbose)
+            return self._manual_test_action(
+                reg, opdeg=opdeg, mode="left", verbose=verbose
+            )
 
         def _manual_test_right_action(self, reg, opdeg=None, verbose=False):
-            return self._manual_test_action(reg, opdeg=opdeg, mode='right', verbose=verbose)
+            return self._manual_test_action(
+                reg, opdeg=opdeg, mode="right", verbose=verbose
+            )
 
         def _manual_test_bimod_action(self, reg, opdeg=None, verbose=False):
-            return self._manual_test_action(reg, opdeg=opdeg, mode='bimod', verbose=verbose)
+            return self._manual_test_action(
+                reg, opdeg=opdeg, mode="bimod", verbose=verbose
+            )
 
         def _manual_test_left_conj_action(self, reg, opdeg=None, verbose=False):
-            return self._manual_test_action(reg, opdeg=opdeg, mode='leftconj', verbose=verbose)
+            return self._manual_test_action(
+                reg, opdeg=opdeg, mode="leftconj", verbose=verbose
+            )
 
         def _manual_test_right_conj_action(self, reg, opdeg=None, verbose=False):
-            return self._manual_test_action(reg, opdeg=opdeg, mode='rightconj', verbose=verbose)
+            return self._manual_test_action(
+                reg, opdeg=opdeg, mode="rightconj", verbose=verbose
+            )
 
         def _manual_test_bimod_conj_action(self, reg, opdeg=None, verbose=False):
-            return self._manual_test_action(reg, opdeg=opdeg, mode='bimodconj', verbose=verbose)
+            return self._manual_test_action(
+                reg, opdeg=opdeg, mode="bimodconj", verbose=verbose
+            )
 
     class ElementMethods:
         pass
@@ -366,20 +441,28 @@ class YacopLeftModules(Category_over_base_ring):
                 return all(M._can_test_pickling() for M in self._sets)
 
             def left_steenrod_action_on_basis(self, a, elem):
-                return self.linear_combination((self.monomial(tuple(k)), c)
-                                               for (k, c) in self.__act_left(a, self._sets, elem))
+                return self.linear_combination(
+                    (self.monomial(tuple(k)), c)
+                    for (k, c) in self.__act_left(a, self._sets, elem)
+                )
 
             def right_steenrod_action_on_basis(self, elem, a):
-                return self.linear_combination((self.monomial(tuple(k)), c)
-                                               for (k, c) in self.__act_right(elem, self._sets, a))
+                return self.linear_combination(
+                    (self.monomial(tuple(k)), c)
+                    for (k, c) in self.__act_right(elem, self._sets, a)
+                )
 
             def left_conj_steenrod_action_on_basis(self, a, elem):
-                return self.linear_combination((self.monomial(tuple(k)), c)
-                                               for (k, c) in self.__act_left_conj(a, self._sets, elem))
+                return self.linear_combination(
+                    (self.monomial(tuple(k)), c)
+                    for (k, c) in self.__act_left_conj(a, self._sets, elem)
+                )
 
             def right_conj_steenrod_action_on_basis(self, elem, a):
-                return self.linear_combination((self.monomial(tuple(k)), c)
-                                               for (k, c) in self.__act_right_conj(elem, self._sets, a))
+                return self.linear_combination(
+                    (self.monomial(tuple(k)), c)
+                    for (k, c) in self.__act_right_conj(elem, self._sets, a)
+                )
 
             def __act_left(self, a, parents, elem):
                 for (key, cf) in elem:
@@ -387,7 +470,9 @@ class YacopLeftModules(Category_over_base_ring):
                     m0 = M0._from_dict({key[0]: cf})
                     if len(parents) == 1:
                         for (k, c) in M0.left_steenrod_action_on_basis(a, m0):
-                            yield [k, ], c
+                            yield [
+                                k,
+                            ], c
                     else:
                         A = a.parent()
                         cop = a.coproduct()
@@ -396,19 +481,29 @@ class YacopLeftModules(Category_over_base_ring):
                             a2 = A.monomial(k2)
                             deg2 = a2.degree()
                             for (k1, c1) in M0.left_steenrod_action_on_basis(a1, m0):
-                                for (k, c) in self.__act_left(a2, parents[1:], [(key[1:], c1), ]):
+                                for (k, c) in self.__act_left(
+                                    a2,
+                                    parents[1:],
+                                    [
+                                        (key[1:], c1),
+                                    ],
+                                ):
                                     if (deg2 & 1) and (m0.e & 1):
                                         c = -c
-                                    yield [k1, ]+k, c
+                                    yield [
+                                        k1,
+                                    ] + k, c
 
             def __act_right(self, elem, parents, a):
-                ln = len(parents)-1
+                ln = len(parents) - 1
                 for (key, cf) in elem:
                     M0 = parents[ln]
                     m0 = M0._from_dict({key[ln]: cf})
                     if len(parents) == 1:
                         for (k, c) in M0.right_steenrod_action_on_basis(m0, a):
-                            yield [k, ], c
+                            yield [
+                                k,
+                            ], c
                     else:
                         A = a.parent()
                         cop = a.coproduct()
@@ -417,10 +512,18 @@ class YacopLeftModules(Category_over_base_ring):
                             a2 = A.monomial(k2)
                             deg1 = a1.degree()
                             for (k1, c1) in M0.right_steenrod_action_on_basis(m0, a2):
-                                for (k, c) in self.__act_right([(key[:ln], c1), ], parents[:ln], a1):
+                                for (k, c) in self.__act_right(
+                                    [
+                                        (key[:ln], c1),
+                                    ],
+                                    parents[:ln],
+                                    a1,
+                                ):
                                     if (deg1 & 1) and (m0.e & 1):
                                         c = -c
-                                    yield k+[k1, ], c
+                                    yield k + [
+                                        k1,
+                                    ], c
 
             def __act_left_conj(self, a, parents, elem):
                 for (key, cf) in elem:
@@ -428,7 +531,9 @@ class YacopLeftModules(Category_over_base_ring):
                     m0 = M0._from_dict({key[0]: cf})
                     if len(parents) == 1:
                         for (k, c) in M0.left_conj_steenrod_action_on_basis(a, m0):
-                            yield [k, ], c
+                            yield [
+                                k,
+                            ], c
                     else:
                         A = a.parent()
                         cop = a.coproduct()
@@ -436,20 +541,32 @@ class YacopLeftModules(Category_over_base_ring):
                             a1 = A._from_dict({k1: acf})
                             a2 = A.monomial(k2)
                             deg2 = a2.degree()
-                            for (k1, c1) in M0.left_conj_steenrod_action_on_basis(a1, m0):
-                                for (k, c) in self.__act_left_conj(a2, parents[1:], [(key[1:], c1), ]):
+                            for (k1, c1) in M0.left_conj_steenrod_action_on_basis(
+                                a1, m0
+                            ):
+                                for (k, c) in self.__act_left_conj(
+                                    a2,
+                                    parents[1:],
+                                    [
+                                        (key[1:], c1),
+                                    ],
+                                ):
                                     if (deg2 & 1) and (m0.e & 1):
                                         c = -c
-                                    yield [k1, ]+k, c
+                                    yield [
+                                        k1,
+                                    ] + k, c
 
             def __act_right_conj(self, elem, parents, a):
-                ln = len(parents)-1
+                ln = len(parents) - 1
                 for (key, cf) in elem:
                     M0 = parents[ln]
                     m0 = M0._from_dict({key[ln]: cf})
                     if len(parents) == 1:
                         for (k, c) in M0.right_conj_steenrod_action_on_basis(m0, a):
-                            yield [k, ], c
+                            yield [
+                                k,
+                            ], c
                     else:
                         A = a.parent()
                         cop = a.coproduct()
@@ -457,19 +574,31 @@ class YacopLeftModules(Category_over_base_ring):
                             a1 = A._from_dict({k1: acf})
                             a2 = A.monomial(k2)
                             deg1 = a1.degree()
-                            for (k1, c1) in M0.right_conj_steenrod_action_on_basis(m0, a2):
-                                for (k, c) in self.__act_right_conj([(key[:ln], c1), ], parents[:ln], a1):
+                            for (k1, c1) in M0.right_conj_steenrod_action_on_basis(
+                                m0, a2
+                            ):
+                                for (k, c) in self.__act_right_conj(
+                                    [
+                                        (key[:ln], c1),
+                                    ],
+                                    parents[:ln],
+                                    a1,
+                                ):
                                     if (deg1 & 1) and (m0.e & 1):
                                         c = -c
-                                    yield k+[k1, ], c
+                                    yield k + [
+                                        k1,
+                                    ], c
 
             @staticmethod
             def SuspendedObjectsFactory(module, *args, **kwopts):
                 from sage.categories.tensor import tensor
+
                 l = len(module._sets)
-                last = module._sets[l-1]
-                newsets = list(module._sets[:l-1]) + \
-                    [suspension(last, *args, **kwopts), ]
+                last = module._sets[l - 1]
+                newsets = list(module._sets[: l - 1]) + [
+                    suspension(last, *args, **kwopts),
+                ]
                 return tensor(tuple(newsets))
 
         class ElementMethods:
@@ -495,7 +624,6 @@ class YacopLeftModules(Category_over_base_ring):
                 return self.parent()._can_test_pickling()
 
         class ParentMethods:
-
             def left_steenrod_action_on_basis(self, a, m):
                 smds = []
                 for i in range(0, len(self._sets)):
@@ -538,7 +666,10 @@ class YacopLeftModules(Category_over_base_ring):
                 return self.summand_embedding(idx)(mod.differential(mod.monomial(k)))
 
             def _repr_term(self, elem):
-                return "(%s)" % ", ".join(mod._repr_term(mod.cartesian_projection(i)(elem)) for (mod, i) in zip(self._sets, self._set_keys))
+                return "(%s)" % ", ".join(
+                    mod._repr_term(mod.cartesian_projection(i)(elem))
+                    for (mod, i) in zip(self._sets, self._set_keys)
+                )
 
             def suspend_element(self, m, **options):
                 susp = suspension(self, **options)
@@ -555,13 +686,15 @@ class YacopLeftModules(Category_over_base_ring):
             @staticmethod
             def SuspendedObjectsFactory(module, *args, **kwopts):
                 from sage.categories.cartesian_product import cartesian_product
-                return cartesian_product([suspension(mod, *args, **kwopts) for mod in module._sets])
+
+                return cartesian_product(
+                    [suspension(mod, *args, **kwopts) for mod in module._sets]
+                )
 
             def _can_test_pickling(self):
                 return all(m._can_test_pickling() for m in self._sets)
 
     class xxDualObjects(DualObjectsCategory):
-
         def extra_super_categories(self):
             r"""
             Returns the dual category
@@ -578,6 +711,7 @@ class YacopLeftModules(Category_over_base_ring):
                 [Category of coalgebras over Rational Field]
             """
             from sage.categories.coalgebras import Coalgebras
+
             return [Coalgebras(self.base_category().base_ring())]
 
         def Subquotients(self):
@@ -631,31 +765,26 @@ class YacopLeftModules(Category_over_base_ring):
             pass
 
     class MorphismMethods:
-
         def kernel(self):
             M = self.domain()
             if hasattr(M, "KernelOf"):
                 return M.KernelOf(self)
-            raise NotImplementedError(
-                "kernel of map from %s not implemented" % M)
+            raise NotImplementedError("kernel of map from %s not implemented" % M)
 
         def image(self):
             N = self.codomain()
             if hasattr(N, "ImageOf"):
                 return N.ImageOf(self)
-            raise NotImplementedError(
-                "image of map into %s not implemented" % N)
+            raise NotImplementedError("image of map into %s not implemented" % N)
 
         def cokernel(self):
             N = self.codomain()
             if hasattr(N, "CokernelOf"):
                 return N.CokernelOf(self)
-            raise NotImplementedError(
-                "cokernel of map into %s not implemented" % N)
+            raise NotImplementedError("cokernel of map into %s not implemented" % N)
 
         def blubb(self):
             return "wtf"
-
 
     class Homsets(HomsetsCategory):
         """
@@ -672,17 +801,24 @@ class YacopLeftModules(Category_over_base_ring):
 
         def extra_super_categories(self):
             # TODO: make this a Steenrod algebra module
-            return [ModulesWithBasis(self.base_category().ModuleCategory().base_ring()).Homsets(), ]
+            return [
+                ModulesWithBasis(
+                    self.base_category().ModuleCategory().base_ring()
+                ).Homsets(),
+            ]
 
         def super_categories(self):
             # TODO: make this a Steenrod algebra module
-            return [ModulesWithBasis(self.base_category().ModuleCategory().base_ring()).Homsets(), ]
+            return [
+                ModulesWithBasis(
+                    self.base_category().ModuleCategory().base_ring()
+                ).Homsets(),
+            ]
 
         class ParentMethods:
             pass
 
         class ElementMethods:
-
             def _test_nonzero_equal(self, **options):
                 "disabled test method"
                 pass
@@ -691,22 +827,19 @@ class YacopLeftModules(Category_over_base_ring):
                 M = self.domain()
                 if hasattr(M, "KernelOf"):
                     return M.KernelOf(self)
-                raise NotImplementedError(
-                    "kernel of map from %s not implemented" % M)
+                raise NotImplementedError("kernel of map from %s not implemented" % M)
 
             def xximage(self):
                 N = self.codomain()
                 if hasattr(N, "ImageOf"):
                     return N.ImageOf(self)
-                raise NotImplementedError(
-                    "image of map into %s not implemented" % N)
+                raise NotImplementedError("image of map into %s not implemented" % N)
 
             def xxcokernel(self):
                 N = self.codomain()
                 if hasattr(N, "CokernelOf"):
                     return N.CokernelOf(self)
-                raise NotImplementedError(
-                    "cokernel of map into %s not implemented" % N)
+                raise NotImplementedError("cokernel of map into %s not implemented" % N)
 
             @staticmethod
             def SuspendedObjectsFactory(self, *args, **kwopts):
@@ -732,7 +865,10 @@ class YacopLeftModules(Category_over_base_ring):
                 """
                 M, N = self.domain(), self.codomain()
                 SM, SN = [suspension(x, **kwopts) for x in (M, N)]
-                def lam(i): return self(M.monomial(i)).suspend(**kwopts)
+
+                def lam(i):
+                    return self(M.monomial(i)).suspend(**kwopts)
+
                 res = SM.module_morphism(codomain=SN, on_basis=lam)
                 res.rename("suspension of %s" % self)
                 return res
@@ -797,11 +933,15 @@ class YacopLeftModules(Category_over_base_ring):
 
             def left_conj_steenrod_action_on_basis(self, a, m):
                 amb = self.ambient()
-                return self.retract(amb.left_conj_steenrod_action_on_basis(a, self.lift(m)))
+                return self.retract(
+                    amb.left_conj_steenrod_action_on_basis(a, self.lift(m))
+                )
 
             def right_conj_steenrod_action_on_basis(self, m, a):
                 amb = self.ambient()
-                return self.retract(amb.right_conj_steenrod_action_on_basis(self.lift(m), a))
+                return self.retract(
+                    amb.right_conj_steenrod_action_on_basis(self.lift(m), a)
+                )
 
             def lift(self, elem):
                 """
@@ -826,10 +966,8 @@ class YacopLeftModules(Category_over_base_ring):
                 return self.parent().sum(ans)
 
 
-
-@yacop_category(left_action=True,is_algebra=True,module_category=YacopLeftModules)
+@yacop_category(left_action=True, is_algebra=True, module_category=YacopLeftModules)
 class YacopLeftModuleAlgebras(Category_over_base_ring):
-
     def super_categories(self):
         """
         TESTS::
@@ -838,7 +976,6 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
             sage: YacopLeftModuleAlgebras(SteenrodAlgebra(5)).super_categories()
         """
         return [self.ModuleCategory(), AlgebrasWithBasis(self.base_ring().base_ring())]
-
 
     @cached_method
     def xxis_subcategory(self, other):
@@ -866,7 +1003,6 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
     # fixme: is it right to add these functor categories ?
 
     class SuspendedObjects(SuspendedObjectsCategory):
-
         def _repr_object_names(self):
             return "suspensions of %s" % self.base_category()._repr_object_names()
 
@@ -874,7 +1010,6 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
             return []
 
     class Subquotients(SubquotientsCategory):
-
         def _repr_object_names(self):
             return "subquotients of %s" % self.base_category()._repr_object_names()
 
@@ -883,12 +1018,13 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
 
         def super_categories(self):
             # subquotients of algebras (computed in modules) are not algebras
-            return [self.base_category().ModuleCategory()]
+            return [self.base_category().ModuleCategory().Subquotients()]
 
     class CartesianProducts(CartesianProductsCategory):
-
         def _repr_object_names(self):
-            return "Cartesian products of %s" % self.base_category()._repr_object_names()
+            return (
+                "Cartesian products of %s" % self.base_category()._repr_object_names()
+            )
 
         def extra_super_categories(self):
             return [self.base_category().ModuleCategory()]
@@ -919,10 +1055,15 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
                  Category of Cartesian products of yacop graded objects]
 
             """
-            return [self.base_category().ModuleCategory().CartesianProducts(),]
+            return [
+                self.base_category().ModuleCategory().CartesianProducts(),
+            ]
+
+        def Subquotients(self):
+            return self.base_category().Subquotients()
+
 
     class TensorProducts(TensorProductsCategory):
-
         def _repr_object_names(self):
             return "tensor products of %s" % self.base_category()._repr_object_names()
 
@@ -930,7 +1071,6 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
             return []
 
     class DualObjects(DualObjectsCategory):
-
         def _repr_object_names(self):
             return "duals of %s" % self.base_category()._repr_object_names()
 
@@ -938,7 +1078,6 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
             return []
 
     class TruncatedObjects(TruncatedObjectsCategory):
-
         def _repr_object_names(self):
             return "truncations of %s" % self.base_category()._repr_object_names()
 
@@ -946,36 +1085,13 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
             return []
 
     class Homsets(HomsetsCategory):
-
         def _repr_object_names(self):
             return "homsets of %s" % self.base_category()._repr_object_names()
 
         def extra_super_categories(self):
-            return [self.base_category().ModuleCategory().Homsets(),]
-
-    class FiniteDimensional(CategoryWithAxiom_over_base_ring):
-        """
-        We want to overwrite the "kernel" (and other) methods from the MorphismMethods
-        of the finite dimensional modules with basis category. This seems not possible
-        as long as the finite dimensional modules category is a super category of
-        YacopLeftModuleAlgebras.FiniteDimensional(). We therefore get rid of those
-        functions entirely by creating our own category of finite dimensional modules.
-
-        TESTS::
-
-            sage: from yacop.categories import YacopLeftModuleAlgebras
-            sage: C=YacopLeftModuleAlgebras(SteenrodAlgebra(2))
-            sage: C._with_axiom_as_tuple('FiniteDimensional')
-            (Category of finite dimensional yacop left module algebras over mod 2 Steenrod algebra, milnor basis,)
-
-        """
-
-        def super_categories(self):
-            return [self.base_category(),]
-
-        def extra_super_categories(self):
-            return []
-
+            return [
+                self.base_category().ModuleCategory().Homsets(),
+            ]
 
 
 # Local Variables:

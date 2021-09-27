@@ -8,13 +8,13 @@ AUTHORS:
  - Christian Nassau (2011): initial revision
 
 """
-#*****************************************************************************
+# *****************************************************************************
 #  Copyright (C) 2011      Christian Nassau <nassau@nullhomotopie.de>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
-#******************************************************************************
-#pylint: disable=E0213
+# ******************************************************************************
+# pylint: disable=E0213
 
 from sage.rings.infinity import Infinity
 from sage.misc.abstract_method import abstract_method
@@ -23,9 +23,23 @@ from sage.misc.lazy_attribute import lazy_attribute
 from sage.categories.category_singleton import Category_singleton
 from sage.categories.category_types import Category_over_base_ring
 from sage.categories.homsets import HomsetsCategory
-from sage.categories.all import Category, Sets, Hom, Rings, Modules, LeftModules, RightModules, Bimodules, ModulesWithBasis, AlgebrasWithBasis
+from sage.categories.all import (
+    Category,
+    Sets,
+    Hom,
+    Rings,
+    Modules,
+    LeftModules,
+    RightModules,
+    Bimodules,
+    ModulesWithBasis,
+    AlgebrasWithBasis,
+)
 from sage.categories.objects import Objects
-from sage.categories.cartesian_product import CartesianProductsCategory, cartesian_product
+from sage.categories.cartesian_product import (
+    CartesianProductsCategory,
+    cartesian_product,
+)
 from sage.categories.subquotients import SubquotientsCategory
 from sage.categories.algebra_functor import AlgebrasCategory
 from sage.categories.dual import DualObjectsCategory
@@ -47,9 +61,11 @@ from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 from yacop.categories.utils import steenrod_antipode, category_meet
 from sage.categories.category_with_axiom import CategoryWithAxiom_over_base_ring
 
+
 def module_method(f):
     f.yacop_module_method = True
     return f
+
 
 from types import MethodType, FunctionType
 import re
@@ -73,7 +89,9 @@ class FiniteDimensional(CategoryWithAxiom_over_base_ring):
     """
 
     def super_categories(self):
-        return [self.base_category(),]
+        return [
+            self.base_category(),
+        ]
 
     def extra_super_categories(self):
         return []
@@ -82,39 +100,45 @@ class FiniteDimensional(CategoryWithAxiom_over_base_ring):
 # a decorator with arguments to refactor common code from
 # the yacop module categories
 class yacop_category:
-
-    def __init__(self,left_action=False,right_action=False,is_algebra=False,module_category=None):
+    def __init__(
+        self,
+        left_action=False,
+        right_action=False,
+        is_algebra=False,
+        module_category=None,
+    ):
         self.left = left_action
         self.right = right_action
         self.algebra = is_algebra
         self.modules = module_category
 
-    def is_yacop_method(self,name,meth):
+    def is_yacop_method(self, name, meth):
         if name in ["__contains__", "__yacop_category__"]:
             return True
-        if re.match("^__",name):
+        if re.match("^__", name):
             return False
-        if not isinstance(meth,FunctionType):
+        if not isinstance(meth, FunctionType):
             # probably a cached or abstract method
             return True
-        if hasattr(meth,"yacop_module_method") and getattr(meth,"yacop_module_method"):
+        if hasattr(meth, "yacop_module_method") and getattr(meth, "yacop_module_method"):
             return True
         return False
 
-    def __call__(self,cls):
+    def __call__(self, cls):
         cls._yacop_category = (self.left, self.right, self.algebra)
-        for (name,meth) in CommonParentMethods.__dict__.items():
-            if self.is_yacop_method(name,meth):
-                setattr(cls.ParentMethods,name,meth)
-        for (name,meth) in CommonCategoryMethods.__dict__.items():
-            if self.is_yacop_method(name,meth) and not name in cls.__dict__:
-                setattr(cls,name,meth)
+        for (name, meth) in CommonParentMethods.__dict__.items():
+            if self.is_yacop_method(name, meth):
+                setattr(cls.ParentMethods, name, meth)
+        for (name, meth) in CommonCategoryMethods.__dict__.items():
+            if self.is_yacop_method(name, meth) and not name in cls.__dict__:
+                setattr(cls, name, meth)
         cls._yacop_modules_class = self.modules if not self.modules is None else cls
 
         if not self.algebra:
             cls.FiniteDimensional = FiniteDimensional
 
         __class__ = cls
+
         @cached_method
         def is_subcategory(self, other):
             """
@@ -131,12 +155,13 @@ class yacop_category:
                 if scat.is_subcategory(other):
                     return True
             return super().is_subcategory(other)
+
         cls.is_subcategory = is_subcategory
 
         return cls
 
-class CommonCategoryMethods:
 
+class CommonCategoryMethods:
     @module_method
     def ModuleCategory(self):
         """
@@ -169,7 +194,7 @@ class CommonCategoryMethods:
             Category of yacop left modules over sub-Hopf algebra of mod 2 Steenrod algebra, milnor basis
 
         """
-        return category_meet(self,other)
+        return category_meet(self, other)
 
     @cached_method
     @module_method
@@ -218,29 +243,32 @@ class CommonCategoryMethods:
         x.append(YacopDifferentialModules(R))
         x.append(ModulesWithBasis(R.base_ring()))
         if left and right:
-            x.append(Bimodules(R,R))
+            x.append(Bimodules(R, R))
         else:
-            if left: x.append(LeftModules(R))
-            if right: x.append(RightModules(R))
-        if algebra: x.append(AlgebrasWithBasis(R.base_ring()))
+            if left:
+                x.append(LeftModules(R))
+            if right:
+                x.append(RightModules(R))
+        if algebra:
+            x.append(AlgebrasWithBasis(R.base_ring()))
         return x
 
-class CommonParentMethods:
 
+class CommonParentMethods:
     @cached_method
     @module_method
     def __yacop_category__(self):
         # the list of categories should contain at most one yacop module category
         for cat in self.categories():
             try:
-                if getattr(cat,"_yacop_modules_class") is not None:
+                if getattr(cat, "_yacop_modules_class") is not None:
                     return cat
             except:
                 pass
         raise ValueError("internal error: cannot detect yacop category")
 
     @module_method
-    def _test_category_contains(self,tester=None,**options):
+    def _test_category_contains(self, tester=None, **options):
         """
         Test the implicit __contains__ method of this category::
 
@@ -255,29 +283,44 @@ class CommonParentMethods:
         """
         from sage.misc.lazy_format import LazyFormat
         from sage.rings.finite_rings.finite_field_constructor import FiniteField
+
         tester = self._tester(**options)
-        tester.assertTrue(self in self.category(), LazyFormat("%s not contained in its category %s" % (self,self.category())))
+        tester.assertTrue(
+            self in self.category(),
+            LazyFormat("%s not contained in its category %s" % (self, self.category())),
+        )
         M = ModulesWithBasis(FiniteField(self.base_ring().characteristic()))
-        tester.assertTrue(self in M,  LazyFormat("%s not contained in %s" % (self,M)))
+        tester.assertTrue(self in M, LazyFormat("%s not contained in %s" % (self, M)))
 
     @module_method
-    def _test_homset_sanity(self,tester=None,**options):
+    def _test_homset_sanity(self, tester=None, **options):
         """
         Test whether the identity can be constructed and has its kernel, coker, etc.
         in the right category. This can fail if Sage puts the wrong "kernel" method
         into the mro of the Homset category.
         """
         from sage.misc.lazy_format import LazyFormat
+
         tester = self._tester(**options)
-        id = self.module_morphism(codomain=self, function = lambda x:x)
-        tester.assertTrue(id.kernel() in self.category(), LazyFormat("identity of %s has a bad kernel",(self,)))
-        tester.assertTrue(id.cokernel() in self.category(), LazyFormat("identity of %s has a bad cokernel",(self,)))
-        tester.assertTrue(id.image() in self.category(), LazyFormat("identity of %s has a bad image",(self,)))
+        id = self.module_morphism(codomain=self, function=lambda x: x)
+        tester.assertTrue(
+            id.kernel() in self.category(),
+            LazyFormat("identity of %s has a bad kernel" % (self,)),
+        )
+        tester.assertTrue(
+            id.cokernel() in self.category(),
+            LazyFormat("identity of %s has a bad cokernel" % (self,)),
+        )
+        tester.assertTrue(
+            id.image() in self.category(),
+            LazyFormat("identity of %s has a bad image" % (self,)),
+        )
 
     @module_method
     def _test_steenrod_action(self, tester=None, **options):
         from sage.misc.sage_unittest import TestSuite
         from sage.misc.lazy_format import LazyFormat
+
         tester = self._tester(**options)
         Y = self.__yacop_category__()
         A = Y.base_ring()
@@ -285,7 +328,7 @@ class CommonParentMethods:
         try:
             # under exotic circumstances, this code can fail: #24988
             elist = list(A.some_elements())
-            for e in A.homogeneous_component(2*(A.prime()**3-1)).basis():
+            for e in A.homogeneous_component(2 * (A.prime() ** 3 - 1)).basis():
                 elist.append(A(e))
         except:
             pass
@@ -296,49 +339,84 @@ class CommonParentMethods:
         x = self.an_element()
         for e in elist:
             if is_left:
-                y = e*x        # does left action work?
-                tester.assertEqual(y, steenrod_antipode(e) % x,
-                                    LazyFormat(
-                                        "conjugate action check failed: e.antipode()%x != e*x for x=%s, e=%s")
-                                    % (x, e))
+                y = e * x  # does left action work?
+                tester.assertEqual(
+                    y,
+                    steenrod_antipode(e) % x,
+                    LazyFormat("conjugate action check failed: e.antipode()%x != e*x for x=%s, e=%s") % (x, e),
+                )
             if is_right:
-                y = x*e        # does right action work?
-                tester.assertEqual(y, x % steenrod_antipode(e),
-                                    LazyFormat(
-                                        "conjugate action check failed: x%e.antipode() != x*e for x=%s, e=%s")
-                                    % (x, e))
+                y = x * e  # does right action work?
+                tester.assertEqual(
+                    y,
+                    x % steenrod_antipode(e),
+                    LazyFormat("conjugate action check failed: x%e.antipode() != x*e for x=%s, e=%s") % (x, e),
+                )
             if is_left and is_right:
-                tester.assertEqual((e*x)*e, e*(x*e),
-                                    LazyFormat(
-                                        "bimodule check failed: (ex)e != e(xe) for x=%s, e=%s")
-                                    % (x, e))
+                tester.assertEqual(
+                    (e * x) * e,
+                    e * (x * e),
+                    LazyFormat("bimodule check failed: (ex)e != e(xe) for x=%s, e=%s") % (x, e),
+                )
         if False:
-            tester.assertTrue(bbox.__class__ == region,
-                                LazyFormat("bounding box of %s is not a region") % (self,))
+            tester.assertTrue(
+                bbox.__class__ == region,
+                LazyFormat("bounding box of %s is not a region") % (self,),
+            )
 
     @module_method
-    def _manual_test_action(self, reg, opdeg=None, mode='left', verbose=False):
+    def _manual_test_action(self, reg, opdeg=None, mode="left", verbose=False):
         """
         a check of the associativity of the steenrod algebra action
         """
-        if mode == 'left':
-            def LHS(op1, op2, a): return (op1*op2)*a
-            def RHS(op1, op2, a): return op1*(op2*a)
-        elif mode == 'right':
-            def LHS(op1, op2, a): return a*(op1*op2)
-            def RHS(op1, op2, a): return (a*op1)*op2
-        elif mode == 'bimod':
-            def LHS(op1, op2, a): return (op1*a)*op2
-            def RHS(op1, op2, a): return op1*(a*op2)
-        elif mode == 'leftconj':
-            def LHS(op1, op2, a): return (op1*op2) % a
-            def RHS(op1, op2, a): return op2 % (op1 % a)
-        elif mode == 'rightconj':
-            def LHS(op1, op2, a): return a % (op1*op2)
-            def RHS(op1, op2, a): return (a % op2) % op1
-        elif mode == 'bimodconj':
-            def LHS(op1, op2, a): return (op1 % a) % op2
-            def RHS(op1, op2, a): return op1 % (a % op2)
+        if mode == "left":
+
+            def LHS(op1, op2, a):
+                return (op1 * op2) * a
+
+            def RHS(op1, op2, a):
+                return op1 * (op2 * a)
+
+        elif mode == "right":
+
+            def LHS(op1, op2, a):
+                return a * (op1 * op2)
+
+            def RHS(op1, op2, a):
+                return (a * op1) * op2
+
+        elif mode == "bimod":
+
+            def LHS(op1, op2, a):
+                return (op1 * a) * op2
+
+            def RHS(op1, op2, a):
+                return op1 * (a * op2)
+
+        elif mode == "leftconj":
+
+            def LHS(op1, op2, a):
+                return (op1 * op2) % a
+
+            def RHS(op1, op2, a):
+                return op2 % (op1 % a)
+
+        elif mode == "rightconj":
+
+            def LHS(op1, op2, a):
+                return a % (op1 * op2)
+
+            def RHS(op1, op2, a):
+                return (a % op2) % op1
+
+        elif mode == "bimodconj":
+
+            def LHS(op1, op2, a):
+                return (op1 % a) % op2
+
+            def RHS(op1, op2, a):
+                return op1 % (a % op2)
+
         else:
             raise ValueError("unknown mode %s" % mode)
 
@@ -347,12 +425,13 @@ class CommonParentMethods:
         def abasis(i):
             for x in A[i].basis():
                 yield A(x)
+
         cnt = 0
         for b in self.graded_basis(reg):
             odeg = opdeg if not opdeg is None else reg.tmax - b.t
-            for i in range(0, odeg+1):
+            for i in range(0, odeg + 1):
                 for op1 in abasis(i):
-                    for j in range(0, odeg+1-i):
+                    for j in range(0, odeg + 1 - i):
                         if verbose:
                             print(mode, b, i, j, cnt)
                         for op2 in abasis(j):
@@ -379,7 +458,6 @@ class CommonParentMethods:
 
 
 class notused:
-
     @cached_method
     def __yacop_category__(self):
         # the list of categories should contain at most one yacop module category
@@ -390,6 +468,7 @@ class notused:
             except:
                 pass
         raise ValueError("internal error: cannot detect yacop category")
+
     def _Hom_(X, Y, category):
         # here we overwrite the Rings._Hom_ implementation
         return Homset(X, Y, category=category)
@@ -412,18 +491,18 @@ class notused:
         """
         # hack to fix the automatic category detection
         Y = self.__yacop_category__()
-        cat = kwargs.pop('category', Y)
-        codomain = kwargs.pop('codomain', self)
+        cat = kwargs.pop("category", Y)
+        codomain = kwargs.pop("codomain", self)
         cat = cat.category().meet((self.category(), codomain.category()))
-        kwargs['category'] = cat
-        kwargs['codomain'] = codomain
-        ans = ModulesWithBasis(Y.base_ring().base_ring(
-        )).parent_class.module_morphism(self, *args, **kwargs)
+        kwargs["category"] = cat
+        kwargs["codomain"] = codomain
+        ans = ModulesWithBasis(Y.base_ring().base_ring()).parent_class.module_morphism(self, *args, **kwargs)
         # there is a known issue with morphism categories (see sage code)
         # disable the _test_category and _test_pickling method for this instance:
 
         def dummy(*args, **kwopts):
             pass
+
         setattr(ans, "_test_category", dummy)
         setattr(ans, "_test_pickling", dummy)
         return ans
@@ -437,6 +516,7 @@ class notused:
         create the kernel of the map ``f``. ``domain(f)`` must be self.
         """
         from yacop.modules.morph_module import KernelImpl
+
         assert f.domain() is self
         return KernelImpl(f, **options)
 
@@ -445,6 +525,7 @@ class notused:
         create the image of the map ``f`` ``domain(f)`` must be self.
         """
         from yacop.modules.morph_module import ImageImpl
+
         assert f.codomain() is self
         return ImageImpl(f, **options)
 
@@ -453,6 +534,7 @@ class notused:
         create the cokernel of the map ``f`` ``domain(f)`` must be self.
         """
         from yacop.modules.morph_module import CokerImpl
+
         assert f.codomain() is self
         return CokerImpl(f, **options)
 
@@ -460,7 +542,8 @@ class notused:
         from yacop.categories.functors import truncation
         from sage.misc.sage_unittest import TestSuite
         from sage.misc.lazy_format import LazyFormat
-        is_sub_testsuite = (tester is not None)
+
+        is_sub_testsuite = tester is not None
         tester = self._tester(tester=tester, **options)
         myatt = "_truncation_tested"
         if not hasattr(self, myatt):
@@ -468,16 +551,17 @@ class notused:
             def testops(A):
                 for _ in A.some_elements():
                     yield _
-                maxdeg = A.prime()**3
+                maxdeg = A.prime() ** 3
                 for deg in range(1, maxdeg):
-                    for key in A.homogeneous_component(maxdeg-deg+1).basis():
+                    for key in A.homogeneous_component(maxdeg - deg + 1).basis():
                         yield A(key)
+
             n = self.zero()
             for (deg, m) in self.an_element().homogeneous_decomposition().items():
                 if not m.is_zero():
                     for a in testops(self._yacop_base_ring):
-                        n = a*m
-                        #print("trying %s*%s->%s"%(a,m,n))
+                        n = a * m
+                        # print("trying %s*%s->%s"%(a,m,n))
                         if not n.is_zero():
                             break
                     if not n.is_zero():
@@ -499,88 +583,141 @@ class notused:
                 for ((tmin, tmax), sm, sn, am) in tests:
                     T = truncation(self, tmin=tmin, tmax=tmax)
                     if sm:
-                        tester.assertTrue(m in T,
-                                            LazyFormat("contains (+) broken for %s (elem %s)") % (T, n))
-                        tester.assertTrue(self(T(m)) == m,
-                                            LazyFormat("casting from/to truncation broken for %s (elem %s)") % (T, n))
-                        tester.assertTrue(T(m).parent() is T,
-                                            LazyFormat("wrong parent for %s (elem %s)") % (T, n))
+                        tester.assertTrue(
+                            m in T,
+                            LazyFormat("contains (+) broken for %s (elem %s)") % (T, n),
+                        )
+                        tester.assertTrue(
+                            self(T(m)) == m,
+                            LazyFormat("casting from/to truncation broken for %s (elem %s)") % (T, n),
+                        )
+                        tester.assertTrue(
+                            T(m).parent() is T,
+                            LazyFormat("wrong parent for %s (elem %s)") % (T, n),
+                        )
                     else:
-                        tester.assertTrue(not m in T,
-                                            LazyFormat("contains (-) broken for %s (elem %s)") % (T, n))
+                        tester.assertTrue(
+                            not m in T,
+                            LazyFormat("contains (-) broken for %s (elem %s)") % (T, n),
+                        )
                         ok = False
                         try:
                             x = T(m)
                         except:
                             ok = True
-                        tester.assertTrue(ok,
-                                            LazyFormat("no exception when casting %s into %s" % (m, T)))
+                        tester.assertTrue(
+                            ok,
+                            LazyFormat("no exception when casting %s into %s" % (m, T)),
+                        )
                     if sn:
-                        tester.assertEqual(n, self(T(n)),
-                                            LazyFormat("casting %s into %s destroys element" % (n, T)))
+                        tester.assertEqual(
+                            n,
+                            self(T(n)),
+                            LazyFormat("casting %s into %s destroys element" % (n, T)),
+                        )
                     else:
-                        tester.assertTrue(T(n).is_zero(),
-                                            LazyFormat("%s does not map to zero in %s" % (n, T)))
+                        tester.assertTrue(
+                            T(n).is_zero(),
+                            LazyFormat("%s does not map to zero in %s" % (n, T)),
+                        )
                     if sm:
-                        tester.assertEqual(a*T(m), T(am),
-                                            LazyFormat("bad action %s * %s != %s" % (a, m, n)))
+                        tester.assertEqual(
+                            a * T(m),
+                            T(am),
+                            LazyFormat("bad action %s * %s != %s" % (a, m, n)),
+                        )
         # FIXME: run the TestSuite of a truncation (and avoid infinite loops)
 
     def _test_suspension(self, tester=None, **options):
         from sage.misc.sage_unittest import TestSuite
         from sage.misc.lazy_format import LazyFormat
-        is_sub_testsuite = (tester is not None)
+
+        is_sub_testsuite = tester is not None
         tester = self._tester(tester=tester, **options)
         myatt = "_suspension_tested"
         if not hasattr(self, myatt):
             s = self.an_element()
             X = suspension(self, t=5, s=3)
-            tester.assertTrue(X is suspension(self, t=5, s=3),
-                                LazyFormat("suspension(X,..) is not suspension(X,..) for X=%s") % (X,))
+            tester.assertTrue(
+                X is suspension(self, t=5, s=3),
+                LazyFormat("suspension(X,..) is not suspension(X,..) for X=%s") % (X,),
+            )
             setattr(X, myatt, "yo")
             try:
                 tester.info("\n  Running the test suite of a suspension")
-                TestSuite(X).run(verbose=tester._verbose, prefix=tester._prefix+"  ",
-                                    raise_on_failure=is_sub_testsuite)
-                tester.info(tester._prefix+" ", newline=False)
+                TestSuite(X).run(
+                    verbose=tester._verbose,
+                    prefix=tester._prefix + "  ",
+                    raise_on_failure=is_sub_testsuite,
+                )
+                tester.info(tester._prefix + " ", newline=False)
                 x = s.suspend(t=5, s=3)
                 x3 = s.suspend(t=5, s=3)
                 x2 = self.suspend_element(s, t=5, s=3)
-                tester.assertEqual(x, x3,
-                                    LazyFormat("x.suspend(...) != x.suspend(...):\n   A=%s\n   B=%s") % (x, x3,))
-                tester.assertEqual(x, x2,
-                                    LazyFormat("x.suspend(...) != parent.suspend_element(x,...):\n   A=%s\n   B=%s") % (x, x2,))
-                tester.assertTrue(x.parent() == X,
-                                    LazyFormat("suspended element %s not in suspension %s") % (x, X,))
+                tester.assertEqual(
+                    x,
+                    x3,
+                    LazyFormat("x.suspend(...) != x.suspend(...):\n   A=%s\n   B=%s")
+                    % (
+                        x,
+                        x3,
+                    ),
+                )
+                tester.assertEqual(
+                    x,
+                    x2,
+                    LazyFormat("x.suspend(...) != parent.suspend_element(x,...):\n   A=%s\n   B=%s")
+                    % (
+                        x,
+                        x2,
+                    ),
+                )
+                tester.assertTrue(
+                    x.parent() == X,
+                    LazyFormat("suspended element %s not in suspension %s")
+                    % (
+                        x,
+                        X,
+                    ),
+                )
             finally:
                 delattr(X, myatt)
 
     def _test_cartesian_product(self, tester=None, **options):
         from sage.misc.sage_unittest import TestSuite
         from sage.misc.lazy_format import LazyFormat
+
         if hasattr(self, "_suspension_tested"):
             return  # avoids infinity test cycle
-        is_sub_testsuite = (tester is not None)
+        is_sub_testsuite = tester is not None
         tester = self._tester(tester=tester, **options)
         myatt = "_ycp_cartesian_product_tested"
         if not hasattr(self, myatt):
             X = cartesian_product((self, self))
             setattr(X, myatt, "yo")
             try:
-                tester.info(
-                    "\n  Running the test suite of (self (+) self)")
-                TestSuite(X).run(verbose=tester._verbose, prefix=tester._prefix+"  ",
-                                    raise_on_failure=is_sub_testsuite)
+                tester.info("\n  Running the test suite of (self (+) self)")
+                TestSuite(X).run(
+                    verbose=tester._verbose,
+                    prefix=tester._prefix + "  ",
+                    raise_on_failure=is_sub_testsuite,
+                )
                 f = X.cartesian_projection(0)
-                tester.info(
-                    "\n  Running the test suite of the projection (self (+) self) -> self")
-                TestSuite(f).run(verbose=tester._verbose, prefix=tester._prefix+"  ",
-                                    raise_on_failure=is_sub_testsuite, skip=["_test_category", "_test_nonzero_equal", "_test_pickling"])
+                tester.info("\n  Running the test suite of the projection (self (+) self) -> self")
+                TestSuite(f).run(
+                    verbose=tester._verbose,
+                    prefix=tester._prefix + "  ",
+                    raise_on_failure=is_sub_testsuite,
+                    skip=["_test_category", "_test_nonzero_equal", "_test_pickling"],
+                )
                 f = X.summand_embedding(1)
-                tester.info(
-                    "\n  Running the test suite of the embedding self -> (self (+) self)")
-                TestSuite(f).run(verbose=tester._verbose, prefix=tester._prefix+"  ",
-                                    raise_on_failure=is_sub_testsuite, skip=["_test_category", "_test_nonzero_equal", "_test_pickling"])
+                tester.info("\n  Running the test suite of the embedding self -> (self (+) self)")
+                TestSuite(f).run(
+                    verbose=tester._verbose,
+                    prefix=tester._prefix + "  ",
+                    raise_on_failure=is_sub_testsuite,
+                    skip=["_test_category", "_test_nonzero_equal", "_test_pickling"],
+                )
             finally:
                 delattr(X, myatt)
 
@@ -592,6 +729,7 @@ class notused:
         .. note:: the string must be unambigously determined by the element.
         """
         import base64
+
         return base64.b64encode(dumps(el))
 
     def load_element(self, str):
@@ -600,23 +738,29 @@ class notused:
         The default implementation uses 'loads' and is very inefficient.
         """
         import base64
+
         return loads(bse64.b64decode(str))
 
     def _test_dump_element(self, tester=None, **options):
         tester = self._tester(tester=tester, **options)
         from sage.misc.sage_unittest import TestSuite
         from sage.misc.lazy_format import LazyFormat
+
         for (cnt, el) in zip(list(range(0, 10)), self.some_elements()):
             str = self.dump_element(el)
             oth = self.load_element(str)
-            tester.assertEqual(el, oth,
-                                LazyFormat("load_element(dump_element(el)) != el for el = %s") % el)
+            tester.assertEqual(
+                el,
+                oth,
+                LazyFormat("load_element(dump_element(el)) != el for el = %s") % el,
+            )
 
     def _can_test_pickling(self):
         """
         Some objects (e.g., morphisms, kernels of morphisms, ...) cannot be pickled.
         """
         return True
+
 
 class CommonElementMethods:
     pass

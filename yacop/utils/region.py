@@ -113,7 +113,9 @@ from sage.structure.sage_object import SageObject
 from sage.sets.integer_range import IntegerRange
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.misc.classcall_metaclass import ClasscallMetaclass
+from functools import total_ordering
 
+@total_ordering
 class region(SageObject):
     """
     This class represents a rectangular region in some `R^n`.
@@ -232,8 +234,8 @@ class region(SageObject):
     def __eq__(r1,r2):
         return 0 == r1.__cmp__(r2)
 
-    def __ne__(r1,r2):
-        return not r1.__eq__(r2)
+    def __le__(r1,r2):
+        return 0 < r1.__cmp__(r2)
 
     def __cmp__(r1,r2):
         for v in sorted(r1.vars().union(r2.vars())):
