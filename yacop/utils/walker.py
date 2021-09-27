@@ -73,12 +73,12 @@ TESTS::
    Category of finite enumerated sets
 
 """
-#*****************************************************************************
+# *****************************************************************************
 #  Copyright (C) 2011 Christian Nassau <nassau@nullhomotopie.de>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
-#******************************************************************************
+# ******************************************************************************
 
 from sage.structure.category_object import CategoryObject
 from sage.structure.parent import Parent
@@ -86,36 +86,36 @@ from sage.categories.enumerated_sets import EnumeratedSets
 from sage.rings.infinity import Infinity
 from sage.rings.integer_ring import ZZ
 
+
 class Walker(Parent):
+    def __init__(self, category=EnumeratedSets()):
+        Parent.__init__(self, ZZ, category=category)
 
-   def __init__(self,category=EnumeratedSets()):
-      Parent.__init__(self,ZZ,category=category)
+    def __len__(self):
+        ans = self.cardinality()
+        if ans < Infinity:
+            return ans
+        raise NotImplementedError
 
-   def __len__(self):
-      ans = self.cardinality()
-      if ans < Infinity:
-         return ans
-      raise NotImplementedError
+    def cardinality(self):
+        return Infinity
 
-   def cardinality(self):
-      return Infinity
+    def an_element(self):
+        from itertools import islice
 
-   def an_element(self):
-      from itertools import islice
-      lst = list(islice(self,3))
-      return lst.pop()
+        lst = list(islice(self, 3))
+        return lst.pop()
 
-   def unrank(self,x):
-      return self._unrank_from_iterator(x)
+    def unrank(self, x):
+        return self._unrank_from_iterator(x)
 
-   def rank(self,x):
-      return self._rank_from_iterator(x)
+    def rank(self, x):
+        return self._rank_from_iterator(x)
 
-   def xxlist(self):
-      if self.cardinality() < Infinity:
-         return [u for u in self]
-      raise ValueError("set is potentially infinite")
-
+    def xxlist(self):
+        if self.cardinality() < Infinity:
+            return [u for u in self]
+        raise ValueError("set is potentially infinite")
 
 
 # Local Variables:

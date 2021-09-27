@@ -6,12 +6,12 @@ AUTHORS:
  - Christian Nassau (2018): initial revision
 
 """
-#*****************************************************************************
+# *****************************************************************************
 #  Copyright (C) 2018      Christian Nassau <nassau@nullhomotopie.de>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
-#******************************************************************************
+# ******************************************************************************
 
 from sage.matrix.constructor import matrix
 from sage.structure.parent import Parent
@@ -22,8 +22,8 @@ from sage.combinat.integer_vector_weighted import WeightedIntegerVectors
 from yacop.utils.bitstuff import binom_modp
 from sage.rings.integer_ring import ZZ
 
-class AdmissibleMatrices(Parent):
 
+class AdmissibleMatrices(Parent):
     def __init__(self, prime, exponents, maxn=None):
         """
         TESTS::
@@ -55,16 +55,23 @@ class AdmissibleMatrices(Parent):
         self.p = prime
         self.one = GF(self.p).one()
         self.exp = list(exponents)
-        self.maxn = 99999 if maxn is None else maxn 
-        me = max([0, ] + self.exp)
-        self.powers = [1, ]
+        self.maxn = 99999 if maxn is None else maxn
+        me = max(
+            [
+                0,
+            ]
+            + self.exp
+        )
+        self.powers = [
+            1,
+        ]
         pow = self.p
         i = 0
         while pow <= me:
             self.powers.append(pow)
             pow *= self.p
             i += 1
-            if i>self.maxn:
+            if i > self.maxn:
                 break
         self.ncols = len(self.powers)
         self.nrows = len(exponents)
@@ -119,49 +126,49 @@ class AdmissibleMatrices(Parent):
         ans = matrix(ZZ, self.nrows, self.ncols)
         col = matrix(ZZ, self.nrows, self.ncols)
         dia = matrix(ZZ, self.nrows, self.ncols)
-        for (cf,ans,col,dia) in self._enumerate_row(ans, col, dia, 0):
+        for (cf, ans, col, dia) in self._enumerate_row(ans, col, dia, 0):
             cols, diags = list(col.row(0)), list(dia.row(0))
-            for i in range(1,self.nrows):
-                diags.append(dia[i,self.ncols-1])
-            yield (cf,ans,cols,diags)
+            for i in range(1, self.nrows):
+                diags.append(dia[i, self.ncols - 1])
+            yield (cf, ans, cols, diags)
 
-
-    def _enumerate_row(self,ans,col,dia,rownum):
-        if rownum == self.nrows-1:
-            loop = [(self.one,ans,col,dia),].__iter__()
+    def _enumerate_row(self, ans, col, dia, rownum):
+        if rownum == self.nrows - 1:
+            loop = [
+                (self.one, ans, col, dia),
+            ].__iter__()
         else:
-            loop = self._enumerate_row(ans,col,dia,rownum+1)
-        for (cf,a,c,d) in loop:
+            loop = self._enumerate_row(ans, col, dia, rownum + 1)
+        for (cf, a, c, d) in loop:
             # fill in row #rownum
-            for sol in WeightedIntegerVectors(self.exp[rownum],self.powers):
+            for sol in WeightedIntegerVectors(self.exp[rownum], self.powers):
                 cf2 = cf
                 isbad = False
-                for (i,s) in enumerate(sol):
-                    if s>0 and rownum+i>=self.maxn:
+                for (i, s) in enumerate(sol):
+                    if s > 0 and rownum + i >= self.maxn:
                         isbad = True
                         break
-                    a[rownum,i] = s
-                    if rownum+1<self.nrows:
-                        cprev = c[rownum+1,i]
-                        dprev = 0 if i==0 else d[rownum+1,i-1]
+                    a[rownum, i] = s
+                    if rownum + 1 < self.nrows:
+                        cprev = c[rownum + 1, i]
+                        dprev = 0 if i == 0 else d[rownum + 1, i - 1]
                     else:
                         cprev = 0
                         dprev = 0
-                    c[rownum,i] = cprev + s
-                    d[rownum,i] = dprev + s
-                    cf2 *= binom_modp(self.p,dprev+s,s)
+                    c[rownum, i] = cprev + s
+                    d[rownum, i] = dprev + s
+                    cf2 *= binom_modp(self.p, dprev + s, s)
                     if cf2.is_zero():
                         isbad = True
                         break
                 if isbad:
                     continue
-                yield (cf2,a,c,d)
+                yield (cf2, a, c, d)
 
     def __iter__(self):
         return AdmissibleMatrices.Iterator(self)
 
     class Iterator:
-
         def __init__(self, admat):
             self.gen = admat.enumerate()
 

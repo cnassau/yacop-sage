@@ -28,10 +28,10 @@ CLASS DOCUMENTATION:
     sage: import __main__
 """
 
-#*****************************************************************************
+# *****************************************************************************
 #       Copyright (C) 2011 Christian Nassau <nassau@nullhomotopie.de>
 #  Distributed under the terms of the GNU General Public License (GPL)
-#*****************************************************************************
+# *****************************************************************************
 
 from yacop.utils.region import region
 from yacop.utils.gradings import YacopGrading
@@ -64,13 +64,13 @@ from yacop.modules.xitauring import XiTauRing
 from sage.misc.lazy_attribute import lazy_attribute
 from sage.misc.cachefunc import cached_method
 
+
 class DicksonBase(SteenrodAlgebraBase):
     """
     Base class for DicksonDualSteenrodAlgebra and DicksonAlgebra
     """
 
     class Degrees(object):
-
         def __init__(self, prime, generic, ispos, index=None):
             self._prime = prime
             self._generic = generic
@@ -78,7 +78,7 @@ class DicksonBase(SteenrodAlgebraBase):
             self._index = index
 
         def __getitem__(self, idx):
-            if idx>=2*self._index:
+            if idx >= 2 * self._index:
                 raise StopIteration
             idx = idx ^ 1
             fac = 2 if self._generic else 1
@@ -87,28 +87,54 @@ class DicksonBase(SteenrodAlgebraBase):
                 return (-(2 * self._prime ** ((idx - 1) >> 1) - 1), -1, 0)
             else:
                 if self._ispos:
-                    ind = (idx >> 1)
-                    fac = -fac * self._prime ** (self._index-ind-1)
+                    ind = idx >> 1
+                    fac = -fac * self._prime ** (self._index - ind - 1)
                 # xi_(idx/2+1)
                 return (-fac * (self._prime ** (1 + (idx >> 1)) - 1), 0, 0)
 
-    def __init__(self, prime, index, ispos=False, generic='auto', category=None,
-                 names=("zeta", "tau"), latexnames=("\\zeta", "\\tau")):
-        if generic == 'auto':
+    def __init__(
+        self,
+        prime,
+        index,
+        ispos=False,
+        generic="auto",
+        category=None,
+        names=("zeta", "tau"),
+        latexnames=("\\zeta", "\\tau"),
+    ):
+        if generic == "auto":
             generic = False if prime == 2 else True
         self._generic = generic
         degs = DicksonBase.Degrees(prime, generic, ispos=ispos, index=index)
         self._prime = prime
         self._index = index
         self._ispos = ispos
-        A = SteenrodAlgebra(prime) if prime > 2 else SteenrodAlgebra(prime, generic=generic)
-        SteenrodAlgebraBase.__init__(self, XiTauRing(prime,numxi=index,numtau=index,degrees=degs,
-                                                     names=names,latexnames=latexnames), degs, None,
-                                     A, left_action=True, right_action=False, category=category)
-        self._genpower = lambda g,e : self._R._genpower(g,e)
-    
+        A = (
+            SteenrodAlgebra(prime)
+            if prime > 2
+            else SteenrodAlgebra(prime, generic=generic)
+        )
+        SteenrodAlgebraBase.__init__(
+            self,
+            XiTauRing(
+                prime,
+                numxi=index,
+                numtau=index,
+                degrees=degs,
+                names=names,
+                latexnames=latexnames,
+            ),
+            degs,
+            None,
+            A,
+            left_action=True,
+            right_action=False,
+            category=category,
+        )
+        self._genpower = lambda g, e: self._R._genpower(g, e)
+
     def octants(self):
-        return [(-1, -1, 0)] if not self._ispos else [(1,-1,0)]
+        return [(-1, -1, 0)] if not self._ispos else [(1, -1, 0)]
 
     def _is_sorted_by_t_degrees(self):
         return False if self._ispos else True
@@ -124,31 +150,31 @@ class DicksonBase(SteenrodAlgebraBase):
 
     def _monomial_gen_key(self, idx, expo=1):
         """
-         TESTS::
+        TESTS::
 
-            sage: from yacop.modules.dickson import *
-            sage: D=DicksonDualSteenrodAlgebra(5,6)
-            sage: for u in range(0,4):
-            ....:     print(u,D._monomial_gen(u))
-            0 1
-            1 tau[0]
-            2 zeta[1]
-            3 tau[1]
-            sage: D._tau(0)
-            tau[0]
-            sage: D._zetapower(3,5)
-            zeta[3]**5
-            sage: D._zetapower(0,2)
-            1
+           sage: from yacop.modules.dickson import *
+           sage: D=DicksonDualSteenrodAlgebra(5,6)
+           sage: for u in range(0,4):
+           ....:     print(u,D._monomial_gen(u))
+           0 1
+           1 tau[0]
+           2 zeta[1]
+           3 tau[1]
+           sage: D._tau(0)
+           tau[0]
+           sage: D._zetapower(3,5)
+           zeta[3]**5
+           sage: D._zetapower(0,2)
+           1
         """
         return tuple([0 if x < idx else expo for x in range(1, idx + 1)])
 
     def _monomial_gen(self, idx, expo=1):
-        return self._from_dict({self._monomial_gen_key(idx, expo):1})
+        return self._from_dict({self._monomial_gen_key(idx, expo): 1})
 
     def _toqp(self, elem):
         # hack: elem must be monomial with coefficient 1
-        elem, = elem.monomial_coefficients()
+        (elem,) = elem.monomial_coefficients()
         q = 0
         msk = 1
         for idx in elem[::2]:
@@ -159,8 +185,9 @@ class DicksonBase(SteenrodAlgebraBase):
 
     def gens(self):
         if self._generic:
-            return [self._monomial_gen(i+1) for (i, g) in enumerate(self._R.gens())]
-        return [self._monomial_gen(i+1) for (i, g) in enumerate(self._R.gens())][1::2]
+            return [self._monomial_gen(i + 1) for (i, g) in enumerate(self._R.gens())]
+        return [self._monomial_gen(i + 1) for (i, g) in enumerate(self._R.gens())][1::2]
+
 
 class DicksonDualSteenrodAlgebra(DicksonBase):
 
@@ -233,7 +260,7 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
 
     """
 
-    x="""
+    x = """
        sage: A = SteenrodAlgebra(5)
        sage: P,Q = A.P,A.Q_exp
        sage: [tau[1]*u for u in [Q(0,1),P(1),P(0)]]
@@ -286,9 +313,17 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
 
     """
 
-    def __init__(self, prime, index, generic='auto', category=None):
-        DicksonBase.__init__(self, prime, index, ispos=False, generic=generic, category=category,
-                             names=("zeta[{idx}]", "tau[{idx}]"), latexnames=("\\zeta_{{{idx}}}", "\\tau_{{{idx}}}"))
+    def __init__(self, prime, index, generic="auto", category=None):
+        DicksonBase.__init__(
+            self,
+            prime,
+            index,
+            ispos=False,
+            generic=generic,
+            category=category,
+            names=("zeta[{idx}]", "tau[{idx}]"),
+            latexnames=("\\zeta_{{{idx}}}", "\\tau_{{{idx}}}"),
+        )
 
     @lazy_attribute
     def _dicksonalgebra(self):
@@ -302,19 +337,26 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
 
         """
         from yacop.modules.dickson import DicksonAlgebra
-        return DicksonAlgebra(self._prime,self._index,generic=self._generic)
+
+        return DicksonAlgebra(self._prime, self._index, generic=self._generic)
 
     def _repr_(self):
         # TODO support having numtau == 0
         gen = "generic " if self._prime == 2 and self._generic else ""
-        return "%sDickson(%d) dual Steenrod algebra at the prime %d" % (gen, self._index, self._prime)
+        return "%sDickson(%d) dual Steenrod algebra at the prime %d" % (
+            gen,
+            self._index,
+            self._prime,
+        )
 
     def _bbox(self):
         return region(tmax=0, emax=0, s=0, tmin=-Infinity, emin=-self._R.numtau)
 
     def variable_names(self):
         if not self._generic:
-            return ["zeta",]
+            return [
+                "zeta",
+            ]
         else:
             return ["zeta", "tau"]
 
@@ -367,7 +409,7 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
                 step = 1 if val.step is None else val.step
                 if start < 0:
                     raise ValueError("no such generator")
-                if stop > max: 
+                if stop > max:
                     stop = max
                 return [self[u] for u in range(start, stop, step)]
             idx = val << 1
@@ -380,11 +422,11 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
                     raise ValueError("no such generator")
                 idx = idx - 2
             idx = idx ^ 1
-            if idx >= 2*self.par._index:
+            if idx >= 2 * self.par._index:
                 raise ValueError("no such generator")
             if 0 == numtau:
-                idx = idx>>1
-                return self.par._monomial_gen(idx+1)
+                idx = idx >> 1
+                return self.par._monomial_gen(idx + 1)
             return self.par._monomial_gen(idx + 1)
 
         def __iter__(self):
@@ -415,14 +457,14 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
 
     def tau(self, idx):
         """
-         TESTS::
+        TESTS::
 
-            sage: from yacop.modules.dickson import DicksonDualSteenrodAlgebra
-            sage: D=DicksonDualSteenrodAlgebra(11,4)
-            sage: D.tau(3)
-            tau[3]
-            sage: D.tau(-1)
-            1
+           sage: from yacop.modules.dickson import DicksonDualSteenrodAlgebra
+           sage: D=DicksonDualSteenrodAlgebra(11,4)
+           sage: D.tau(3)
+           tau[3]
+           sage: D.tau(-1)
+           1
         """
         if not self._generic:
             raise ValueError("tau generator not defined in %s" % self)
@@ -433,7 +475,9 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
         return self._tau(idx)
 
     def gens(self):
-        ans = [DicksonDualSteenrodAlgebra.GenFactory(self, 1), ]
+        ans = [
+            DicksonDualSteenrodAlgebra.GenFactory(self, 1),
+        ]
         if self._generic:
             ans.append(DicksonDualSteenrodAlgebra.GenFactory(self, 0))
         return ans
@@ -462,7 +506,7 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
                 yield self._zetapower(n - i, ppow), self._zetapower(i)
                 ppow = ppow * self._prime
         else:
-            n = (idx >> 1)
+            n = idx >> 1
             # Delta(tau_n) = sum xi_{n-i}^{p^i}*tau_i + tau_n*1
             ppow = 1
             yield self._tau(n), self._zetapower(0)
@@ -482,8 +526,7 @@ class DicksonDualSteenrodAlgebra(DicksonBase):
 
 
 class DicksonAlgebra(DicksonBase):
-
-    def __init__(self, prime, index, generic='auto', category=None):
+    def __init__(self, prime, index, generic="auto", category=None):
         """
         TESTS::
 
@@ -552,9 +595,16 @@ class DicksonAlgebra(DicksonBase):
             sage: TestSuite(G).run()
 
         """
-        DicksonBase.__init__(self, prime, index, ispos=True, generic=generic, category=category,
-                             names=("d{deg}", "tau{idx}"), latexnames=("d_{{{deg}}}", "\\tau_{{{idx}}}"))
-
+        DicksonBase.__init__(
+            self,
+            prime,
+            index,
+            ispos=True,
+            generic=generic,
+            category=category,
+            names=("d{deg}", "tau{idx}"),
+            latexnames=("d_{{{deg}}}", "\\tau_{{{idx}}}"),
+        )
 
     def variable_names(self):
         return [str(u) for u in self.gens()]
@@ -572,6 +622,7 @@ class DicksonAlgebra(DicksonBase):
     @lazy_attribute
     def _peterson_factory(self):
         from yacop.modules.dickson import PetersonPolynomials
+
         return PetersonPolynomials(self._prime, self._index)
 
     def peterson(self, idx, coeff=1):
@@ -620,19 +671,19 @@ class DicksonAlgebra(DicksonBase):
         GF = self.base_ring()
         dec = PetersonPolynomials.decompose(self._prime, idx)
         comp = []
-        startpow = self._prime**(self._index-1)
+        startpow = self._prime ** (self._index - 1)
         for (cf, expos) in dec:
             if len(expos) > self._index:
                 continue
             pow = startpow
             key = []
             for e in expos:
-                if e%pow != 0:
+                if e % pow != 0:
                     raise ValueError("Peterson element %d not in %s" % (idx, self))
                 key.append(0)
-                key.append(e//pow)
+                key.append(e // pow)
                 pow //= self._prime
-            comp.append((tuple(key), GF(coeff*cf)))
+            comp.append((tuple(key), GF(coeff * cf)))
         return self._from_dict(dict(comp))
 
     def _zetapower(self, idx, pow=1):
@@ -647,19 +698,19 @@ class DicksonAlgebra(DicksonBase):
         """
         if idx == 0:
             return self.one()
-        x = self._monomial_gen_key(2*self._index, -pow)
+        x = self._monomial_gen_key(2 * self._index, -pow)
         if idx < self._index:
             y = list(x)
-            y[2*(self._index-idx)-1] += pow
+            y[2 * (self._index - idx) - 1] += pow
             x = tuple(y)
         elif idx > self._index:
             raise ValueError("zeta%d not in %s" % (idx, self))
-        return self._from_dict({x:1})
+        return self._from_dict({x: 1})
 
     def _xipower(self, idx, pow=1):
         """
         TESTS::
- 
+
             sage: from yacop.modules.dickson import DicksonAlgebra
             sage: D = DicksonAlgebra(2,3)
             sage: [D._xipower(i) for i in (0,1,2,3)]
@@ -673,26 +724,32 @@ class DicksonAlgebra(DicksonBase):
 
         """
         # FIXME: compute this more intelligently, e.g. just cache xi^k with k<p
-        return self.__xi(idx,pow)
+        return self.__xi(idx, pow)
 
     @cached_method
-    def __xi(self,idx,pow):
+    def __xi(self, idx, pow):
         if idx == 0:
             return self.one()
         elif idx > self._index:
             raise ValueError("xi%d not in %s" % (idx, self))
         if pow > 1:
-            return self.product(self.__xi(idx,pow-1),self.__xi(idx,1))
+            return self.product(self.__xi(idx, pow - 1), self.__xi(idx, 1))
         p = self._prime
-        return -self.sum(self.product(self.__xi(j,1),self._zetapower(idx-j,p**j)) for j in range(idx))
-        
+        return -self.sum(
+            self.product(self.__xi(j, 1), self._zetapower(idx - j, p ** j))
+            for j in range(idx)
+        )
+
     def admissible_action(self, redpow, elem, debug=False):
         """
         Compute redpow * elem using admissible matrices
         """
         from yacop.utils.admissible_matrices import AdmissibleMatrices
+
         isgen = redpow.parent().is_generic()
-        zpad = [0,]*self._index
+        zpad = [
+            0,
+        ] * self._index
         ans = []
         for (key, cf) in redpow:
             if isgen:
@@ -701,36 +758,51 @@ class DicksonAlgebra(DicksonBase):
                     raise ValueError("exterior multiplications not implemented yet")
             else:
                 expos = key
-            #print "redpow contains", (key,cf), "expos=",expos
-            for (c, a, cols, diag) in AdmissibleMatrices(self._prime, expos, maxn=self._index).enumerate():
-                if debug: print("admissible matrix, coeff=%d\n%s" % (c,a))
+            # print "redpow contains", (key,cf), "expos=",expos
+            for (c, a, cols, diag) in AdmissibleMatrices(
+                self._prime, expos, maxn=self._index
+            ).enumerate():
+                if debug:
+                    print("admissible matrix, coeff=%d\n%s" % (c, a))
                 for (dkey, dcf) in elem:
-                    ncf = c*dcf*cf
-                    for _ in [0,]:
+                    ncf = c * dcf * cf
+                    for _ in [
+                        0,
+                    ]:
                         dkey = list(dkey) + zpad + zpad
                         if max(dkey[0::2]) != 0:
                             raise ValueError("exterior part not implemented yet")
                         rexpos = dkey[1::2]
-                        zexpos = list(reversed(rexpos[0:self._index-1]))
-                        zexpos = [-1-_ for _ in zexpos] + [-1+sum(zexpos)+rexpos[self._index-1]]
-                        if debug: print("%s = zeta(%s)" % (self._from_dict({tuple(dkey):dcf}), zexpos))
-                        zrems = [a-b for (a,b) in zip(zexpos,cols[1:]+zpad)]
-                        if debug: print("zeta-remainder = ", zrems)
-                        for (dterm,zterm) in zip(diag, zrems):
-                            ncf *= binom_modp(self._prime,dterm+zterm,dterm)
+                        zexpos = list(reversed(rexpos[0 : self._index - 1]))
+                        zexpos = [-1 - _ for _ in zexpos] + [
+                            -1 + sum(zexpos) + rexpos[self._index - 1]
+                        ]
+                        if debug:
+                            print(
+                                "%s = zeta(%s)"
+                                % (self._from_dict({tuple(dkey): dcf}), zexpos)
+                            )
+                        zrems = [a - b for (a, b) in zip(zexpos, cols[1:] + zpad)]
+                        if debug:
+                            print("zeta-remainder = ", zrems)
+                        for (dterm, zterm) in zip(diag, zrems):
+                            ncf *= binom_modp(self._prime, dterm + zterm, dterm)
                             if ncf.is_zero():
                                 break
-                        if debug: print("coefficient=", ncf)
+                        if debug:
+                            print("coefficient=", ncf)
                         if ncf.is_zero():
                             continue
-                        newzeta = [a+b for (a,b) in zip(diag+zpad,zrems)]
-                        newexpo = list(reversed([-1-a for a in newzeta[0:self._index-1]]))
-                        newexpo.append(1+newzeta[self._index-1]-sum(newexpo))
-                        newkey = [(0,_) for _ in newexpo]
+                        newzeta = [a + b for (a, b) in zip(diag + zpad, zrems)]
+                        newexpo = list(
+                            reversed([-1 - a for a in newzeta[0 : self._index - 1]])
+                        )
+                        newexpo.append(1 + newzeta[self._index - 1] - sum(newexpo))
+                        newkey = [(0, _) for _ in newexpo]
                         newkey = [_ for j in newkey for _ in j]
                         while newkey[-1] == 0:
                             newkey.pop()
-                        ans.append(self._from_dict({tuple(newkey):ncf}))
+                        ans.append(self._from_dict({tuple(newkey): ncf}))
         return self.sum(ans)
 
     def __action_exponents(self, p, n, maxP, isconjugate=False):
@@ -745,25 +817,36 @@ class DicksonAlgebra(DicksonBase):
         for (cf, exp, dg, psum, esum) in self.__action_exponents2(p, maxP, 0, 0):
             # the flag isconjugate switches between ordinary and conjugate action
             if isconjugate:
-                c2 = binom_modp(p, -n*(p-1), psum)
+                c2 = binom_modp(p, -n * (p - 1), psum)
             else:
-                c2 = binom_modp(p, psum+n*(p-1)-esum, psum)
+                c2 = binom_modp(p, psum + n * (p - 1) - esum, psum)
             if c2 != 0:
-                yield (c2*cf, exp, dg)
+                yield (c2 * cf, exp, dg)
 
     def __action_exponents2(self, p, maxP, partialsum, expsum):
         idx = len(maxP)
         if idx > 0:
-            ppow = p**idx
-            opdeg = (ppow-1) // (p-1)
+            ppow = p ** idx
+            opdeg = (ppow - 1) // (p - 1)
             idx = idx - 1
-            for e in range(maxP[idx]+1):
-                epow = e*ppow
+            for e in range(maxP[idx] + 1):
+                epow = e * ppow
                 ps2 = partialsum + epow
                 cf = binom_modp(p, ps2, epow)
                 if cf != 0:
-                    for (c, exp, dg, ps, es) in self.__action_exponents2(p, maxP[0:idx], ps2, expsum+e):
-                        yield (c*cf, exp+[e,], dg+e*opdeg, ps, es)
+                    for (c, exp, dg, ps, es) in self.__action_exponents2(
+                        p, maxP[0:idx], ps2, expsum + e
+                    ):
+                        yield (
+                            c * cf,
+                            exp
+                            + [
+                                e,
+                            ],
+                            dg + e * opdeg,
+                            ps,
+                            es,
+                        )
         else:
             yield (1, [], 0, partialsum, expsum)
 
@@ -853,28 +936,29 @@ class DicksonAlgebra(DicksonBase):
         """
         if idx & 1:
             num = (idx + 1) >> 1
-            expo = self._prime**(self._index-num)
+            expo = self._prime ** (self._index - num)
             n = 0
             while num:
-                num = num-1
-                n += self._prime**num*expo
+                num = num - 1
+                n += self._prime ** num * expo
             # now idx = self.peterson(n)
-            #print "exponents(n=%d,maxP=%s)=%s" % (n,maxP,list(self.__action_exponents(self._prime, n, maxP)))
+            # print "exponents(n=%d,maxP=%s)=%s" % (n,maxP,list(self.__action_exponents(self._prime, n, maxP)))
             for (cf, expos, deg) in self.__action_exponents(self._prime, n, maxP):
                 if cf:
-                    yield self._coaction_tensor(self.peterson(n+deg,coeff=cf), 0, expos)
+                    yield self._coaction_tensor(
+                        self.peterson(n + deg, coeff=cf), 0, expos
+                    )
         else:
-            n = (idx >> 1)
+            n = idx >> 1
             # Delta(tau_n) = sum zeta_{n-i}^{p^i}*tau_i + tau_n*1
             ppow = 1
-            yield self._coaction_tensor(self._monomial_gen(idx+1), 0, ())
-            #print "Delta(tau%d)" % n
-            #print self._coaction_tensor(self._monomial_gen(idx+1), 0, ())
+            yield self._coaction_tensor(self._monomial_gen(idx + 1), 0, ())
+            # print "Delta(tau%d)" % n
+            # print self._coaction_tensor(self._monomial_gen(idx+1), 0, ())
             for i in range(0, n + 1):
-                #print self._coaction_tensor(self._zetapower(n - i, ppow), 1<<i, ())
-                yield self._coaction_tensor(self._xipower(n - i, ppow), 1<<i, ())
+                # print self._coaction_tensor(self._zetapower(n - i, ppow), 1<<i, ())
+                yield self._coaction_tensor(self._xipower(n - i, ppow), 1 << i, ())
                 ppow = ppow * self._prime
-
 
     def _left_conjugate_steenrod_coaction_milnor_gen(self, idx, maxQ, maxP):
         """
@@ -889,30 +973,37 @@ class DicksonAlgebra(DicksonBase):
         """
         if idx & 1:
             num = (idx + 1) >> 1
-            expo = self._prime**(self._index-num)
+            expo = self._prime ** (self._index - num)
             n = 0
             while num:
-                num = num-1
-                n += self._prime**num*expo
+                num = num - 1
+                n += self._prime ** num * expo
             # now idx = self.peterson(n)
-            #print "exponents(n=%d,maxP=%s)=%s" % (n,maxP,list(self.__action_exponents(self._prime, n, maxP)))
-            for (cf, expos, deg) in self.__action_exponents(self._prime, n, maxP, isconjugate=True):
+            # print "exponents(n=%d,maxP=%s)=%s" % (n,maxP,list(self.__action_exponents(self._prime, n, maxP)))
+            for (cf, expos, deg) in self.__action_exponents(
+                self._prime, n, maxP, isconjugate=True
+            ):
                 if cf:
-                    yield self._coaction_tensor(self.peterson(n+deg,coeff=cf), 0, expos)
+                    yield self._coaction_tensor(
+                        self.peterson(n + deg, coeff=cf), 0, expos
+                    )
         else:
             # FIXME: the exterior part is wrong
-            n = (idx >> 1)
+            n = idx >> 1
             # Delta(tau_n) = sum zeta_{n-i}^{p^i}*tau_i + tau_n*1
             ppow = 1
-            yield self._coaction_tensor(self._monomial_gen(idx+1), 0, ())
+            yield self._coaction_tensor(self._monomial_gen(idx + 1), 0, ())
             for i in range(0, n + 1):
-                yield self._coaction_tensor(self._zetapower(n - i, ppow), 1<<i, ())
+                yield self._coaction_tensor(self._zetapower(n - i, ppow), 1 << i, ())
                 ppow = ppow * self._prime
 
-
     def _left_conjugate_coaction_on_basis(self, a, maxq, maxp):
-        return self._coaction_helper(self._left_conjugate_steenrod_coaction_milnor_gen, 
-                                     self._factor_key(a, 0 if len(maxp)==0 else max(maxp)), maxq, maxp)
+        return self._coaction_helper(
+            self._left_conjugate_steenrod_coaction_milnor_gen,
+            self._factor_key(a, 0 if len(maxp) == 0 else max(maxp)),
+            maxq,
+            maxp,
+        )
 
     def left_steenrod_action_milnor_conj(self, a, m):
         """
@@ -930,14 +1021,14 @@ class DicksonAlgebra(DicksonBase):
 
     def _restriction_basis(self, dest, key):
         idx = dest._index
-        if len(key) > 2*idx:
+        if len(key) > 2 * idx:
             return dest.zero()
         ans = []
         for (i, x) in enumerate(key):
-            ans.append(x if 0 == i&1 else self._prime*x)
+            ans.append(x if 0 == i & 1 else self._prime * x)
         while 0 == ans[-1]:
             ans.pop()
-        return dest._from_dict({tuple(ans):self.base_ring().one()})
+        return dest._from_dict({tuple(ans): self.base_ring().one()})
 
     @cached_method
     def restriction(self, other):
@@ -970,8 +1061,9 @@ class DicksonAlgebra(DicksonBase):
             raise ValueError("prime mismatch")
         if other._index > self._index:
             raise ValueError("restriction from %s to %s not defined" % (self, other))
-        ans = self.module_morphism(codomain=other,
-                                   on_basis=lambda x: self._restriction_basis(other, x))
+        ans = self.module_morphism(
+            codomain=other, on_basis=lambda x: self._restriction_basis(other, x)
+        )
         ans.rename("restriction from %s to %s" % (self, other))
         return ans
 
@@ -995,10 +1087,12 @@ class DicksonAlgebra(DicksonBase):
             raise ValueError("prime mismatch")
         if other._index < self._index:
             raise ValueError("transfer from %s to %s not defined" % (self, other))
-        ans = self.module_morphism(codomain=other,
-                                   on_basis=lambda x: self._transfer_basis(other, x))
+        ans = self.module_morphism(
+            codomain=other, on_basis=lambda x: self._transfer_basis(other, x)
+        )
         ans.rename("transfer from %s to %s" % (self, other))
         return ans
+
 
 class PetersonPolynomials(SageObject):
     """
@@ -1040,20 +1134,42 @@ class PetersonPolynomials(SageObject):
         from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
         from yacop.modules.classifying_spaces import BZpGeneric
         from sage.categories.tensor import tensor
+
         self.p = p
         self.n = n
         self.B = BZpGeneric(p)
-        factors = tuple([self.B,]*n)
+        factors = tuple(
+            [
+                self.B,
+            ]
+            * n
+        )
         self.BT = tensor(factors)
         self.tc = self.BT.tensor_constructor(factors)
-        deg = - 1
-        fac = 2 # if p>2 else 1
-        self.b = self.B.monomial(fac*deg)
-        self.binv = self.B.monomial(-fac*deg)
-        self.bt = tensor([self.b,]*n)
-        self.bti = tensor([self.binv,]*n)
+        deg = -1
+        fac = 2  # if p>2 else 1
+        self.b = self.B.monomial(fac * deg)
+        self.binv = self.B.monomial(-fac * deg)
+        self.bt = tensor(
+            [
+                self.b,
+            ]
+            * n
+        )
+        self.bti = tensor(
+            [
+                self.binv,
+            ]
+            * n
+        )
         self.P = SteenrodAlgebra(p, generic=True).P
-        self.Q = PolynomialRing(GF(p), ["x%d"%(i+1) for i in range(n)]+ ["t",])
+        self.Q = PolynomialRing(
+            GF(p),
+            ["x%d" % (i + 1) for i in range(n)]
+            + [
+                "t",
+            ],
+        )
 
     def _repr_(self):
         return "Peterson element factory for prime %d, index %d" % (self.p, self.n)
@@ -1079,10 +1195,16 @@ class PetersonPolynomials(SageObject):
         """
         xi = self.Q.gens()[:-1]
         t = self.Q.gens()[self.n]
-        pol = self.Q.prod(t+self.Q.sum(a*x for (a, x) in zip(cf, xi)) for cf in GF(self.p)**self.n)
-        return [pol.coefficient(t**(self.p**i))*(-1)**(self.n-i) for i in range(self.n)]
+        pol = self.Q.prod(
+            t + self.Q.sum(a * x for (a, x) in zip(cf, xi))
+            for cf in GF(self.p) ** self.n
+        )
+        return [
+            pol.coefficient(t ** (self.p ** i)) * (-1) ** (self.n - i)
+            for i in range(self.n)
+        ]
 
-    def is_invariant(self,qelem):
+    def is_invariant(self, qelem):
         """
         TESTS::
 
@@ -1105,14 +1227,17 @@ class PetersonPolynomials(SageObject):
         """
         if self.n == 1:
             return True
-        Q=self.Q
-        x1,x2 = Q.gens()[0:2]
+        Q = self.Q
+        x1, x2 = Q.gens()[0:2]
         # we already know the element is symmetric in the variables
         # so we only check invariance under x1 -> x1+x2
-        return (qelem - qelem.subs({x1:x1+x2})).is_zero()#
+        return (qelem - qelem.subs({x1: x1 + x2})).is_zero()  #
 
     def toQ(self, x):
-        return self.Q.sum(cf*self.Q.prod(a**(e>>1) for (a, e) in zip(self.Q.gens(), expo)) for (expo, cf) in x)
+        return self.Q.sum(
+            cf * self.Q.prod(a ** (e >> 1) for (a, e) in zip(self.Q.gens(), expo))
+            for (expo, cf) in x
+        )
 
     def opelem(self, op):
         return self.toQ((op * self.bt) * self.bti)
@@ -1131,14 +1256,25 @@ class PetersonPolynomials(SageObject):
         if len == 1:
             cf = self.gamma(sum)
             if cf:
-                yield (cf, [sum,])
+                yield (
+                    cf,
+                    [
+                        sum,
+                    ],
+                )
             return
         if len > 1:
-            for smd in range(sum+1):
+            for smd in range(sum + 1):
                 cf = self.gamma(smd)
                 if cf:
-                    for (c, x) in self._omega_exponents(sum-smd, len-1):
-                        yield (cf*c, [smd,]+x)
+                    for (c, x) in self._omega_exponents(sum - smd, len - 1):
+                        yield (
+                            cf * c,
+                            [
+                                smd,
+                            ]
+                            + x,
+                        )
 
     def _omega_fast(self, n):
         """
@@ -1155,17 +1291,21 @@ class PetersonPolynomials(SageObject):
         """
         from sage.combinat.integer_vector_weighted import WeightedIntegerVectors
         from sage.misc.misc_c import prod
+
         pmo = self.p - 1
         ans = []
         for (cf, expos) in self._omega_exponents(n, self.n):
-            if 0 == cf%self.p:
+            if 0 == cf % self.p:
                 continue
-            ans.append(cf*self.Q.prod(a**(pmo*e) for (a, e) in zip(self.Q.gens(), expos)))
+            ans.append(
+                cf * self.Q.prod(a ** (pmo * e) for (a, e) in zip(self.Q.gens(), expos))
+            )
         return self.Q.sum(ans)
 
     @staticmethod
     def _milnor_basis(p, n):
         from sage.algebras.steenrod.steenrod_algebra_bases import milnor_basis
+
         if p == 2:
             for x in milnor_basis(n, 2):
                 yield x
@@ -1178,7 +1318,7 @@ class PetersonPolynomials(SageObject):
         """
         the gamma(n) in the definition of omega(n)
         """
-        return binom_modp(self.p, -(self.p-1)*n, n)
+        return binom_modp(self.p, -(self.p - 1) * n, n)
 
     @staticmethod
     def decompose(p, n):
@@ -1186,10 +1326,10 @@ class PetersonPolynomials(SageObject):
         Decompose a omega_n into a product of Dicksonians
         """
 
-        inv = p**(p-2)
-        tdeg = 2*(p-1) if p > 2 else 1
-        pmo = p-1
-        #FIXME: why does this not depend on the generic/non-generic flag for p=2?
+        inv = p ** (p - 2)
+        tdeg = 2 * (p - 1) if p > 2 else 1
+        pmo = p - 1
+        # FIXME: why does this not depend on the generic/non-generic flag for p=2?
         for expos in PetersonPolynomials._milnor_basis(p, tdeg * n):
             sum = 0
             cf = 1
@@ -1200,10 +1340,9 @@ class PetersonPolynomials(SageObject):
                     break
             if 0 == cf:
                 continue
-            cf *= binom_modp(p, -n*pmo, sum)
+            cf *= binom_modp(p, -n * pmo, sum)
             if 0 != cf:
                 yield [cf, expos]
-
 
 
 # Local Variables:

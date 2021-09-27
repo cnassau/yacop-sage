@@ -70,12 +70,12 @@ TESTS::
 
 
 """
-#*****************************************************************************
+# *****************************************************************************
 #  Copyright (C) 2011 Christian Nassau <nassau@nullhomotopie.de>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
-#******************************************************************************
+# ******************************************************************************
 
 from sage.combinat.free_module import CombinatorialFreeModule
 from sage.structure.category_object import CategoryObject
@@ -97,84 +97,90 @@ Fix pickling doc tests::
     sage: __main__.SetOfElements = SetOfElements
 """
 
+
 class SetOfElements(Parent, metaclass=ClasscallMetaclass):
-   """
-   dummy documentation, replaced below
-   """
+    """
+    dummy documentation, replaced below
+    """
 
-   def __init__(self,ambient,iterable,size,mapfunc,unmapfunc):
-      if size < Infinity:
-         category=FiniteEnumeratedSets()
-      else:
-         category=InfiniteEnumeratedSets()
-      Parent.__init__(self,ZZ,category=category)
-      self.size = size
-      self.fmap = mapfunc
-      self.funm = unmapfunc
-      self.keys = iterable
-      self.am = ambient
+    def __init__(self, ambient, iterable, size, mapfunc, unmapfunc):
+        if size < Infinity:
+            category = FiniteEnumeratedSets()
+        else:
+            category = InfiniteEnumeratedSets()
+        Parent.__init__(self, ZZ, category=category)
+        self.size = size
+        self.fmap = mapfunc
+        self.funm = unmapfunc
+        self.keys = iterable
+        self.am = ambient
 
-   def _repr_(self):
-      return "<a subset of %s indexed by %s>" % (self.am,self.keys)
+    def _repr_(self):
+        return "<a subset of %s indexed by %s>" % (self.am, self.keys)
 
-   class walker(object):
-      def __init__(self,owner):
-         self.owner = owner
-         self.it = iter(owner.keys)
-      def __iter__(self):
-         return self.__class__(self.owner)
-      def __next__(self):
-         return self.owner.fmap(next(self.it))
+    class walker(object):
+        def __init__(self, owner):
+            self.owner = owner
+            self.it = iter(owner.keys)
 
-   def __iter__(self):
-      return SetOfElements.walker(self)
+        def __iter__(self):
+            return self.__class__(self.owner)
 
-   def cardinality(self):
-      if self.size < 0:
-         self.size = len(list(iter(self)))
-      if self.size == Infinity:
-         return Infinity
-      return Integer(self.size)
+        def __next__(self):
+            return self.owner.fmap(next(self.it))
 
-   def __len__(self):
-      ans = self.cardinality()
-      if ans < Infinity:
-         return self.size
-      raise AttributeError("set is infinite")
+    def __iter__(self):
+        return SetOfElements.walker(self)
 
-   def an_element(self):
-      from itertools import islice
-      lst = list(islice(self,3))
-      return lst.pop()
+    def cardinality(self):
+        if self.size < 0:
+            self.size = len(list(iter(self)))
+        if self.size == Infinity:
+            return Infinity
+        return Integer(self.size)
 
-   def some_elements(self):
-      # 5 is plenty
-      from itertools import islice
-      return list(islice(self,5))
+    def __len__(self):
+        ans = self.cardinality()
+        if ans < Infinity:
+            return self.size
+        raise AttributeError("set is infinite")
 
-   def __contains__(self,x):
-      try:
-         # the unmap function can throw any kind of error
-         # for foreign input
-         key = self.funm(x)
-         return x == self.fmap(key)
-      except:
-         return False
+    def an_element(self):
+        from itertools import islice
 
-   def _test_pickling(self,tester=None,**options):
-      print(("pickling of %s not implemented" % self.__class__))
+        lst = list(islice(self, 3))
+        return lst.pop()
+
+    def some_elements(self):
+        # 5 is plenty
+        from itertools import islice
+
+        return list(islice(self, 5))
+
+    def __contains__(self, x):
+        try:
+            # the unmap function can throw any kind of error
+            # for foreign input
+            key = self.funm(x)
+            return x == self.fmap(key)
+        except:
+            return False
+
+    def _test_pickling(self, tester=None, **options):
+        print(("pickling of %s not implemented" % self.__class__))
 
 
 SetOfElements.__doc__ = __doc__
 
-def SetOfMonomials(ambient,iterable,size):
-   mf = lambda k:ambient.monomial(k)
-   def uf(x):
-       k, = x.monomial_coefficients()
-       return k
-   return SetOfElements(ambient,iterable,size,mf,uf)
 
+def SetOfMonomials(ambient, iterable, size):
+    mf = lambda k: ambient.monomial(k)
 
+    def uf(x):
+        (k,) = x.monomial_coefficients()
+        return k
+
+    return SetOfElements(ambient, iterable, size, mf, uf)
 
 
 # Local Variables:

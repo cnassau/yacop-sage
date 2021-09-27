@@ -6,10 +6,10 @@ AUTHORS: - Christian Nassau (2011-05-13: version 1.0)
 CLASS DOCUMENTATION:
 """
 
-#*****************************************************************************
+# *****************************************************************************
 #       Copyright (C) 2011 Christian Nassau <nassau@nullhomotopie.de>
 #  Distributed under the terms of the GNU General Public License (GPL)
-#*****************************************************************************
+# *****************************************************************************
 
 from yacop.utils.region import region
 from yacop.utils.gradings import YacopGrading
@@ -48,25 +48,27 @@ from yacop.utils.bitstuff import N0
 class XiTauRing(CombinatorialFreeModule, UniqueRepresentation):
 
     r"""
-     TESTS::
+    TESTS::
 
-       sage: from yacop.modules.xitauring import XiTauRing
-       sage: X=XiTauRing(5) ; X
-       <<xitau ring for prime 5, names=('xi[{idx}]', 'tau[{idx}]')>>
-       sage: X is XiTauRing(5)
-       True
-       sage: X.an_element()
-       2 + 2*xi[2] + 3*xi[2]**2
-       sage: X.monomial((9,(0,0,4)))
-       tau[0]*tau[3]*xi[3]**4
-       sage: latex(X.monomial((2,(1,2))))
-       \tau_{1}\xi_{1}\xi_{2}^{2}
-       sage: TestSuite(X).run()
+      sage: from yacop.modules.xitauring import XiTauRing
+      sage: X=XiTauRing(5) ; X
+      <<xitau ring for prime 5, names=('xi[{idx}]', 'tau[{idx}]')>>
+      sage: X is XiTauRing(5)
+      True
+      sage: X.an_element()
+      2 + 2*xi[2] + 3*xi[2]**2
+      sage: X.monomial((9,(0,0,4)))
+      tau[0]*tau[3]*xi[3]**4
+      sage: latex(X.monomial((2,(1,2))))
+      \tau_{1}\xi_{1}\xi_{2}^{2}
+      sage: TestSuite(X).run()
 
-     """
+    """
 
     @staticmethod
-    def __classcall__(cls,prime,numxi=None,numtau=None,degrees=None,names=None,latexnames=None):
+    def __classcall__(
+        cls, prime, numxi=None, numtau=None, degrees=None, names=None, latexnames=None
+    ):
         if numxi is None:
             numxi = Infinity
         if numtau is None:
@@ -75,9 +77,11 @@ class XiTauRing(CombinatorialFreeModule, UniqueRepresentation):
             names = ("xi[{idx}]", "tau[{idx}]")
         if latexnames is None:
             latexnames = ("\\xi_{{{idx}}}", "\\tau_{{{idx}}}")
-        return super(XiTauRing,cls).__classcall__(cls,prime,numxi,numtau,degrees,tuple(names),tuple(latexnames))
+        return super(XiTauRing, cls).__classcall__(
+            cls, prime, numxi, numtau, degrees, tuple(names), tuple(latexnames)
+        )
 
-    def __init__(self,prime,numxi,numtau,degrees,names,latexnames):
+    def __init__(self, prime, numxi, numtau, degrees, names, latexnames):
         self._prime = prime
         self.numxi = numxi
         self.numtau = numtau
@@ -91,10 +95,8 @@ class XiTauRing(CombinatorialFreeModule, UniqueRepresentation):
                 for v in range(0, 3):
                     b.append((e, (u, v)))
         CombinatorialFreeModule.__init__(
-            self,
-            GF(prime),
-            Family(b),
-            category=AlgebrasWithBasis(GF(prime)))
+            self, GF(prime), Family(b), category=AlgebrasWithBasis(GF(prime))
+        )
 
     def _repr_(self):
         return "<<xitau ring for prime %d, names=%s>>" % (self._prime, self.names)
@@ -116,12 +118,14 @@ class XiTauRing(CombinatorialFreeModule, UniqueRepresentation):
             times = "*"
         for (idx, digit) in zip(N0(), Integer(e).digits(2)):
             if digit == 1:
-                deg = abs(self._degrees[2*idx][1]) if not self._degrees is None else -1
-                ans.append(tau.format(idx=idx,deg=deg))
+                deg = (
+                    abs(self._degrees[2 * idx][1]) if not self._degrees is None else -1
+                )
+                ans.append(tau.format(idx=idx, deg=deg))
         for (idx, exp) in zip(N0(), p):
             if exp != 0:
-                deg = self._degrees[2*idx+1][0] if not self._degrees is None else -1
-                var = xi.format(deg=deg,idx=idx + 1)
+                deg = self._degrees[2 * idx + 1][0] if not self._degrees is None else -1
+                var = xi.format(deg=deg, idx=idx + 1)
                 if exp != 1:
                     if exp > 0:
                         ans.append(expo % (var, exp))
@@ -169,15 +173,15 @@ class XiTauRing(CombinatorialFreeModule, UniqueRepresentation):
             i = self.idx
             self.idx = i + 1
             i = i ^ 1
-            num = (i ^ (i&1))>>1
-            if num>=r.numxi and num>r.numtau:
+            num = (i ^ (i & 1)) >> 1
+            if num >= r.numxi and num > r.numtau:
                 raise StopIteration
             if i & 1:
-                if num>=r.numtau:
+                if num >= r.numtau:
                     return next(self)
                 return r.monomial((1 << num, ()))
             else:
-                if num>=r.numxi:
+                if num >= r.numxi:
                     return next(self)
                 d = tuple([0 if x < num else 1 for x in range(0, num + 1)])
                 return r.monomial((0, d))
@@ -204,12 +208,11 @@ class XiTauRing(CombinatorialFreeModule, UniqueRepresentation):
         return XiTauRing.GeneratorList(self)
 
     def _monomial_gen(self, idx, expo=1):
-        if idx&1:
-            return self.monomial((1<<(idx>>1), ()))
-        idx = idx>>1
-        return (
-            self.monomial(
-                (0, tuple([0 if x < idx else expo for x in range(1, idx + 1)])))
+        if idx & 1:
+            return self.monomial((1 << (idx >> 1), ()))
+        idx = idx >> 1
+        return self.monomial(
+            (0, tuple([0 if x < idx else expo for x in range(1, idx + 1)]))
         )
 
     def _genpower(self, gen, exp):
@@ -217,8 +220,8 @@ class XiTauRing(CombinatorialFreeModule, UniqueRepresentation):
             return self.one()
         if exp == 1:
             return gen
-        ((q, p), cf), = gen
-        return self._from_dict({(q, tuple(exp*_ for _ in p)) : cf})
+        (((q, p), cf),) = gen
+        return self._from_dict({(q, tuple(exp * _ for _ in p)): cf})
 
     class Element(CombinatorialFreeModule.Element):
         """
@@ -234,8 +237,8 @@ class XiTauRing(CombinatorialFreeModule, UniqueRepresentation):
             sage: (a1+b0)**18
             a1**18 + 3*b0*a1**17
         """
-        pass
 
+        pass
 
 
 # Local Variables:

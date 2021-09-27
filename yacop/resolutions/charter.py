@@ -7,12 +7,12 @@ AUTHORS: - Christian Nassau
 CLASS DOCUMENTATION:
 """
 
-#*****************************************************************************
+# *****************************************************************************
 #       Copyright (C) 2017 Christian Nassau <nassau@nullhomotopie.de>
 #  Distributed under the terms of the GNU General Public License (GPL)
-#*****************************************************************************
+# *****************************************************************************
 
-#from tkinter import Tcl
+# from tkinter import Tcl
 from yacop.utils.tcl import Yacop
 from yacop.utils.region import region
 from sage.structure.sage_object import SageObject
@@ -22,16 +22,17 @@ from sage.plot.point import point2d
 from sage.rings.infinity import Infinity
 from sage.rings.real_double import RDF
 
+
 class Charter(SageObject):
-    
-    def __init__(self,dbname,vtp):
+    def __init__(self, dbname, vtp):
         self.tcl = Yacop.Interpreter()
         self.filename = dbname
         self.lineinfo = {}
         # use globalsetvar with dummy variable to cope with possible whitespace in path name
-        Yacop.main.globalsetvar("FNAME",dbname)
+        Yacop.main.globalsetvar("FNAME", dbname)
         self.tcl.eval("yacop::sqlite [set db [namespace current]::chartdb] $::FNAME")
-        self.tcl.eval("""
+        self.tcl.eval(
+            """
         
             $db eval {
                 create temporary view chart_crowdiness
@@ -101,20 +102,22 @@ class Charter(SageObject):
                     }
                 }
             }
-        """)
+        """
+        )
         self.vtp = None
         if not vtp is None:
             self.viewtype(vtp)
-        
+
     def viewtypes(self):
         ans = self.tcl.eval("$db eval {select name from chart_viewtypes}")
         return ans.split(" ")
-        
-    def viewtype(self,newtype=None):
+
+    def viewtype(self, newtype=None):
         if newtype is None:
             return self.vtp
         self.vtp = newtype
-        self.tcl.eval("""
+        self.tcl.eval(
+            """
            set newtype "%s"
            set code [$db onecolumn {select code from chart_viewtypes where name=$newtype}]
            if {$code eq ""} { error "no such viewtype '$newtype'" }
@@ -122,97 +125,123 @@ class Charter(SageObject):
            $db eval { drop view if exists chart_fragments }
            $db eval { drop view if exists chart_geninfo }
            $db eval $code
-        """ % newtype)
-    
-    def add_line(self,pts,argdict):
-        defaults = {'zorder':5,'rgbcolor':(0,0,0)}
+        """
+            % newtype
+        )
+
+    def add_line(self, pts, argdict):
+        defaults = {"zorder": 5, "rgbcolor": (0, 0, 0)}
         defaults.update(argdict)
-        # turn pts into the monomial format for the steenrod tcl library 
+        # turn pts into the monomial format for the steenrod tcl library
         isgen = pts.parent().is_generic()
         self.p = pts.parent().prime()
         for x in list(pts.monomial_coefficients()):
             if isgen:
-                q,p = x
+                q, p = x
             else:
-                q,p = (),x
-            Q = sum(1<<_ for _ in q)
+                q, p = (), x
+            Q = sum(1 << _ for _ in q)
             s = "1 %d {%s} 0" % (Q, " ".join([str(_) for _ in p]))
-            self.lineinfo[s] = (pts,defaults)
-        
-    def chartgens(self,region=None):
+            self.lineinfo[s] = (pts, defaults)
+
+    def chartgens(self, region=None):
         cond = []
         if not region is None:
-            if region.smax<Infinity:
+            if region.smax < Infinity:
                 cond.append("sdeg <= %d" % region.smax)
-            if region.nmax<Infinity:
+            if region.nmax < Infinity:
                 cond.append("ndeg <= %d" % region.nmax)
-            if region.emax<Infinity:
+            if region.emax < Infinity:
                 cond.append("edeg <= %d" % region.emax)
-            if region.smin>-Infinity:
+            if region.smin > -Infinity:
                 cond.append("sdeg >= %d" % region.smin)
-            if region.nmin>-Infinity:
+            if region.nmin > -Infinity:
                 cond.append("ndeg >= %d" % region.nmin)
-            if region.emin>-Infinity:
+            if region.emin > -Infinity:
                 cond.append("edeg >= %d" % region.emin)
         c = " and ".join(cond)
-        with self.tcl.coroutine("chartgens {%s}" %c) as cor:
+        with self.tcl.coroutine("chartgens {%s}" % c) as cor:
             for x in cor:
-                yield dict(list(zip(["id","s","n","e","num","crwd"],(int(_) for _ in x.split("|")))))
-                
+                yield dict(
+                    list(
+                        zip(
+                            ["id", "s", "n", "e", "num", "crwd"],
+                            (int(_) for _ in x.split("|")),
+                        )
+                    )
+                )
+
     def chartlines(self):
         self.tcl.eval("clear_ptsops")
         lines = list(self.lineinfo)
-        for (n,k) in enumerate(lines):
+        for (n, k) in enumerate(lines):
             self.tcl.eval("add_ptsop %d {%s} %d" % (self.p, k, n))
         with self.tcl.coroutine("chartlines") as cor:
             for x in cor:
-                z = dict(list(zip(["tar","opdeg","info","src"],x.split("|"))))
+                z = dict(list(zip(["tar", "opdeg", "info", "src"], x.split("|"))))
                 for u in z["info"].split(","):
-                    z["name"],z["cf"] = u.split("@")
+                    z["name"], z["cf"] = u.split("@")
                     if int(z["cf"]) != 0:
                         z["line"] = lines[int(z["name"])]
                         yield z
-        
-    def geninfo(self,id):
-        x = self.tcl.eval("""
+
+    def geninfo(self, id):
+        x = self.tcl.eval(
+            """
             $db eval { select rowid,sdeg,ndeg,edeg,basid,dim from chart_generators cg
                          join chart_crowdiness cc on cg.ndeg = cc.n where cg.rowid = %d }
-        """ % id)
-        return dict(list(zip(["id","s","n","e","num","crwd"],(int(_) for _ in x.split(" ")))))
-    
-    def get_coords(self,pt):
+        """
+            % id
+        )
+        return dict(
+            list(
+                zip(
+                    ["id", "s", "n", "e", "num", "crwd"], (int(_) for _ in x.split(" "))
+                )
+            )
+        )
+
+    def get_coords(self, pt):
         crowdiness = pt["crwd"]
         if crowdiness == 1:
-            return (pt["n"],pt["s"])
-        offset = 0.4-0.8*pt["num"]/(crowdiness-1)
-        offset /= 2.5 # not sure about the best choice
-        return (RDF(pt["n"]+offset),RDF(pt["s"]-offset))
-    
-    def make_chart(self,region=None):
+            return (pt["n"], pt["s"])
+        offset = 0.4 - 0.8 * pt["num"] / (crowdiness - 1)
+        offset /= 2.5  # not sure about the best choice
+        return (RDF(pt["n"] + offset), RDF(pt["s"] - offset))
+
+    def make_chart(self, region=None):
         G = Graphics()
-        smin,smax,nmin,nmax = [],[],[],[]
+        smin, smax, nmin, nmax = [], [], [], []
         for d in self.chartgens(region):
-            x,y = self.get_coords(d)
-            G += point2d((x,y),zorder=10)
+            x, y = self.get_coords(d)
+            G += point2d((x, y), zorder=10)
             smin.append(y)
             smax.append(y)
             nmin.append(x)
             nmax.append(x)
-            smin = [min(smin),]
-            smax = [max(smax),]
-            nmin = [min(nmin),]
-            nmax = [max(nmax),]
+            smin = [
+                min(smin),
+            ]
+            smax = [
+                max(smax),
+            ]
+            nmin = [
+                min(nmin),
+            ]
+            nmax = [
+                max(nmax),
+            ]
         for l in self.chartlines():
             try:
-                pts,lineargs = self.lineinfo[l["line"]]
-                x1,y1 = self.get_coords(self.geninfo(int(l["src"])))
-                x2,y2 = self.get_coords(self.geninfo(int(l["tar"])))
-                G += line2d([(x1,y1),(x2,y2)],**lineargs)
+                pts, lineargs = self.lineinfo[l["line"]]
+                x1, y1 = self.get_coords(self.geninfo(int(l["src"])))
+                x2, y2 = self.get_coords(self.geninfo(int(l["tar"])))
+                G += line2d([(x1, y1), (x2, y2)], **lineargs)
             except:
-                print("line not understood:",l)
-        off=0.5
-        G.ymin(smin[0]-off)
-        G.ymax(smax[0]+off)
-        G.xmin(nmin[0]-off)
-        G.xmax(nmax[0]+off)
+                print("line not understood:", l)
+        off = 0.5
+        G.ymin(smin[0] - off)
+        G.ymax(smax[0] + off)
+        G.xmin(nmin[0] - off)
+        G.xmax(nmax[0] + off)
         return G

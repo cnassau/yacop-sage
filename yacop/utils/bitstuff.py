@@ -3,43 +3,45 @@ Collection of utility functions related to binomials and multinomials
 
 """
 
-#*****************************************************************************
+# *****************************************************************************
 #       Copyright (C) 2011 Christian Nassau <nassau@nullhomotopie.de>
 #  Distributed under the terms of the GNU General Public License (GPL)
-#*****************************************************************************
+# *****************************************************************************
 
 from sage.rings.infinity import Infinity
 from sage.rings.integer import Integer
 from sage.misc.cachefunc import cached_function
 from sage.arith.all import binomial
 
-    
-@cached_function        
-def _binomtable(prime,n,m):
-   """
-   cached values of binomial(n,m) for n in (0,..,prime-1)
-   """
-   assert (n<prime) and (0<=n)
-   return binomial(n,m)
 
-def binom_modp(p,n,m):
-   """
-   optimized computation of binomial(n,m) mod p
+@cached_function
+def _binomtable(prime, n, m):
+    """
+    cached values of binomial(n,m) for n in (0,..,prime-1)
+    """
+    assert (n < prime) and (0 <= n)
+    return binomial(n, m)
 
-   EXAMPLE::
 
-      sage: from yacop.utils.bitstuff import binom_modp
-      sage: binom_modp(5,37,26)
-      2
-      sage: binomial(37,26)
-      854992152
-   """
-   assert m>=0
-   ans=1
-   while m>0:
-      ans *= _binomtable(p,n%p,m%p)
-      n,m = n//p, m//p
-   return ans%p
+def binom_modp(p, n, m):
+    """
+    optimized computation of binomial(n,m) mod p
+
+    EXAMPLE::
+
+       sage: from yacop.utils.bitstuff import binom_modp
+       sage: binom_modp(5,37,26)
+       2
+       sage: binomial(37,26)
+       854992152
+    """
+    assert m >= 0
+    ans = 1
+    while m > 0:
+        ans *= _binomtable(p, n % p, m % p)
+        n, m = n // p, m // p
+    return ans % p
+
 
 def bitcount(val):
     """
@@ -57,17 +59,18 @@ def bitcount(val):
     """
     res = 0
     assert val >= 0
-    while val>0:
-        i = val & 0xffffffff
+    while val > 0:
+        i = val & 0xFFFFFFFF
         val = val >> 32
         i = i - ((i >> 1) & 0x55555555)
         i = (i & 0x33333333) + ((i >> 2) & 0x33333333)
-        aux = (((i + (i >> 4) & 0xF0F0F0F) * 0x1010101) & 0xffffffff) >> 24
+        aux = (((i + (i >> 4) & 0xF0F0F0F) * 0x1010101) & 0xFFFFFFFF) >> 24
         res = res + aux
     return res
 
-def sign_correction(a,b):
-    """ 
+
+def sign_correction(a, b):
+    """
     Compute the sign change between "a^b" and the exterior algebra multiplictation "a*b"
 
     TESTS::
@@ -86,26 +89,28 @@ def sign_correction(a,b):
         ...
         AssertionError
     """
-    assert a>=0
-    if b<0:
-        bc = -1-b
-        msk=1
-        while msk<=a or msk<=bc: msk = msk<<1
-        b = b+ (msk<<1)
-    assert b>=0
+    assert a >= 0
+    if b < 0:
+        bc = -1 - b
+        msk = 1
+        while msk <= a or msk <= bc:
+            msk = msk << 1
+        b = b + (msk << 1)
+    assert b >= 0
     res = 0
     cnt = 0
-    while a: 
-        x = a & (a-1)
+    while a:
+        x = a & (a - 1)
         z = a ^ x
-        cnt = cnt+1
-        res = res + bitcount((z-1) & b)
+        cnt = cnt + 1
+        res = res + bitcount((z - 1) & b)
         a = x
         b = b | z
     # implicitly we've had to reverse a, since it's easier to isolate the
-    # lowest bit than the highest. Here we make up for the reversion: 
+    # lowest bit than the highest. Here we make up for the reversion:
     res = res + ((2 & cnt) >> 1)
-    return (1&res)
+    return 1 & res
+
 
 def Delta(idx):
     """
@@ -121,9 +126,15 @@ def Delta(idx):
         sage: Delta(4)
         (0, 0, 0, 1)
     """
-    if idx<=0:
-       return ()
-    return tuple([0 for u in range(1,idx)] + [1,])
+    if idx <= 0:
+        return ()
+    return tuple(
+        [0 for u in range(1, idx)]
+        + [
+            1,
+        ]
+    )
+
 
 def qexp_to_bitmask(qexp):
     """
@@ -137,18 +148,19 @@ def qexp_to_bitmask(qexp):
     """
     ans = 0
     for exp in qexp:
-       ans = ans | (1<<exp)
+        ans = ans | (1 << exp)
     return ans
+
 
 def N0():
     """
     infinite generator (0,1,2,...)
     """
-    cnt=-1
+    cnt = -1
     while True:
-        cnt = cnt+1
+        cnt = cnt + 1
         yield cnt
-    
+
 
 # Local Variables:
 # eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)

@@ -66,7 +66,6 @@ class MorphModule(SteenrodModuleBase):
             category = category.Subquotients()
         gr = self._am.grading().SubquotientGrading(self)
 
-
         if not truncate_to is None:
             gr = truncation(gr, **truncate_to.as_dict())
 
@@ -100,7 +99,9 @@ class MorphModule(SteenrodModuleBase):
         if False:
             # fix various basis issues
             b = self.basis()
-            b.rename("<<private and inefficient basis family: use graded_basis instead>>")
+            b.rename(
+                "<<private and inefficient basis family: use graded_basis instead>>"
+            )
             b.max_test_enumerated_set_loop = 5
 
             def some_elements(fam):

@@ -88,12 +88,12 @@ CARTESIAN PRODUCTS::
    {4, 8, 9}
 
 """
-#*****************************************************************************
+# *****************************************************************************
 #  Copyright (C) 2011 Christian Nassau <nassau@nullhomotopie.de>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
-#******************************************************************************
+# ******************************************************************************
 
 from sage.misc.classcall_metaclass import ClasscallMetaclass
 from sage.rings.infinity import Infinity
@@ -119,7 +119,10 @@ from yacop.categories.functors import suspension, SuspendedObjectsCategory
 from yacop.categories.functors import truncation, TruncatedObjectsCategory
 from yacop.categories.functors import cartesian_product, CartesianProductsCategory
 from yacop.categories.functors import tensor, TensorProductsCategory
-from sage.structure.unique_representation import CachedRepresentation, UniqueRepresentation
+from sage.structure.unique_representation import (
+    CachedRepresentation,
+    UniqueRepresentation,
+)
 from sage.structure.sage_object import SageObject
 from sage.combinat.free_module import CombinatorialFreeModule
 import operator
@@ -134,6 +137,7 @@ Fix pickling doc tests::
     sage: from yacop.utils.gradings import Gradings
     sage: __main__.Gradings = Gradings
 """
+
 
 class Gradings(Category_singleton):
     """
@@ -191,104 +195,113 @@ class Gradings(Category_singleton):
             sage: Gradings().super_categories()
             [Category of yacop objects]
         """
-        return [YacopObjects(),]
+        return [
+            YacopObjects(),
+        ]
 
     class ParentMethods:
+        @abstract_method(optional=False)
+        def basis(self, region=None):
+            """
+            return a basis for the region
+            """
 
-       @abstract_method(optional=False)
-       def basis(self,region=None):
-          """
-          return a basis for the region
-          """
+        @abstract_method(optional=False)
+        def bbox(self):
+            """
+            return a bounding box
+            """
 
-       @abstract_method(optional=False)
-       def bbox(self):
-          """
-          return a bounding box
-          """
+        @abstract_method(optional=False)
+        def split_element(self, elem):
+            """
+            split the element `e` into homogeneous pieces `e = sum_i e_i`
+            and return the dictionary { i : e_i }
+            """
 
-       @abstract_method(optional=False)
-       def split_element(self,elem):
-          """
-          split the element `e` into homogeneous pieces `e = sum_i e_i`
-          and return the dictionary { i : e_i }
-          """
+        def nontrivial_degrees(self, region=None):
+            """
+            return the degrees in which ``self.basis(region)`` is concentrated
+            """
+            return self._nontrivial_degrees_from_basis(region)
 
-       def nontrivial_degrees(self,region=None):
-          """
-          return the degrees in which ``self.basis(region)`` is concentrated
-          """
-          return self._nontrivial_degrees_from_basis(region)
+        def _nontrivial_degrees_from_basis(self, region):
+            """
+            default implementation of ``nontrivial_degrees``
+            """
 
-       def _nontrivial_degrees_from_basis(self,region):
-          """
-          default implementation of ``nontrivial_degrees``
-          """
-          class nontrivdeg_walker(Walker):
-             def __init__(self,grading):
-                Walker.__init__(self)
-                self.gr = grading
-             def __iter__(self):
-                self.basis_iter = self.gr.basis(region).__iter__()
-                self.dct = dict()
-                self.xdegs = []
-                return self
-             def __next__(self):
-                if len(self.xdegs)>0:
-                   return self.xdegs.pop()
-                # the next line will eventually raise our StopIteration
-                x = next(self.basis_iter)
-                for k in list(self.gr.split_element(x).keys()):
-                   if k not in self.dct:
-                      self.dct[k] = 1
-                      self.xdegs.append(k)
-                return next(self)
-             def _repr_(self):
-                return "nontrivial degree walker of %s" % self.gr
-          return Family(nontrivdeg_walker(self),lambda x:x,lazy=True)
+            class nontrivdeg_walker(Walker):
+                def __init__(self, grading):
+                    Walker.__init__(self)
+                    self.gr = grading
 
-       def degree(self,elem):
-          degs = list(self.split_element(elem).keys())
-          if len(degs) == 0:
-              raise ValueError("degree of zero is undefined")
-          if len(degs) == 1:
-              return degs[0]
-          raise ValueError("element is not homogeneous")
+                def __iter__(self):
+                    self.basis_iter = self.gr.basis(region).__iter__()
+                    self.dct = dict()
+                    self.xdegs = []
+                    return self
 
-       def _format_(self,other):
-          return "%s" % other
+                def __next__(self):
+                    if len(self.xdegs) > 0:
+                        return self.xdegs.pop()
+                    # the next line will eventually raise our StopIteration
+                    x = next(self.basis_iter)
+                    for k in list(self.gr.split_element(x).keys()):
+                        if k not in self.dct:
+                            self.dct[k] = 1
+                            self.xdegs.append(k)
+                    return next(self)
 
-       def _format_term(self,elem):
-           return self._format_(elem)
+                def _repr_(self):
+                    return "nontrivial degree walker of %s" % self.gr
 
-       def _latex_term(self,elem):
-           from sage.misc.latex import latex
-           return elem
+            return Family(nontrivdeg_walker(self), lambda x: x, lazy=True)
 
-       @abstract_method(optional=False)
-       def suspenders(self):
-           """
-           Group of suspenders that act on this grading.
+        def degree(self, elem):
+            degs = list(self.split_element(elem).keys())
+            if len(degs) == 0:
+                raise ValueError("degree of zero is undefined")
+            if len(degs) == 1:
+                return degs[0]
+            raise ValueError("element is not homogeneous")
 
-           EXAMPLE::
-               sage: from yacop.modules.projective_spaces import RealProjectiveSpace
-               sage: M = RealProjectiveSpace()
-               sage: S = M.grading().suspenders() ; S
-               Group of suspenders for graded modules over the Steenrod algebra
-               sage: from yacop.utils.gradings import Suspender
-               sage: S is Suspender
-               True
-           """
-           pass
+        def _format_(self, other):
+            return "%s" % other
 
-       @abstract_method(optional=True)
-       def SubquotientGrading(subquotient):
-          """
-          Create a grading for a subquotient.
-          """
+        def _format_term(self, elem):
+            return self._format_(elem)
 
-       def tensor(*gradings):
-          return gradings[0].__class__.TensorProduct(gradings, category = tensor.category_from_parents(gradings))
+        def _latex_term(self, elem):
+            from sage.misc.latex import latex
+
+            return elem
+
+        @abstract_method(optional=False)
+        def suspenders(self):
+            """
+            Group of suspenders that act on this grading.
+
+            EXAMPLE::
+                sage: from yacop.modules.projective_spaces import RealProjectiveSpace
+                sage: M = RealProjectiveSpace()
+                sage: S = M.grading().suspenders() ; S
+                Group of suspenders for graded modules over the Steenrod algebra
+                sage: from yacop.utils.gradings import Suspender
+                sage: S is Suspender
+                True
+            """
+            pass
+
+        @abstract_method(optional=True)
+        def SubquotientGrading(subquotient):
+            """
+            Create a grading for a subquotient.
+            """
+
+        def tensor(*gradings):
+            return gradings[0].__class__.TensorProduct(
+                gradings, category=tensor.category_from_parents(gradings)
+            )
 
     class ElementMethods:
         pass
@@ -309,256 +322,279 @@ class Gradings(Category_singleton):
         def extra_super_categories(self):
             return [self.base_category()]
 
+
 class SampleGrading(Parent, metaclass=ClasscallMetaclass):
+    def __init__(self, range, modulus):
+        self._range = range
+        self._mod = modulus
+        CategoryObject.__init__(self, category=Gradings())
 
-    def __init__(self,range,modulus):
-       self._range = range
-       self._mod = modulus
-       CategoryObject.__init__(self,category = Gradings())
-
-    def _format_(self,other):
+    def _format_(self, other):
         return self._repr_()
 
     def _repr_(self):
-       return "mod %d decomposition of the range %s" % (self._mod,self._range)
+        return "mod %d decomposition of the range %s" % (self._mod, self._range)
 
     def bbox(self):
-       return IntegerRange(Integer(0),Integer(self._mod))
+        return IntegerRange(Integer(0), Integer(self._mod))
 
-    def split_element(self,elements):
+    def split_element(self, elements):
         from sage.rings.integer_ring import ZZ
+
         if elements in ZZ:
-           elements = (elements,)
+            elements = (elements,)
         m = self._mod
         ans = dict()
         for e in elements:
             try:
-               x = ans[e%m]
+                x = ans[e % m]
             except:
-               x = []
+                x = []
             x.append(e)
-            ans[e%m]=x
+            ans[e % m] = x
         return ans
 
-    def basis(self,reg):
-       return [i for i in self._range if (i % self._mod) in reg]
+    def basis(self, reg):
+        return [i for i in self._range if (i % self._mod) in reg]
 
     def suspenders(self):
-       #from sage.rings import Integers
-       return Integers()
+        # from sage.rings import Integers
+        return Integers()
+
 
 class SampleGrading_SuspendedObjects(SampleGrading):
-
-       @staticmethod
-       def __classcall_private__(cls,other,offset):
-          if offset == 0:
-             return other
-          return type.__call__(cls,other,offset)
-
-       def __init__(self,other,offset):
-          self._other = other
-          self._off = offset
-          SampleGrading.__init__(self,other._range,other._mod)
-
-       def _format_(self,other):
-          return "suspension with offset %d of %s" % (self._off,self._other)
-
-       def _repr_(self):
-          return "suspension with offset %d of %s" % (self._off,self._other)
-
-       def bbox(self):
-          r = self._other.bbox()
-          f,l = r.first(), r.last()
-          o = self._off
-          return IntegerRange(Integer(f+o),Integer(l+1+o))
-
-       def basis(self,reg=region()):
-          oreg = [u-self._off for u in reg]
-          return self._other.basis(oreg)
-
-       def split_element(self,lst):
-          l = [(k+self._off,v) for (k,v) in list(self._other.split_element(lst).items())]
-          return dict(l)
-
-class SampleGrading_SuspendedObjects2(SampleGrading_SuspendedObjects):
-
     @staticmethod
-    def __classcall_private__(cls,other,offset):
+    def __classcall_private__(cls, other, offset):
         if offset == 0:
             return other
-        return SampleGrading_SuspendedObjects(other._other,other._off+offset)
+        return type.__call__(cls, other, offset)
+
+    def __init__(self, other, offset):
+        self._other = other
+        self._off = offset
+        SampleGrading.__init__(self, other._range, other._mod)
+
+    def _format_(self, other):
+        return "suspension with offset %d of %s" % (self._off, self._other)
+
+    def _repr_(self):
+        return "suspension with offset %d of %s" % (self._off, self._other)
+
+    def bbox(self):
+        r = self._other.bbox()
+        f, l = r.first(), r.last()
+        o = self._off
+        return IntegerRange(Integer(f + o), Integer(l + 1 + o))
+
+    def basis(self, reg=region()):
+        oreg = [u - self._off for u in reg]
+        return self._other.basis(oreg)
+
+    def split_element(self, lst):
+        l = [
+            (k + self._off, v)
+            for (k, v) in list(self._other.split_element(lst).items())
+        ]
+        return dict(l)
+
+
+class SampleGrading_SuspendedObjects2(SampleGrading_SuspendedObjects):
+    @staticmethod
+    def __classcall_private__(cls, other, offset):
+        if offset == 0:
+            return other
+        return SampleGrading_SuspendedObjects(other._other, other._off + offset)
+
 
 SampleGrading.SuspendedObjects = SampleGrading_SuspendedObjects
 SampleGrading_SuspendedObjects.SuspendedObjects = SampleGrading_SuspendedObjects2
+
 
 class YacopGrading(Parent):
     """
     A base class for gradings by regions as per :meth: `yacop.utils.region`.
     """
 
-    def __init__(self,suspension_symbol="S",suspension_symbol_latex="\\sigma"):
-        Parent.__init__(self,category=Gradings())
+    def __init__(self, suspension_symbol="S", suspension_symbol_latex="\\sigma"):
+        Parent.__init__(self, category=Gradings())
         self._susp_sym = suspension_symbol
         self._susp_sym_latex = suspension_symbol_latex
 
     def suspenders(self):
         return Suspender().parent()
 
-    def basis_coefficients(self,elem,region=None):
-       """
-       decompose a homogeneous element of a module in terms of the graded basis.
-       """
-       # This default implementation assumes that the
-       # elements of graded_basis() are monomials.
-       ans = []
-       gb = self.basis(region)
-       try:
-         assert gb.is_finite()
-       except AttributeError:
-          try:
-             assert gb.cardinality() < Infinity
-          except NotImplementedError:
-             pass
-       for b in gb:
-          (k,v), = list(b.monomial_coefficients().items())
-          ans.append(elem[k]/v)
-       return ans
+    def basis_coefficients(self, elem, region=None):
+        """
+        decompose a homogeneous element of a module in terms of the graded basis.
+        """
+        # This default implementation assumes that the
+        # elements of graded_basis() are monomials.
+        ans = []
+        gb = self.basis(region)
+        try:
+            assert gb.is_finite()
+        except AttributeError:
+            try:
+                assert gb.cardinality() < Infinity
+            except NotImplementedError:
+                pass
+        for b in gb:
+            ((k, v),) = list(b.monomial_coefficients().items())
+            ans.append(elem[k] / v)
+        return ans
+
 
 class SubquotientGrading(YacopGrading):
-   """
-   Grading of a subquotient of a yacop graded module.
-   """
+    """
+    Grading of a subquotient of a yacop graded module.
+    """
 
-   def __init__(self,subquotient):
-       self._sq = subquotient
-       self._am = subquotient.ambient()
-       #ogr = self._am.grading()
-       YacopGrading.__init__(self)
+    def __init__(self, subquotient):
+        self._sq = subquotient
+        self._am = subquotient.ambient()
+        # ogr = self._am.grading()
+        YacopGrading.__init__(self)
 
-   def _repr_(self):
-      return "subquotient grading of %s" % self._sq
+    def _repr_(self):
+        return "subquotient grading of %s" % self._sq
 
-   def basis(self,region=None):
-       # this assumes a _basis_walker method in the subquotient object
-       wk = self._sq._basis_walker(region)
-       if self._am.graded_basis(region).cardinality() < Infinity:
-           cat = FiniteEnumeratedSets()
-       else:
-           cat = InfiniteEnumeratedSets()
-       res = Family(wk,lambda i:i,lazy=True)
-       res._refine_category_(cat)
-       return res
+    def basis(self, region=None):
+        # this assumes a _basis_walker method in the subquotient object
+        wk = self._sq._basis_walker(region)
+        if self._am.graded_basis(region).cardinality() < Infinity:
+            cat = FiniteEnumeratedSets()
+        else:
+            cat = InfiniteEnumeratedSets()
+        res = Family(wk, lambda i: i, lazy=True)
+        res._refine_category_(cat)
+        return res
 
-   def bbox(self):
-      return self._am.grading().bbox()
+    def bbox(self):
+        return self._am.grading().bbox()
 
-   def nontrivial_degrees(self,region=None):
-      class sqg_walker(Walker):
-         def __init__(self,grading,region):
-            Walker.__init__(self)
-            self.gr = grading
-            self.amg = grading._am.grading()
-            self.reg = region
-         def __iter__(self):
-            self.degiter = self.amg.nontrivial_degrees(self.reg).__iter__()
-            return self
-         def __next__(self):
-            deg = next(self.degiter)
-            b = self.gr.basis(deg)
-            # len(b) might not be implemented
-            try:
-              x = next(b.__iter__())
-              return deg
-            except StopIteration:
-              pass
-            return next(self)
-         def _repr_(self):
-            return "nontrivial degree walker of %s" % self.gr
-      return Family(sqg_walker(self,region),lambda u:u,lazy=True)
+    def nontrivial_degrees(self, region=None):
+        class sqg_walker(Walker):
+            def __init__(self, grading, region):
+                Walker.__init__(self)
+                self.gr = grading
+                self.amg = grading._am.grading()
+                self.reg = region
 
-   def split_element(self,elem):
-      X = self._am
-      Y = self._sq
-      ans = dict()
-      for (key,val) in X.grading().split_element(Y.lift(elem)).items():
-         ans[key] = Y.retract(val)
-      return ans
+            def __iter__(self):
+                self.degiter = self.amg.nontrivial_degrees(self.reg).__iter__()
+                return self
+
+            def __next__(self):
+                deg = next(self.degiter)
+                b = self.gr.basis(deg)
+                # len(b) might not be implemented
+                try:
+                    x = next(b.__iter__())
+                    return deg
+                except StopIteration:
+                    pass
+                return next(self)
+
+            def _repr_(self):
+                return "nontrivial degree walker of %s" % self.gr
+
+        return Family(sqg_walker(self, region), lambda u: u, lazy=True)
+
+    def split_element(self, elem):
+        X = self._am
+        Y = self._sq
+        ans = dict()
+        for (key, val) in X.grading().split_element(Y.lift(elem)).items():
+            ans[key] = Y.retract(val)
+        return ans
 
 
 YacopGrading.SubquotientGrading = SubquotientGrading
 
 
-class YacopGrading_SuspendedObjects(YacopGrading,CachedRepresentation):
+class YacopGrading_SuspendedObjects(YacopGrading, CachedRepresentation):
+    @staticmethod
+    def __classcall__(cls, other, t=0, e=0, s=0):
+        if t == 0 and e == 0 and s == 0:
+            return other
+        return super(YacopGrading_SuspendedObjects, cls).__classcall__(
+            cls, other, t=t, e=e, s=s
+        )
 
-       @staticmethod
-       def __classcall__(cls,other,t=0,e=0,s=0):
-           if t==0 and e==0 and s==0:
-               return other
-           return super(YacopGrading_SuspendedObjects,cls).__classcall__(cls,other,t=t,e=e,s=s)
+    def __init__(self, other, **kwargs):
+        YacopGrading.__init__(self)
+        self._other = other
+        self._kwargs = kwargs
+        self._off = region(**kwargs)
+        self._neg = self._off.negative()
 
-       def __init__(self,other,**kwargs):
-           YacopGrading.__init__(self)
-           self._other = other
-           self._kwargs = kwargs
-           self._off = region(**kwargs)
-           self._neg = self._off.negative()
+    def _format_(self, other):
+        return "suspension (%d,%d,%d) of %s" % (
+            self._off.val("t", 0),
+            self._off.val("e", 0),
+            self._off.val("s", 0),
+            other,
+        )
 
-       def _format_(self,other):
-           return "suspension (%d,%d,%d) of %s" % (self._off.val('t',0),self._off.val('e',0),
-                                                           self._off.val('s',0),other)
+    def _format_term(self, other):
+        x = Suspender(t=self._off.tmin, e=self._off.emin, s=self._off.smin)
+        if x == Suspender():
+            return other
+        return "(%s)*%s" % (other, x)
 
-       def _format_term(self,other):
-           x = Suspender(t=self._off.tmin,e=self._off.emin,s=self._off.smin)
-           if x == Suspender():
-              return other
-           return "(%s)*%s" % (other,x)
+    def _latex_term(self, other):
+        x = Suspender(t=self._off.tmin, e=self._off.emin, s=self._off.smin)
+        if x == Suspender():
+            return other
+        return "\\left( %s \\right)%s" % (other, x._latex_())
 
-       def _latex_term(self,other):
-           x = Suspender(t=self._off.tmin,e=self._off.emin,s=self._off.smin)
-           if x == Suspender():
-              return other
-           return "\\left( %s \\right)%s" % (other,x._latex_())
+    def _repr_(self):
+        return self._format_(self._other)
 
-       def _repr_(self):
-           return self._format_(self._other)
+    def bbox(self):
+        return self._other.bbox() + self._off
 
-       def bbox(self):
-          return self._other.bbox() + self._off
+    def basis(self, reg=None):
+        if reg is None:
+            reg = region()
+        b = self._other.basis(reg + self._neg)
+        if b.cardinality() == 0:
+            return FiniteEnumeratedSet(())
+        x = next(iter(b))
+        dom = suspension(x.parent(), **self._kwargs)
+        mapfunc = lambda x: x.suspend(**self._kwargs)
+        unmapfunc = lambda x: x.suspend(t=self._neg.t, e=self._neg.e, s=self._neg.s)
+        return SetOfElements(dom, b, b.cardinality(), mapfunc, unmapfunc)
 
-       def basis(self,reg=None):
-          if reg is None:
-             reg = region()
-          b = self._other.basis(reg + self._neg)
-          if b.cardinality() == 0:
-             return FiniteEnumeratedSet(())
-          x = next(iter(b))
-          dom = suspension(x.parent(),**self._kwargs)
-          mapfunc = lambda x: x.suspend(**self._kwargs)
-          unmapfunc = lambda x: x.suspend(t=self._neg.t,e=self._neg.e,s=self._neg.s)
-          return SetOfElements(dom,b,b.cardinality(),mapfunc,unmapfunc)
+    def split_element(self, lst):
+        l = [
+            (k + self._off, v)
+            for (k, v) in list(self._other.split_element(lst).items())
+        ]
+        try:
+            # suspend the elements - for some gradings this is not necessary/possible
+            l = [(k, v.suspend(**self._kwargs)) for (k, v) in l]
+        except:
+            pass
+        return dict(l)
 
-       def split_element(self,lst):
-          l = [(k+self._off,v) for (k,v) in list(self._other.split_element(lst).items())]
-          try:
-             # suspend the elements - for some gradings this is not necessary/possible
-             l = [(k,v.suspend(**self._kwargs)) for (k,v) in l]
-          except:
-             pass
-          return dict(l)
 
 YacopGrading.SuspendedObjects = YacopGrading_SuspendedObjects
 
-class YacopGrading_SuspendedObjects2(YacopGrading_SuspendedObjects):
 
+class YacopGrading_SuspendedObjects2(YacopGrading_SuspendedObjects):
     @staticmethod
-    def __classcall_private__(cls,other,**kwargs):
-        dct = { 'i' : 0, 'e' : 0, 's' : 0 }
+    def __classcall_private__(cls, other, **kwargs):
+        dct = {"i": 0, "e": 0, "s": 0}
         dct.update(kwargs)
         reg = region(**dct)
-        if region(t=0,e=0,s=0).contains(reg):
+        if region(t=0, e=0, s=0).contains(reg):
             return other
         noff = other._off + reg
-        return YacopGrading_SuspendedObjects(other._other,t=noff.tmin,e=noff.emin,s=noff.smin)
+        return YacopGrading_SuspendedObjects(
+            other._other, t=noff.tmin, e=noff.emin, s=noff.smin
+        )
+
 
 YacopGrading_SuspendedObjects.SuspendedObjects = YacopGrading_SuspendedObjects2
 
@@ -567,53 +603,58 @@ YacopGrading_SuspendedObjects.SuspendedObjects = YacopGrading_SuspendedObjects2
 ###############################################################################################
 ###############################################################################################
 
-class YacopGrading_TruncatedObjects(YacopGrading,CachedRepresentation):
 
-       @staticmethod
-       def __classcall__(cls,other,**kwargs):
-           reg = region(**kwargs)
-           if reg.is_full():
-               return other
-           return super(YacopGrading_TruncatedObjects,cls).__classcall__(cls,other,**reg.as_dict())
+class YacopGrading_TruncatedObjects(YacopGrading, CachedRepresentation):
+    @staticmethod
+    def __classcall__(cls, other, **kwargs):
+        reg = region(**kwargs)
+        if reg.is_full():
+            return other
+        return super(YacopGrading_TruncatedObjects, cls).__classcall__(
+            cls, other, **reg.as_dict()
+        )
 
-       def __init__(self,other,**kwargs):
-           YacopGrading.__init__(self)
-           self._other = other
-           self._off = region(**kwargs)
+    def __init__(self, other, **kwargs):
+        YacopGrading.__init__(self)
+        self._other = other
+        self._off = region(**kwargs)
 
-       def _format_(self,other):
-           return "truncation to %s of %s" % (self._off,other)
+    def _format_(self, other):
+        return "truncation to %s of %s" % (self._off, other)
 
-       def _format_term(self,other):
-           return other
+    def _format_term(self, other):
+        return other
 
-       def _repr_(self):
-           return self._format_(self._other)
+    def _repr_(self):
+        return self._format_(self._other)
 
-       def bbox(self):
-           return self._other.bbox().intersect(self._off)
+    def bbox(self):
+        return self._other.bbox().intersect(self._off)
 
-       def basis(self,reg=None):
-           if reg is None:
-              reg = region()
-           return self._other.basis(reg.intersect(self._off))
+    def basis(self, reg=None):
+        if reg is None:
+            reg = region()
+        return self._other.basis(reg.intersect(self._off))
 
-       def split_element(self,lst):
-           return self._other.split_element(lst)
+    def split_element(self, lst):
+        return self._other.split_element(lst)
+
 
 YacopGrading.TruncatedObjects = YacopGrading_TruncatedObjects
 
-class YacopGrading_TruncatedObjects2(YacopGrading_TruncatedObjects):
 
+class YacopGrading_TruncatedObjects2(YacopGrading_TruncatedObjects):
     @staticmethod
-    def __classcall_private__(cls,other,**kwargs):
+    def __classcall_private__(cls, other, **kwargs):
         reg = region(**kwargs)
         if reg.is_full():
             return other
         noff = other._off.intersect(reg)
-        return YacopGrading_TruncatedObjects(other._other,**(noff.as_dict()))
+        return YacopGrading_TruncatedObjects(other._other, **(noff.as_dict()))
+
 
 YacopGrading_TruncatedObjects.TruncatedObjects = YacopGrading_TruncatedObjects2
+
 
 class YacopGrading_TruncOfSuspObjects(YacopGrading_SuspendedObjects):
     """
@@ -621,13 +662,19 @@ class YacopGrading_TruncOfSuspObjects(YacopGrading_SuspendedObjects):
     """
 
     @staticmethod
-    def __classcall_private__(cls,other,**kwargs):
+    def __classcall_private__(cls, other, **kwargs):
         reg = region(**kwargs)
         if reg.is_full():
             return other
         shft = other._off
         reg = reg + shft.negative()
-        return suspension(truncation(other._other,**(reg.as_dict())),t=shft.tmin,e=shft.emin,s=shft.smin)
+        return suspension(
+            truncation(other._other, **(reg.as_dict())),
+            t=shft.tmin,
+            e=shft.emin,
+            s=shft.smin,
+        )
+
 
 YacopGrading_SuspendedObjects.TruncatedObjects = YacopGrading_TruncOfSuspObjects
 
@@ -636,60 +683,69 @@ YacopGrading_SuspendedObjects.TruncatedObjects = YacopGrading_TruncOfSuspObjects
 ###############################################################################################
 ###############################################################################################
 
+
 class YacopGrading_CartesianProduct(YacopGrading):
+    def __init__(self, gradings, **options):
+        YacopGrading.__init__(self)
+        self._summands = gradings
 
-       def __init__(self,gradings,**options):
-           YacopGrading.__init__(self)
-           self._summands = gradings
+    def basis(self, region=None):
+        if hasattr(self, "_domain"):
+            # hack: we're grading a Steenrod algebra module
+            gb = []
+            for idx in range(0, len(self._summands)):
 
-       def basis(self,region=None):
-          if hasattr(self,"_domain"):
-              # hack: we're grading a Steenrod algebra module
-              gb = []
-              for idx in range(0,len(self._summands)):
-                 def mkfam(emb,xx):
+                def mkfam(emb, xx):
                     return xx.map(lambda u: emb(u))
-                 x = self._summands[idx].basis(region)
-                 gb.append(mkfam(self._domain.summand_embedding(idx),x))
-              if all(fam.cardinality() < Infinity for fam in gb):
-                 category = FiniteEnumeratedSets()
-              else:
-                 category=EnumeratedSets()
-              return DisjointUnionEnumeratedSets(gb,keepkey=False,category=category)
 
-          # this is probably a sample grading...
-          return set.union(*[x.basis(region) for x in self._summands])
+                x = self._summands[idx].basis(region)
+                gb.append(mkfam(self._domain.summand_embedding(idx), x))
+            if all(fam.cardinality() < Infinity for fam in gb):
+                category = FiniteEnumeratedSets()
+            else:
+                category = EnumeratedSets()
+            return DisjointUnionEnumeratedSets(gb, keepkey=False, category=category)
 
-       def bbox(self):
-           return region.span(*[g.bbox() for g in self._summands])
+        # this is probably a sample grading...
+        return set.union(*[x.basis(region) for x in self._summands])
 
-       def split_element(self,elem):
-           M = elem.parent()
-           res = {}
-           for i in range(0,len(self._summands)):
-               g = self._summands[i]
-               p = elem.cartesian_projection(i)
-               for k,v in g.split_element(p).items():
-                   v2 = M.summand_embedding(i)(v)
-                   try:
-                       res[k] += v2
-                   except KeyError:
-                       res[k] = v2
-           return res
+    def bbox(self):
+        return region.span(*[g.bbox() for g in self._summands])
 
-       def _format_(self,other):
-           l = [self._summands[i]._format_(other.summand_embedding(i).domain()) for i in (0,len(self._summands))]
-           from sage.categories.cartesian_product import cartesian_product
-           return cartesian_product.symbol.join(l)
+    def split_element(self, elem):
+        M = elem.parent()
+        res = {}
+        for i in range(0, len(self._summands)):
+            g = self._summands[i]
+            p = elem.cartesian_projection(i)
+            for k, v in g.split_element(p).items():
+                v2 = M.summand_embedding(i)(v)
+                try:
+                    res[k] += v2
+                except KeyError:
+                    res[k] = v2
+        return res
 
-       def _repr_(self):
-           from sage.categories.cartesian_product import cartesian_product
-           return cartesian_product.symbol.join(["%s"%g for g in self._summands])
+    def _format_(self, other):
+        l = [
+            self._summands[i]._format_(other.summand_embedding(i).domain())
+            for i in (0, len(self._summands))
+        ]
+        from sage.categories.cartesian_product import cartesian_product
 
-       class ElementMethods:
-           pass
+        return cartesian_product.symbol.join(l)
+
+    def _repr_(self):
+        from sage.categories.cartesian_product import cartesian_product
+
+        return cartesian_product.symbol.join(["%s" % g for g in self._summands])
+
+    class ElementMethods:
+        pass
+
 
 YacopGrading.CartesianProduct = YacopGrading_CartesianProduct
+
 
 class YacopGrading_TensorProduct(YacopGrading):
 
@@ -775,7 +831,7 @@ class YacopGrading_TensorProduct(YacopGrading):
         ...
     """
 
-    def __init__(self,gradings,**options):
+    def __init__(self, gradings, **options):
         YacopGrading.__init__(self)
         self._factors = gradings
         self._bboxes = [u.bbox() for u in gradings]
@@ -785,23 +841,26 @@ class YacopGrading_TensorProduct(YacopGrading):
         #    S^totoff ( S^(i1)M1 # ... # S^(in)Mn )
         # with connected or coconnected factors S^(ik) M_k
 
-        sgns,offs,totoff = [], [], []
-        for var in ('t','e','s'):
+        sgns, offs, totoff = [], [], []
+        for var in ("t", "e", "s"):
             if all(g.min(var) > -Infinity for g in bxs):
-                tsgn,toffs = +1,[g.min(var) for g in bxs]
+                tsgn, toffs = +1, [g.min(var) for g in bxs]
             elif all(g.max(var) < +Infinity for g in bxs):
-                tsgn,toffs = -1,[g.max(var) for g in bxs]
+                tsgn, toffs = -1, [g.max(var) for g in bxs]
             else:
                 # need SmashResolution ( dual-steenrod-algebra * minimal resolution ) for the psi-map
-                print("WARNING: tensor product not locally finite in the %s-direction" % var)
-                tsgn,toffs = 0,[0 for g in bxs] # not sure if this is a good idea ...
+                print(
+                    "WARNING: tensor product not locally finite in the %s-direction"
+                    % var
+                )
+                tsgn, toffs = 0, [0 for g in bxs]  # not sure if this is a good idea ...
             sgns.append(tsgn)
             offs.append(toffs)
             totoff.append(-sum(toffs))
         self._signs = sgns
         self._endpoints = offs
-        t,e,s = totoff
-        self._totaloff = region(t=t,e=e,s=s)
+        t, e, s = totoff
+        self._totaloff = region(t=t, e=e, s=s)
 
     @lazy_attribute
     def _modules(self):
@@ -810,16 +869,17 @@ class YacopGrading_TensorProduct(YacopGrading):
     @lazy_attribute
     def _tc(self):
         return self._domain.tensor_constructor(self._modules)
-    def _tdc(self,*args):
-        print(self._modules,args)
-        #return args
+
+    def _tdc(self, *args):
+        print(self._modules, args)
+        # return args
         return self._domain.tensor_constructor(self._modules)(*args)
 
-    def __degree_walker_tc(self,idx,elems,reg):
-        for x in self.__degree_walker(idx,elems,reg):
+    def __degree_walker_tc(self, idx, elems, reg):
+        for x in self.__degree_walker(idx, elems, reg):
             yield self._tc(*x)
 
-    def __degree_walker(self,idx,elems,reg):
+    def __degree_walker(self, idx, elems, reg):
         r"""
         An iterator for the basis of a tensor product.
 
@@ -830,90 +890,111 @@ class YacopGrading_TensorProduct(YacopGrading):
         - ``reg`` - region to iterate through
         """
         assert idx >= 0
-        tmax,emax,smax=reg.tmax,reg.emax,reg.smax
-        if tmax<0 or emax<0 or smax<0: return
-        toff,eoff,soff = [u[idx] for u in self._endpoints]
-        tsgn,esgn,ssgn = self._signs
+        tmax, emax, smax = reg.tmax, reg.emax, reg.smax
+        if tmax < 0 or emax < 0 or smax < 0:
+            return
+        toff, eoff, soff = [u[idx] for u in self._endpoints]
+        tsgn, esgn, ssgn = self._signs
         gr = self._factors[idx]
-        if idx==0:
+        if idx == 0:
             # this is the last tensor factor
-            r2 = reg.var_mult({'t':tsgn,'e':esgn,'s':ssgn})
-            r2 = r2 + region(t=toff,e=eoff,s=soff)
-            #print "reg=",reg,"r2=",r2
+            r2 = reg.var_mult({"t": tsgn, "e": esgn, "s": ssgn})
+            r2 = r2 + region(t=toff, e=eoff, s=soff)
+            # print "reg=",reg,"r2=",r2
             for elem in gr.basis(r2):
-                yield [elem,]+elems
+                yield [
+                    elem,
+                ] + elems
         else:
             # this is not the last tensor factor
-            regmax = region(tmax=tmax,emax=emax,smax=smax)
-            r2 = regmax.var_mult({'t':tsgn,'e':esgn,'s':ssgn})
-            r2 = r2 + region(t=toff,e=eoff,s=soff)
+            regmax = region(tmax=tmax, emax=emax, smax=smax)
+            r2 = regmax.var_mult({"t": tsgn, "e": esgn, "s": ssgn})
+            r2 = r2 + region(t=toff, e=eoff, s=soff)
             for deg in gr.nontrivial_degrees(r2):
-                dg2 = deg + region(t=-toff,e=-eoff,s=-soff)
-                dg2 = dg2.var_mult({'t':-tsgn,'e':-esgn,'s':-ssgn})
-                regred = reg+dg2
+                dg2 = deg + region(t=-toff, e=-eoff, s=-soff)
+                dg2 = dg2.var_mult({"t": -tsgn, "e": -esgn, "s": -ssgn})
+                regred = reg + dg2
                 for elem in gr.basis(deg):
-                    for x in self.__degree_walker(idx-1,[elem,]+elems,regred):
+                    for x in self.__degree_walker(
+                        idx - 1,
+                        [
+                            elem,
+                        ]
+                        + elems,
+                        regred,
+                    ):
                         yield x
 
-    def basis(self,reg=None):
+    def basis(self, reg=None):
         from sage.sets.set import Set
-        assert hasattr(self,"_domain")
+
+        assert hasattr(self, "_domain")
 
         from functools import partial
         from sage.sets.set_from_iterator import EnumeratedSetFromIterator
 
-        if reg is None: reg = region()
+        if reg is None:
+            reg = region()
         reg = reg.intersect(self.bbox())
-        reg2 = (reg + self._totaloff).var_mult(dict(list(zip(('t','e','s'),self._signs))))
-        iterfunc = partial(self.__degree_walker_tc,
-                           idx = len(self._factors)-1,
-                           elems = [],
-                           reg = reg2)
+        reg2 = (reg + self._totaloff).var_mult(
+            dict(list(zip(("t", "e", "s"), self._signs)))
+        )
+        iterfunc = partial(
+            self.__degree_walker_tc, idx=len(self._factors) - 1, elems=[], reg=reg2
+        )
         sz = 0
-        for var in ('t','e','s'):
-            ma,mi=reg.max(var),reg.min(var)
-            if mi>ma: return Set(())
-            sz += ma-mi
-        category = FiniteEnumeratedSets() if sz<+Infinity else InfiniteEnumeratedSets()
-        return EnumeratedSetFromIterator(iterfunc,
-                                         category=category,
-                                         cache=False,
-                                         name="basis in %s of %s" % (reg,self._domain))
+        for var in ("t", "e", "s"):
+            ma, mi = reg.max(var), reg.min(var)
+            if mi > ma:
+                return Set(())
+            sz += ma - mi
+        category = (
+            FiniteEnumeratedSets() if sz < +Infinity else InfiniteEnumeratedSets()
+        )
+        return EnumeratedSetFromIterator(
+            iterfunc,
+            category=category,
+            cache=False,
+            name="basis in %s of %s" % (reg, self._domain),
+        )
 
     def bbox(self):
-        ans = region(t=0,e=0,s=0)
+        ans = region(t=0, e=0, s=0)
         for bx in [g.bbox() for g in self._factors]:
             ans = ans + bx
         return ans
 
-    def __degree_of_key(self,key):
-        ans = region(t=0,s=0,e=0)
-        for (k,M) in zip(key,self._modules):
-           ans = ans + M.monomial(k).degree()
+    def __degree_of_key(self, key):
+        ans = region(t=0, s=0, e=0)
+        for (k, M) in zip(key, self._modules):
+            ans = ans + M.monomial(k).degree()
         return ans
 
-    def split_element(self,elem):
+    def split_element(self, elem):
         res = {}
-        for m,c in elem:
+        for m, c in elem:
             deg = self.__degree_of_key(m)
-            x = self._domain._from_dict( { m:c } )
+            x = self._domain._from_dict({m: c})
             try:
                 res[deg] += x
             except KeyError:
                 res[deg] = x
         return res
 
-    def _format_(self,other):
-        l = [g._format_(M) for (g,M) in zip(self._factors,other._sets)]
+    def _format_(self, other):
+        l = [g._format_(M) for (g, M) in zip(self._factors, other._sets)]
         from sage.categories.tensor import tensor
+
         return tensor.symbol.join(l)
 
     def _repr_(self):
         from sage.categories.tensor import tensor
-        return tensor.symbol.join(["%s"%g for g in self._factors])
+
+        return tensor.symbol.join(["%s" % g for g in self._factors])
 
     class ElementMethods:
         pass
+
 
 YacopGrading.TensorProduct = YacopGrading_TensorProduct
 
@@ -922,18 +1003,20 @@ YacopGrading.TensorProduct = YacopGrading_TensorProduct
 ###############################################################################################
 ###############################################################################################
 
+
 class YacopGradingFromDict(YacopGrading):
     """
     A grading defined by a dictionary { point : set of objects }
     """
+
     @staticmethod
-    def __classcall_private__(cls,dct):
+    def __classcall_private__(cls, dct):
         return super(YacopGradingFromDict, cls).__classcall__(cls, tuple(dct))
 
-    def __init__(self,tple):
+    def __init__(self, tple):
         YacopGrading.__init__(self)
         self._dct = {}
-        for k,v in tple:
+        for k, v in tple:
             self._dct[k] = v
         self._bbox = region.span(*(list(self._dct.keys())))
 
@@ -943,15 +1026,15 @@ class YacopGradingFromDict(YacopGrading):
     def bbox(self):
         return self._bbox
 
-    def basis(self,reg=region()):
-        g = [set(v) for (k,v) in list(self._dct.items()) if reg.contains(k)]
+    def basis(self, reg=region()):
+        g = [set(v) for (k, v) in list(self._dct.items()) if reg.contains(k)]
         if len(g) > 0:
             return set.union(*g)
         return set()
 
-    def split_element(self,lst):
+    def split_element(self, lst):
         res = {}
-        for (k,v) in list(self._dct.items()):
+        for (k, v) in list(self._dct.items()):
             for l in lst:
                 if l in v:
                     try:
@@ -961,7 +1044,8 @@ class YacopGradingFromDict(YacopGrading):
                     val.append(l)
         return res
 
-def TestGrading(name,dict):
+
+def TestGrading(name, dict):
     X = YacopGradingFromDict(dict)
     X.rename(name)
     return X

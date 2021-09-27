@@ -6,10 +6,10 @@ AUTHORS: - Christian Nassau (2011-05-13: version 1.0)
 CLASS DOCUMENTATION:
 """
 
-#*****************************************************************************
+# *****************************************************************************
 #       Copyright (C) 2011 Christian Nassau <nassau@nullhomotopie.de>
 #  Distributed under the terms of the GNU General Public License (GPL)
-#*****************************************************************************
+# *****************************************************************************
 
 from tkinter import Tcl
 from yacop.utils.tcl import Yacop
@@ -22,7 +22,12 @@ from sage.structure.unique_representation import UniqueRepresentation
 from sage.structure.parent import Parent
 from sage.rings.infinity import Infinity
 from sage.categories.objects import Objects
-from sage.categories.all import EnumeratedSets, FiniteEnumeratedSets, InfiniteEnumeratedSets, Sets
+from sage.categories.all import (
+    EnumeratedSets,
+    FiniteEnumeratedSets,
+    InfiniteEnumeratedSets,
+    Sets,
+)
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 from sage.misc.cachefunc import cached_method
 from copy import copy
@@ -62,7 +67,8 @@ from sage.misc.lazy_format import LazyFormat
         sage: __main__.GeneratorSpace = GeneratorSpace
 """
 
-def resfilename(algebra,flavour="regular"):
+
+def resfilename(algebra, flavour="regular"):
     """
     name of the sqlite database for a minimal resolution of this algebra
 
@@ -87,15 +93,19 @@ def resfilename(algebra,flavour="regular"):
         basename = "motc"
     else:
         raise ValueError("flavour '%s' not understood" % flavour)
-    filename = Yacop.main.eval("""
+    filename = Yacop.main.eval(
+        """
       set p %d
       set a {%s}
       set ae [lindex $a 0]
       set ar [lindex $a 1]
       set fnm "%s-steenrod-$p-E${ae}R[join $ar -].db"
       return $fnm
-    """ % (algebra.prime(), tclprofile(algebra), basename))
+    """
+        % (algebra.prime(), tclprofile(algebra), basename)
+    )
     return filename
+
 
 def tclprofile(algebra):
     """
@@ -121,32 +131,34 @@ def tclprofile(algebra):
     """
     max = 10
     if algebra.is_generic():
-        eprof = sum((algebra.profile(n,1)-1)*(1<<n) for n in range(0,max))
+        eprof = sum((algebra.profile(n, 1) - 1) * (1 << n) for n in range(0, max))
         if algebra._truncation_type == +Infinity:
-            eprof -= 1<<max
+            eprof -= 1 << max
     else:
         eprof = 0
     rprof = []
-    for i in range(1,max):
-        r = algebra.profile(i,0)
+    for i in range(1, max):
+        r = algebra.profile(i, 0)
         if r == +Infinity:
             rprof.append("full")
             break
-        rprof.append("%d"%r)
-    while len(rprof)>0:
+        rprof.append("%d" % r)
+    while len(rprof) > 0:
         p = rprof.pop()
-        if p == "0": continue
+        if p == "0":
+            continue
         rprof.append(p)
         break
-    return "%d {%s}" % (eprof," ".join(rprof))
+    return "%d {%s}" % (eprof, " ".join(rprof))
 
-class GFR(Parent,UniqueRepresentation):
+
+class GFR(Parent, UniqueRepresentation):
     """
     Ground field resolution of the Steenrod algebra and its subalgebras.
     """
 
     @staticmethod
-    def __classcall_private__(cls,algebra,filename=None,memory=None,flavour=None):
+    def __classcall_private__(cls, algebra, filename=None, memory=None, flavour=None):
         """
         Unique representation of resolutions. In-memory databases are handled specially.
 
@@ -170,36 +182,38 @@ class GFR(Parent,UniqueRepresentation):
 
         """
         import os
+
         if flavour is None:
             flavour = "regular"
         if flavour not in ["regular", "motivic"]:
             raise ValueError("flavour must be regular or motivic")
         if filename is None:
-            filename = resfilename(algebra,flavour)
-            filename = 'file:' + os.path.join(Yacop.data_dir(),filename)
+            filename = resfilename(algebra, flavour)
+            filename = "file:" + os.path.join(Yacop.data_dir(), filename)
             if memory is None:
                 memory = Yacop.defaults.memdb
             if memory:
                 filename += "?mode=memory&cache=shared"
-        return super(GFR,cls).__classcall__(cls,algebra,filename,flavour)
+        return super(GFR, cls).__classcall__(cls, algebra, filename, flavour)
 
-    def __init__(self,algebra,filename,flavour):
+    def __init__(self, algebra, filename, flavour):
         """
         .. autoclass:: GFR
         """
 
         import os
-        if os.getenv('YACOP_FORCE_PRIVATE_CACHE') == 'Y':
+
+        if os.getenv("YACOP_FORCE_PRIVATE_CACHE") == "Y":
             # used for parallel doctesting to avoid conflicts
             # between doctest processes
-            filename = filename.replace('cache=shared','cache=private')
+            filename = filename.replace("cache=shared", "cache=private")
 
         self.tcl = Yacop.Interpreter()
         self._filename = filename
         self._algebra = algebra
 
-        self._profmode = 'auto'
-        self._viewtype = 'odd' if algebra.is_generic() else 'even'
+        self._profmode = "auto"
+        self._viewtype = "odd" if algebra.is_generic() else "even"
 
         # test whether prime is supported
         self.tcl.eval("steenrod::prime %s inverse 1" % algebra.prime())
@@ -217,7 +231,8 @@ class GFR(Parent,UniqueRepresentation):
 
             self._viewtype = "odd"
 
-        self.tcl.eval("""
+        self.tcl.eval(
+            """
                  yacop::gfr create resolution {%s} flavour %s
                  if {[info exists alg]} {
                     resolution algebra $p $alg
@@ -228,20 +243,23 @@ class GFR(Parent,UniqueRepresentation):
                  }
                  set resinfo(viewtype) %s
                  resolution viewtype $resinfo(viewtype)
-            """ % (self._filename,self._flavour, self._viewtype))
+            """
+            % (self._filename, self._flavour, self._viewtype)
+        )
 
         self._prime = int(self.tcl.eval("set resinfo(prime)"))
         self._profile = self.tcl.eval("set resinfo(algebra)")
         self._viewtype = self.tcl.eval("set resinfo(viewtype)")
         self._quiet = True
 
-        Parent.__init__(self,category=Sets())
+        Parent.__init__(self, category=Sets())
 
-    def Chart(self,viewtype = None):
+    def Chart(self, viewtype=None):
         from yacop.resolutions.charter import Charter
+
         if viewtype is None:
             viewtype = self._viewtype
-        return Charter(self._filename,viewtype)
+        return Charter(self._filename, viewtype)
 
     def _repr_(self):
         return "minimal resolution of %s" % self._algebra
@@ -283,11 +301,12 @@ class GFR(Parent,UniqueRepresentation):
             [1 1 1 1 1 0 0 0]
             [1 1 1 1 1 1 1 1]
         """
-        if s<=0: return True
-        t=s+n
+        if s <= 0:
+            return True
+        t = s + n
         if self._viewtype == "even":
-            t = 2*t;
-        res = self.tcl.eval("resolution isComplete %d %d" % (s,t))
+            t = 2 * t
+        res = self.tcl.eval("resolution isComplete %d %d" % (s, t))
         if eval(res):
             return True
         return False
@@ -329,23 +348,23 @@ class GFR(Parent,UniqueRepresentation):
             [1 1 1 1 1 1 0 0]
             [1 1 1 1 1 1 1 1]
         """
-        quiet = kwargs.pop('quiet',True)
+        quiet = kwargs.pop("quiet", True)
         if reg is None:
             reg = region()
         reg = reg.intersect(region(kwargs))
         bounds = ""
-        if reg.smax<Infinity:
+        if reg.smax < Infinity:
             bounds += " sdeg %d" % reg.smax
         else:
             bounds += " sdeg %d" % reg.tmax
-        if reg.nmax<Infinity:
+        if reg.nmax < Infinity:
             if self._viewtype == "even":
                 bounds += " rtdeg %d" % reg.nmax
             else:
                 bounds += " tdeg %d" % reg.nmax
-        if reg.tmax<Infinity:
+        if reg.tmax < Infinity:
             if self._viewtype == "even":
-                bounds += " ideg %d" % (2*reg.tmax)
+                bounds += " ideg %d" % (2 * reg.tmax)
             else:
                 bounds += " ideg %d" % reg.tmax
         if quiet is None:
@@ -354,10 +373,13 @@ class GFR(Parent,UniqueRepresentation):
             self.tcl.eval("yacop::sectionizer quiet on")
         else:
             self.tcl.eval("yacop::sectionizer quiet off")
-        self.tcl.eval("""
+        self.tcl.eval(
+            """
               resolution profmode %s
               resolution extend-to {%s}
-           """ % (self._profmode, bounds) )
+           """
+            % (self._profmode, bounds)
+        )
 
     def generators(self, region, extracondition=""):
         """
@@ -385,33 +407,44 @@ class GFR(Parent,UniqueRepresentation):
             66
         """
         from tkinter import TclError
-        def cond(var,col,fac=1):
+
+        def cond(var, col, fac=1):
             res = ""
-            mi,ma = region.min(var), region.max(var)
+            mi, ma = region.min(var), region.max(var)
             if mi > -Infinity:
-                res += " and %s >= %d" % (col,fac*mi)
+                res += " and %s >= %d" % (col, fac * mi)
             if ma < +Infinity:
-                res += " and %s <= %d" % (col,fac*ma)
+                res += " and %s <= %d" % (col, fac * ma)
             return res
+
         c = ""
-        c += cond('s','sdeg')
-        c += cond('t','ideg')
-        c += cond('n','ndeg')
-        c += cond('e','edeg')
-        c += cond('b','(sdeg-edeg)')
+        c += cond("s", "sdeg")
+        c += cond("t", "ideg")
+        c += cond("n", "ndeg")
+        c += cond("e", "edeg")
+        c += cond("b", "(sdeg-edeg)")
         if len(c) and len(extracondition):
             c += " and "
-        c += extracondition;
-        while c[:4] == " and": c = c[4:]
-        if len(c) and c[:5] != "where": c = "where " + c
+        c += extracondition
+        while c[:4] == " and":
+            c = c[4:]
+        if len(c) and c[:5] != "where":
+            c = "where " + c
         try:
-            res = "[" + self.tcl.eval( """
+            res = (
+                "["
+                + self.tcl.eval(
+                    """
                join [resolution db eval {
                    select pydict('id',rowid,'s',sdeg,'t',ideg,'e',edeg,'n',ndeg,'num',basid) from chart_generators %s
                }] ,
-            """ % c ) + "]"
+            """
+                    % c
+                )
+                + "]"
+            )
         except TclError as e:
-            raise TclError("query failed: %s\n%s" % (c,e.message))
+            raise TclError("query failed: %s\n%s" % (c, e.message))
         return eval(res)
 
     def an_element(self):
@@ -423,9 +456,9 @@ class GFR(Parent,UniqueRepresentation):
             sage: C.extend(s=2,n=30)
             sage: C.an_element() # random
         """
-        return self.generators(region(),extracondition="1/* true*/ limit 1")[0]
+        return self.generators(region(), extracondition="1/* true*/ limit 1")[0]
 
-    def g(self,s=None,t=None,n=None,num=None,id=None):
+    def g(self, s=None, t=None, n=None, num=None, id=None):
         """
         TESTS::
 
@@ -451,11 +484,11 @@ class GFR(Parent,UniqueRepresentation):
             extracondition = "rowid=%d" % id
             reg = region()
         else:
-            reg = region(s=s,n=n,t=t)
+            reg = region(s=s, n=n, t=t)
             if not num is None:
                 extracondition = "basid=%d" % num
-        #print reg,extracondition
-        lst = self.generators(reg,extracondition)
+        # print reg,extracondition
+        lst = self.generators(reg, extracondition)
         if len(lst) < 1:
             raise ValueError("no such generator")
         if len(lst) > 1:
@@ -476,7 +509,10 @@ class GFR(Parent,UniqueRepresentation):
         Note that you can search for a specific `P_t^s` or `Q_k` by combining *opdeg* and *ptsonly*.
         """
 
-        from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra_mod_two, SteenrodAlgebra_generic
+        from sage.algebras.steenrod.steenrod_algebra import (
+            SteenrodAlgebra_mod_two,
+            SteenrodAlgebra_generic,
+        )
 
         cond = "srcgen = %d" % src["id"]
         if not (target is None):
@@ -488,7 +524,8 @@ class GFR(Parent,UniqueRepresentation):
         funcname = "sagepoly_" + self._viewtype
         if ptsonly:
             funcname += "_PtsOnly"
-        res = self.tcl.eval( """
+        res = self.tcl.eval(
+            """
                set result {}
                resolution db eval {
                    select %s(%d,group_concat(frag_decode(format,data),' '),targen) as spol from fragments
@@ -499,23 +536,29 @@ class GFR(Parent,UniqueRepresentation):
                   }
                }
                return "\[[join $result ,]\]"
-            """ % (funcname,self._prime,cond) )
+            """
+            % (funcname, self._prime, cond)
+        )
         A = self._algebra
-        #if self._viewtype == "odd":
+        # if self._viewtype == "odd":
         #    A = SteenrodAlgebra_generic(self._prime)
-        #else:
+        # else:
         #    A = SteenrodAlgebra_mod_two()
         return eval(res)
 
     class GUI(Thread):
-        def __init__(self,filename):
+        def __init__(self, filename):
             Thread.__init__(self)
-            self._filename=filename
+            self._filename = filename
+
         def run(self):
             from yacop.utils.tcl import tcl_interp, tcl_eval, loadTk
+
             tcl = tcl_interp()
             loadTk(tcl)
-            tcl_eval(tcl,"""
+            tcl_eval(
+                tcl,
+                """
               set fname [lindex {%s} 0]
               yacop::sqlite db $fname
               proc ::chartbusycb args { after 100; return 0 }
@@ -524,7 +567,9 @@ class GFR(Parent,UniqueRepresentation):
               trace add variable [$chv forever] write "[list $chv destroy];#"
               vwait [$chv forever]
               update
-           """ % self._filename)
+           """
+                % self._filename,
+            )
 
     def gui(self):
         """
@@ -540,9 +585,9 @@ class GFR(Parent,UniqueRepresentation):
         self.tcl.loadTk()
         self.tcl.eval("sqlconsole new [resolution db]")
 
-class Subset(Parent,UniqueRepresentation):
 
-    def __init__(self,minres,region):
+class Subset(Parent, UniqueRepresentation):
+    def __init__(self, minres, region):
         """
         The generators of the minimal resolution in a certain region.
 
@@ -565,16 +610,18 @@ class Subset(Parent,UniqueRepresentation):
         """
         self._res = minres
         self._reg = copy(region)
-        if region.tmax < +Infinity or (region.smax < +Infinity and region.nmax < +Infinity):
+        if region.tmax < +Infinity or (
+            region.smax < +Infinity and region.nmax < +Infinity
+        ):
             cat = FiniteEnumeratedSets()
         else:
             # FIXME: finite sub hopf algebras with limited s are also finite
             cat = InfiniteEnumeratedSets()
-        Parent.__init__(self, facade = self._res, category=(cat,YacopGradedSets()))
+        Parent.__init__(self, facade=self._res, category=(cat, YacopGradedSets()))
 
     def _repr_(self):
         if not self._reg.is_full():
-            return "generators of %s in %s" % (self._res,self._reg)
+            return "generators of %s in %s" % (self._res, self._reg)
         else:
             return "generators of %s" % (self._res,)
 
@@ -583,123 +630,134 @@ class Subset(Parent,UniqueRepresentation):
         return next(it)
 
     def bbox(self):
-        return self._reg.intersect(region(smin=0,tmin=0,emin=0))
+        return self._reg.intersect(region(smin=0, tmin=0, emin=0))
 
-    def _truncate_region(self,reg):
-        return Subset(self._res,self._reg.intersect(reg))
+    def _truncate_region(self, reg):
+        return Subset(self._res, self._reg.intersect(reg))
 
-    def degree(self,elem):
+    def degree(self, elem):
         dct = elem._dct
-        return region(s=dct["s"],t=dct["t"],e=dct["e"],n=dct["n"])
+        return region(s=dct["s"], t=dct["t"], e=dct["e"], n=dct["n"])
 
     class walker(object):
-        def __init__(self,owner):
+        def __init__(self, owner):
             self.owner = owner
             self.id = -1
+
         def __iter__(self):
             return self.__class__(self.owner)
+
         def __next__(self):
             owner = self.owner
             id = self.id
             self.id += 1
-            extendto=0
+            extendto = 0
             while True:
-                elems = owner._res.generators(owner._reg,extracondition=" rowid>%d order by rowid limit 1" % id)
+                elems = owner._res.generators(
+                    owner._reg, extracondition=" rowid>%d order by rowid limit 1" % id
+                )
                 if len(elems) == 0:
                     if extendto < owner._reg.tmax or extendto < owner._reg.smax:
                         extendto += 5
-                        owner._res.extend(reg=region(smax=extendto,tmax=extendto))
+                        owner._res.extend(reg=region(smax=extendto, tmax=extendto))
                         continue
                     raise StopIteration
                 assert len(elems) == 1
-                self.id = elems[0]['id']
-                ans = owner.element_class(owner,elems[0])
+                self.id = elems[0]["id"]
+                ans = owner.element_class(owner, elems[0])
                 if owner._reg.contains(owner.degree(ans)):
                     return ans
 
     def __iter__(self):
         """
-            sage: from yacop.resolutions.minres import GFR, Subset
-            sage: from yacop.utils.region import region
-            sage: C=GFR(SteenrodAlgebra(5),memory=True)
-            sage: S=Subset(C,region(nmin=1,nmax=35,smax=15)) ; S
-            generators of minimal resolution of mod 5 Steenrod algebra, milnor basis in region(1 <= n <= 35, -Infinity < s <= 15)
-            sage: sorted(list(S))
-            [g(1,8), g(2,17), g(3,26), g(4,35)]
+        sage: from yacop.resolutions.minres import GFR, Subset
+        sage: from yacop.utils.region import region
+        sage: C=GFR(SteenrodAlgebra(5),memory=True)
+        sage: S=Subset(C,region(nmin=1,nmax=35,smax=15)) ; S
+        generators of minimal resolution of mod 5 Steenrod algebra, milnor basis in region(1 <= n <= 35, -Infinity < s <= 15)
+        sage: sorted(list(S))
+        [g(1,8), g(2,17), g(3,26), g(4,35)]
 
         """
         if self in FiniteEnumeratedSets():
             self._res.extend(reg=self._reg)
-            alst = [self.element_class(self,d) for d in self._res.generators(self._reg)]
-            return [ans for ans in alst if self._reg.contains(self.degree(ans))].__iter__()
+            alst = [
+                self.element_class(self, d) for d in self._res.generators(self._reg)
+            ]
+            return [
+                ans for ans in alst if self._reg.contains(self.degree(ans))
+            ].__iter__()
         return Subset.walker(self)
 
     def some_elements(self):
         it = iter(self)
         cnt = 0
-        while cnt<10:
+        while cnt < 10:
             cnt += 1
             try:
                 yield next(it)
             except StopIteration:
                 break
 
-    def __call__(self,x):
+    def __call__(self, x):
         try:
             assert self._res is x.parent()._res
             assert self._reg.contains(self.degree(x))
-            return self.element_class(self,x._dct)
+            return self.element_class(self, x._dct)
         except:
             raise
 
-    def dump_element(self,el):
+    def dump_element(self, el):
         return el._dct["id"]
 
-    def load_element(self,el):
-        return self.element_class(self,self._res.g(id=el))
+    def load_element(self, el):
+        return self.element_class(self, self._res.g(id=el))
 
     class Element(Element):
-        def __init__(self,parent,dct):
+        def __init__(self, parent, dct):
             self._dct = dct
-            Element.__init__(self,parent)
-            self.n = dct["n"] ;# avoid conflicts with the inherited "n" method
+            Element.__init__(self, parent)
+            self.n = dct["n"]
+            # avoid conflicts with the inherited "n" method
 
         def _repr_(self):
-            s,t,num = [self._dct[x] for x in ("s","t","num")]
-            if num>0:
-                return "g(%d,%d,%d)" % (s,t,num)
+            s, t, num = [self._dct[x] for x in ("s", "t", "num")]
+            if num > 0:
+                return "g(%d,%d,%d)" % (s, t, num)
             else:
-                return "g(%d,%d)" % (s,t)
+                return "g(%d,%d)" % (s, t)
 
-        def __getattr__(self,name):
+        def __getattr__(self, name):
             try:
                 return self._dct[name]
             except:
                 raise AttributeError
 
-        def __eq__(a,b):
+        def __eq__(a, b):
             return 0 == a.__cmp__(b)
 
-        def __ne__(a,b):
+        def __ne__(a, b):
             return not a.__eq__(b)
 
-        def __cmp__(a,b):
+        def __cmp__(a, b):
             try:
-                x = cmp(a.parent()._res,b.parent()._res)
+                x = cmp(a.parent()._res, b.parent()._res)
             except:
                 return -1
-            if x != 0: return x
+            if x != 0:
+                return x
             try:
                 return a._dct["id"].__cmp__(b._dct["id"])
             except:
                 pass
             return -1
 
-        def __richcmp__(a,b):
+        def __richcmp__(a, b):
             return a.__cmp__(b)
 
         def __hash__(a):
             return a._dct["id"]
+
 
 class MinimalResolution(FreeModuleImpl):
     """
@@ -752,14 +810,38 @@ class MinimalResolution(FreeModuleImpl):
     """
 
     @staticmethod
-    def __classcall_private__(cls,algebra,memory=None,filename=None,flavour=None,category=None,istor=None):
+    def __classcall_private__(
+        cls,
+        algebra,
+        memory=None,
+        filename=None,
+        flavour=None,
+        category=None,
+        istor=None,
+    ):
         if istor is None:
             istor = False
         if flavour is None:
-            flavour = 'regular'
-        return super(MinimalResolution,cls).__classcall__(cls,algebra,memory=memory,filename=filename,flavour=flavour,category=category,istor=istor)
+            flavour = "regular"
+        return super(MinimalResolution, cls).__classcall__(
+            cls,
+            algebra,
+            memory=memory,
+            filename=filename,
+            flavour=flavour,
+            category=category,
+            istor=istor,
+        )
 
-    def __init__(self,algebra,memory=None,filename=None,flavour=None,category=None,istor=False):
+    def __init__(
+        self,
+        algebra,
+        memory=None,
+        filename=None,
+        flavour=None,
+        category=None,
+        istor=False,
+    ):
         """
         TESTS::
 
@@ -773,35 +855,43 @@ class MinimalResolution(FreeModuleImpl):
 
         """
 
-        self._worker = GFR(algebra,filename=filename,flavour=flavour,memory=memory)
-        gens = Subset(self._worker,region())
+        self._worker = GFR(algebra, filename=filename, flavour=flavour, memory=memory)
+        gens = Subset(self._worker, region())
         self._algebra = algebra
         self._filename = filename
         self._flavour = flavour
         self._memory = memory
         self._istor = istor
         self._defcategory = category
-        pro = ((),()) if algebra.is_generic() else ()
-        actalg = SteenrodAlgebra(p=algebra.prime(),generic=algebra.is_generic(),profile=pro) if istor else algebra
+        pro = ((), ()) if algebra.is_generic() else ()
+        actalg = (
+            SteenrodAlgebra(
+                p=algebra.prime(), generic=algebra.is_generic(), profile=pro
+            )
+            if istor
+            else algebra
+        )
         if istor:
             actalg.rename("F%s" % algebra.prime())
         if category is None:
             category = YacopLeftModules(actalg)
             if istor:
                 category = category.Subquotients()
-        FreeModuleImpl.__init__(self,actalg,gens,None,True,False,category=category)
+        FreeModuleImpl.__init__(
+            self, actalg, gens, None, True, False, category=category
+        )
 
     def _repr_(self):
-        if self._flavour == 'motivic':
+        if self._flavour == "motivic":
             return "minimal motivic resolution of %s" % self._algebra
         return "minimal resolution of %s" % self._algebra
 
     def Chart(self):
         X = self._worker.Chart()
-        X.rename("Chart of %s" % self);
+        X.rename("Chart of %s" % self)
         return X
 
-    def compute(self,quiet=False,**kwargs):
+    def compute(self, quiet=False, **kwargs):
         """
         TESTS::
 
@@ -811,7 +901,7 @@ class MinimalResolution(FreeModuleImpl):
 
         """
         reg = region(kwargs)
-        self._worker.extend(reg=reg,quiet=quiet)
+        self._worker.extend(reg=reg, quiet=quiet)
 
     @cached_method
     def differential_morphism(self):
@@ -841,20 +931,22 @@ class MinimalResolution(FreeModuleImpl):
             [(((0, 1), ()) g(1,2), 1), (((1,), (1,)) g(1,1), 1)]
 
         """
-        return self.left_linear_morphism(codomain=self,on_basis=lambda g:self._differential_on_basis(g))
+        return self.left_linear_morphism(
+            codomain=self, on_basis=lambda g: self._differential_on_basis(g)
+        )
 
-    def differential(self,x):
+    def differential(self, x):
         return self.differential_morphism()(x)
 
-    def _generator_from_dict(self,dct):
+    def _generator_from_dict(self, dct):
         ge = self._gens.element_class
-        return self(ge(self._gens,dct))
+        return self(ge(self._gens, dct))
 
-    def _differential_on_basis(self,g):
+    def _differential_on_basis(self, g):
         ge = self._generator_from_dict
-        return self.sum(self.A(a)*ge(x) for (a,x) in self._worker.diff(g._dct))
+        return self.sum(self.A(a) * ge(x) for (a, x) in self._worker.diff(g._dct))
 
-    def g(self,s,t,idx=0):
+    def g(self, s, t, idx=0):
         """
         Return the generator with given s, t and index. Raises an error if there is no such generator.
 
@@ -872,8 +964,9 @@ class MinimalResolution(FreeModuleImpl):
             ValueError: no such generator
 
         """
-        list(self._gens.truncate(s=s,t=t)) ;# this triggers the computation up to this bidegree
-        dct = self._worker.g(s=s,t=t,num=idx)
+        list(self._gens.truncate(s=s, t=t))
+        # this triggers the computation up to this bidegree
+        dct = self._worker.g(s=s, t=t, num=idx)
         return self._generator_from_dict(dct)
 
     def variable_names(self):
@@ -888,30 +981,36 @@ class MinimalResolution(FreeModuleImpl):
             sage: M.differential(g(3,6))
             Sq(1)*g(2,5) + Sq(2)*g(2,4) + Sq(4)*g(2,2)
         """
-        return ["g",]
+        return [
+            "g",
+        ]
 
     def gens(self):
-        return [self.g,]
+        return [
+            self.g,
+        ]
 
     def gui(self):
         return self._worker.gui()
 
-    def _dump_term(self,el):
+    def _dump_term(self, el):
         return self.dump_element(self.monomial(el))
 
-    def _load_term(self,el):
+    def _load_term(self, el):
         return list(self.load_element(el)._monomial_coefficients)[0]
 
     class Element(FreeModuleImpl.Element):
         pass
 
+
 class GeneratorSpace(MinimalResolution):
-
     @staticmethod
-    def __classcall_private__(cls,algebra,memory=None,filename=None,category=None):
-        return super(GeneratorSpace,cls).__classcall__(cls,algebra,memory=memory,filename=filename,category=category)
+    def __classcall_private__(cls, algebra, memory=None, filename=None, category=None):
+        return super(GeneratorSpace, cls).__classcall__(
+            cls, algebra, memory=memory, filename=filename, category=category
+        )
 
-    def __init__(self,algebra,memory=None,filename=None,category=None):
+    def __init__(self, algebra, memory=None, filename=None, category=None):
         """
         TESTS::
 
@@ -924,24 +1023,37 @@ class GeneratorSpace(MinimalResolution):
             Category of subquotients of yacop left modules over F2
             sage: TestSuite(T).run()
         """
-        MinimalResolution.__init__(self,algebra,memory=memory,filename=filename,category=category,istor=True)
+        MinimalResolution.__init__(
+            self,
+            algebra,
+            memory=memory,
+            filename=filename,
+            category=category,
+            istor=True,
+        )
 
     def _repr_(self):
         return "generator space of minimal resolution of %s" % self._algebra
 
     @cached_method
     def ambient(self):
-        return MinimalResolution(self._algebra,filename=self._filename,memory=self._memory,category=self._defcategory)
+        return MinimalResolution(
+            self._algebra,
+            filename=self._filename,
+            memory=self._memory,
+            category=self._defcategory,
+        )
 
-    def lift(self,el):
+    def lift(self, el):
         return self.ambient()._from_dict(dict(el))
 
-    def retract(self,el):
+    def retract(self, el):
         aug = self._algebra.counit
-        return self._from_dict(dict((k,aug(cf)) for (k,cf) in el))
+        return self._from_dict(dict((k, aug(cf)) for (k, cf) in el))
 
     class Element(MinimalResolution.Element):
         pass
+
 
 # Local Variables:
 # eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)

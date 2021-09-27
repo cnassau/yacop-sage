@@ -1,5 +1,4 @@
-__all__ = ['all']
-
+__all__ = ["all"]
 
 
 # Local Variables:

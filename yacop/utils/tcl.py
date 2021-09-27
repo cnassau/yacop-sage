@@ -11,10 +11,11 @@ from sage.misc.cachefunc import cached_method
 from sage.misc.lazy_attribute import lazy_attribute
 import os
 
-#*****************************************************************************
+# *****************************************************************************
 #       Copyright (C) 2009-2011 Christian Nassau <nassau@nullhomotopie.de>
 #  Distributed under the terms of the GNU General Public License (GPL)
-#*****************************************************************************
+# *****************************************************************************
+
 
 def tcl_interp():
     """
@@ -30,17 +31,19 @@ def tcl_interp():
     tcl = Tcl()
     xdirs = Yacop.tcllibrary
     if not xdirs is None:
-        if not  isinstance(xdirs,list):
-            xdirs = [ xdirs ]
+        if not isinstance(xdirs, list):
+            xdirs = [xdirs]
             [tcl.eval("lappend auto_path {%s}" % path) for path in xdirs]
-    tcl.eval("""
+    tcl.eval(
+        """
         lappend auto_path $::env(SAGE_LOCAL)/lib
         package require yacop::sage 1.0
-            """)
+            """
+    )
     return tcl
 
 
-def tcl_eval(tcl,script):
+def tcl_eval(tcl, script):
     """
     Execute a Tcl script, with error reporting.
 
@@ -61,10 +64,13 @@ def tcl_eval(tcl,script):
         einf = tcl.eval("set ::errorInfo")
         raise TclError(einf)
 
+
 def loadTk(tcl):
     "Load the Tk widget library into a interpreter"
 
-    tcl_eval(tcl,"""
+    tcl_eval(
+        tcl,
+        """
        namespace eval :: {package require Tk}
        if {![winfo exists .yacop]} {
            set x {}
@@ -86,7 +92,9 @@ def loadTk(tcl):
            }
        }
        wm withdraw .
-     """)
+     """,
+    )
+
 
 class Yacop:
     """
@@ -100,6 +108,7 @@ class Yacop:
     @staticmethod
     def data_dir():
         import os
+
         ans = Yacop._data_dir()
         if not os.path.isdir(ans):
             os.makedirs(ans)
@@ -110,18 +119,18 @@ class Yacop:
         if not Yacop.defaults.datadir is None:
             return Yacop.defaults.datadir
 
-        if 'YACOP_DATA' in os.environ:
-            return os.environ['YACOP_DATA']
+        if "YACOP_DATA" in os.environ:
+            return os.environ["YACOP_DATA"]
 
-        dname = 'yacop_data'
+        dname = "yacop_data"
 
-        if 'YACOP_DATA' in os.environ:
-            return os.path.join(os.environ['YACOP_DATA'],dname)
+        if "YACOP_DATA" in os.environ:
+            return os.path.join(os.environ["YACOP_DATA"], dname)
 
-        if 'HOME' in os.environ:
-            return os.path.join(os.environ['HOME'],dname)
+        if "HOME" in os.environ:
+            return os.path.join(os.environ["HOME"], dname)
 
-        return os.path.join(os.environ['SAGE_ROOT'],dname)
+        return os.path.join(os.environ["SAGE_ROOT"], dname)
 
     tcl = None
     "The main Tcl interpreter. Resolutions use a namespace of this as their interpreter."
@@ -145,45 +154,47 @@ class Yacop:
             if not self._namespace is None:
                 Yacop.main.eval("catch {namespace delete %s}" % self._namespace)
 
-        def eval(self,script):
+        def eval(self, script):
             "Execute a Tcl script in the Interpreter's namespace"
-            return tcl_eval(Yacop.main,"namespace eval {%s} {%s}" % (self._namespace,script))
+            return tcl_eval(
+                Yacop.main, "namespace eval {%s} {%s}" % (self._namespace, script)
+            )
 
         def loadTk(self):
             Yacop.loadTkOnce()
 
-        def createcommand(self,name,callback):
-            Yacop.main.createcommand("%s::%s" % (self._namespace,name) ,callback)
+        def createcommand(self, name, callback):
+            Yacop.main.createcommand("%s::%s" % (self._namespace, name), callback)
 
         class Coroutine(object):
-            
-            def __init__(self,tcl,cmdname):
+            def __init__(self, tcl, cmdname):
                 self.tcl = tcl
                 self._cmd = cmdname
                 global coroutine_cnt
                 coroutine_cnt += 1
                 self._cor = "yacop_coroutine%d" % coroutine_cnt
-                
+
             def __enter__(self):
                 self.tcl.eval("coroutine %s %s" % (self._cor, self._cmd))
                 return self
-                
-            def __exit__(self,*excargs):
+
+            def __exit__(self, *excargs):
                 self.tcl.eval("catch {rename %s {}}" % self._cor)
                 return False
-                
+
             def __iter__(self):
                 return self
-            
+
             def __next__(self):
                 x = self.tcl.eval(self._cor)
                 if len(x) == 0:
                     raise StopIteration
                 return x
-                
-        def coroutine(self,cmdname):
-            return Yacop.Interpreter.Coroutine(self,cmdname)
-            
+
+        def coroutine(self, cmdname):
+            return Yacop.Interpreter.Coroutine(self, cmdname)
+
+
 coroutine_cnt = 0
 
 Yacop.main = tcl_interp()

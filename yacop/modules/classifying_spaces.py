@@ -56,10 +56,10 @@ The construction of these modules is straightforward::
 CLASS DOCUMENTATION:
 """
 
-#*****************************************************************************
+# *****************************************************************************
 #       Copyright (C) 2011 Christian Nassau <nassau@nullhomotopie.de>
 #  Distributed under the terms of the GNU General Public License (GPL)
-#*****************************************************************************
+# *****************************************************************************
 
 from yacop.utils.region import region
 from yacop.utils.gradings import YacopGrading
@@ -95,33 +95,34 @@ r"""
 
 """
 
-class BZpBasis(InfiniteGradedSet,UniqueRepresentation):
 
-    def __init__(self,module):
+class BZpBasis(InfiniteGradedSet, UniqueRepresentation):
+    def __init__(self, module):
         InfiniteGradedSet.__init__(self)
 
     def bbox(self):
-        return region(s=0,emin=-1,emax=0,tmin=0,tmax=Infinity)
+        return region(s=0, emin=-1, emax=0, tmin=0, tmax=Infinity)
 
-    def degree(self,elem):
-        return region(s=0,e=-(elem&1),t=elem)
+    def degree(self, elem):
+        return region(s=0, e=-(elem & 1), t=elem)
 
-    def _truncate_region(self,reg):
-        emin,emax = reg.erange
-        smin,smax = reg.srange
-        tmin,tmax = reg.trange
-        if smax<0 or smin>0 or emax<-1 or emin>0 or tmin>tmax:
+    def _truncate_region(self, reg):
+        emin, emax = reg.erange
+        smin, smax = reg.srange
+        tmin, tmax = reg.trange
+        if smax < 0 or smin > 0 or emax < -1 or emin > 0 or tmin > tmax:
             return Set(())
-        if tmin<0:
-            tmin=0
-        if tmax<Infinity:
-            tmax=Integer(tmax+1)
-        if emax>=0 and emin <=-1:
-            return IntegerRange(Integer(tmin),tmax)
-        elif emax<0 and emin <=-1:
-            return IntegerRange(Integer(tmin|1),tmax,Integer(2))
+        if tmin < 0:
+            tmin = 0
+        if tmax < Infinity:
+            tmax = Integer(tmax + 1)
+        if emax >= 0 and emin <= -1:
+            return IntegerRange(Integer(tmin), tmax)
+        elif emax < 0 and emin <= -1:
+            return IntegerRange(Integer(tmin | 1), tmax, Integer(2))
         else:
-            return IntegerRange(Integer(((tmin+1)|1)-1),tmax,Integer(2))
+            return IntegerRange(Integer(((tmin + 1) | 1) - 1), tmax, Integer(2))
+
 
 class BZpGeneric(SteenrodModuleBase):
     """
@@ -134,74 +135,79 @@ class BZpGeneric(SteenrodModuleBase):
     """
 
     @staticmethod
-    def __classcall_private__(cls,order,prime=None,varnames=None):
+    def __classcall_private__(cls, order, prime=None, varnames=None):
         if varnames is None:
-           varnames = ("y","x")
+            varnames = ("y", "x")
         if prime is None:
-           prime = order
-        return super(BZpGeneric,cls).__classcall__(cls,order,prime,varnames)
+            prime = order
+        return super(BZpGeneric, cls).__classcall__(cls, order, prime, varnames)
 
-    def __init__(self,order,prime,varnames,category=None):
+    def __init__(self, order, prime, varnames, category=None):
         """
         mod p cohomology of ZZ/p*ZZ
         """
-        assert(prime == order)  # TODO: allow prime != order
+        assert prime == order  # TODO: allow prime != order
         assert is_prime(prime)
         self._n = order
         self._varnames = varnames
         self._prime = prime
 
         if category is None:
-            category=YacopLeftModuleAlgebras(SteenrodAlgebra(prime,generic=True))
+            category = YacopLeftModuleAlgebras(SteenrodAlgebra(prime, generic=True))
         SteenrodModuleBase.__init__(self, BZpBasis(self), category=category)
 
     def an_element(self):
-         """
-         Return an element of self. This is used for automatic tests.
+        """
+        Return an element of self. This is used for automatic tests.
 
-         EXAMPLES::
+        EXAMPLES::
 
-             sage: from yacop.modules.classifying_spaces import *
-             sage: N = BZp(5)
-             sage: N.an_element()
-             y + 3*x^2 + 2*y*x^5
-             sage: latex(N.an_element())
-             y + 3x^{2} + 2yx^{5}
-         """
-         dct = []
-         for (cf,a,b) in ((2,1,5),(3,0,2),(1,1,0),(5,0,17)):
-            dct.append( (self.monomial(a+(b<<1)), cf ) )
-         return self.linear_combination( dct )
+            sage: from yacop.modules.classifying_spaces import *
+            sage: N = BZp(5)
+            sage: N.an_element()
+            y + 3*x^2 + 2*y*x^5
+            sage: latex(N.an_element())
+            y + 3x^{2} + 2yx^{5}
+        """
+        dct = []
+        for (cf, a, b) in ((2, 1, 5), (3, 0, 2), (1, 1, 0), (5, 0, 17)):
+            dct.append((self.monomial(a + (b << 1)), cf))
+        return self.linear_combination(dct)
 
     def _repr_(self):
-        return "mod %d cohomology of the classifying space of ZZ/%dZZ" % (self._prime,self._n)
+        return "mod %d cohomology of the classifying space of ZZ/%dZZ" % (
+            self._prime,
+            self._n,
+        )
 
-    def _repr_term_impl(self,elem,numfmt,mulsym):
-        yv,xv = self._varnames
-        yexp,xexp = elem&1,elem>>1
-        if yexp>0: y = "%s%s" % (yv,mulsym)
-        else:      y = ""
+    def _repr_term_impl(self, elem, numfmt, mulsym):
+        yv, xv = self._varnames
+        yexp, xexp = elem & 1, elem >> 1
+        if yexp > 0:
+            y = "%s%s" % (yv, mulsym)
+        else:
+            y = ""
         if xexp > 1:
-           return "%s%s^%s" % (y,xv,numfmt%("%d"%xexp))
+            return "%s%s^%s" % (y, xv, numfmt % ("%d" % xexp))
         elif xexp < 0:
-           return "%s%s^%s" % (y,xv,numfmt%("(%d)"%xexp))
+            return "%s%s^%s" % (y, xv, numfmt % ("(%d)" % xexp))
         elif xexp == 1:
-           if yexp>0:
-              return "%s%s" % (y,xv)
-           else:
-              return xv
+            if yexp > 0:
+                return "%s%s" % (y, xv)
+            else:
+                return xv
         elif xexp == 0:
-           if yexp>0:
-              return yv
-           else:
-              return "1"
+            if yexp > 0:
+                return yv
+            else:
+                return "1"
         raise ValueError("internal error")
 
-    def _repr_term(self,elem):
-       return self._repr_term_impl(elem,"%s","*")
+    def _repr_term(self, elem):
+        return self._repr_term_impl(elem, "%s", "*")
 
-    def _latex_term(self,elem):
-       return self._repr_term_impl(elem,"{%s}","")
+    def _latex_term(self, elem):
+        return self._repr_term_impl(elem, "{%s}", "")
 
     def one_basis(self):
         return 0
@@ -210,24 +216,24 @@ class BZpGeneric(SteenrodModuleBase):
         return self._varnames
 
     def gens(self):
-        return [self.monomial(a+2*b) for (a,b) in ((1,0),(0,1))]
+        return [self.monomial(a + 2 * b) for (a, b) in ((1, 0), (0, 1))]
 
-    def product_on_basis(self,left,right):
-       if left&right&1>0:
-          return self.zero()
-       return self.monomial(left+right)
+    def product_on_basis(self, left, right):
+        if left & right & 1 > 0:
+            return self.zero()
+        return self.monomial(left + right)
 
-    def left_steenrod_action_milnor(self,a,m):
-        qexp,Rexp = a
-        yexp,xexp = m&1,m>>1
+    def left_steenrod_action_milnor(self, a, m):
+        qexp, Rexp = a
+        yexp, xexp = m & 1, m >> 1
         p = self._prime
 
-        if len(qexp)>1:
-           # Q_i Q_j z = 0 for all z
-           return self.zero()
-        if len(qexp)==1 and yexp==0:
-           # Qj(x^k) = 0
-           return self.zero()
+        if len(qexp) > 1:
+            # Q_i Q_j z = 0 for all z
+            return self.zero()
+        if len(qexp) == 1 and yexp == 0:
+            # Qj(x^k) = 0
+            return self.zero()
 
         # compute P(Rexp)*x^xexp
         sum = 0
@@ -235,26 +241,29 @@ class BZpGeneric(SteenrodModuleBase):
         ppow = p
         cf = 1
         for i in Rexp:
-           sum = sum + i
-           if xexp >= 0 and sum > xexp: return self.zero()
-           cf *= binom_modp(self._prime,sum,i)
-           cf = cf % p
-           if 0==cf: return self.zero()
-           deg += i*(ppow-1)
-           ppow *= p
-        rest = xexp-sum
-        cf *= binom_modp(self._prime,rest+sum,sum)
-        if 0==cf: return self.zero()
+            sum = sum + i
+            if xexp >= 0 and sum > xexp:
+                return self.zero()
+            cf *= binom_modp(self._prime, sum, i)
+            cf = cf % p
+            if 0 == cf:
+                return self.zero()
+            deg += i * (ppow - 1)
+            ppow *= p
+        rest = xexp - sum
+        cf *= binom_modp(self._prime, rest + sum, sum)
+        if 0 == cf:
+            return self.zero()
         cf = cf % p
 
-        if len(qexp)==0:
-           ans = self.monomial(yexp+(deg<<1))
+        if len(qexp) == 0:
+            ans = self.monomial(yexp + (deg << 1))
         else:
-           # Qi(y) = x^{p^i}
-           ans = self.monomial((deg+p**qexp[0])<<1)
-        return self.linear_combination(((ans,cf),))
+            # Qi(y) = x^{p^i}
+            ans = self.monomial((deg + p ** qexp[0]) << 1)
+        return self.linear_combination(((ans, cf),))
 
-    def left_steenrod_action_milnor_conj(self,a,m):
+    def left_steenrod_action_milnor_conj(self, a, m):
         """
         TESTS::
 
@@ -274,24 +283,24 @@ class BZpGeneric(SteenrodModuleBase):
             ....:                 assert po * (y*x**i) == op % (y*x**i)
         """
 
-        qexp,Rexp = a
-        yexp,xexp = m&1,m>>1
+        qexp, Rexp = a
+        yexp, xexp = m & 1, m >> 1
         p = self._prime
 
         cf = 1
 
-        if len(qexp)>1:
+        if len(qexp) > 1:
             # Q_i Q_j z = 0 for all z
             return self.zero()
-        if len(qexp)==1:
-            if yexp==0:
+        if len(qexp) == 1:
+            if yexp == 0:
                 # Qj(x^k) = 0
                 return self.zero()
             else:
                 # evaluate chi(Q_k)(y*x**i) = -x**(i+p^k) first
-                cf = p-1
+                cf = p - 1
                 yexp = 0
-                xexp += p**qexp[0]
+                xexp += p ** qexp[0]
 
         # compute P(Rexp)*x^xexp
         sum = 0
@@ -299,27 +308,32 @@ class BZpGeneric(SteenrodModuleBase):
         deg = xexp
         ppow = p
         for i in Rexp:
-           sum = sum + i
-           cf *= binom_modp(self._prime,sum,i)
-           cf = cf % p
-           if 0==cf: return self.zero()
-           deg += i*(ppow-1)
-           psum += ppow*i
-           ppow *= p
-        rest = -1-xexp-psum
-        cf *= binom_modp(self._prime,rest+sum,sum)
-        if 0==cf: return self.zero()
+            sum = sum + i
+            cf *= binom_modp(self._prime, sum, i)
+            cf = cf % p
+            if 0 == cf:
+                return self.zero()
+            deg += i * (ppow - 1)
+            psum += ppow * i
+            ppow *= p
+        rest = -1 - xexp - psum
+        cf *= binom_modp(self._prime, rest + sum, sum)
+        if 0 == cf:
+            return self.zero()
         cf = cf % p
 
-        ans = self.monomial(yexp+(deg<<1))
+        ans = self.monomial(yexp + (deg << 1))
 
-        return self.linear_combination(((ans,cf),))
+        return self.linear_combination(((ans, cf),))
 
-def BZp(order,prime=None,varnames=None):
-   if order==2:
-      from yacop.modules.projective_spaces import RealProjectiveSpace
-      return RealProjectiveSpace(prefix=varnames,botexp=0)
-   return BZpGeneric(order,prime,varnames)
+
+def BZp(order, prime=None, varnames=None):
+    if order == 2:
+        from yacop.modules.projective_spaces import RealProjectiveSpace
+
+        return RealProjectiveSpace(prefix=varnames, botexp=0)
+    return BZpGeneric(order, prime, varnames)
+
 
 # Local Variables:
 # eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)

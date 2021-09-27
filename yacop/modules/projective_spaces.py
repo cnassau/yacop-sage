@@ -90,16 +90,20 @@ Tensor products can be formed::
 CLASS DOCUMENTATION:
 """
 
-#*****************************************************************************
+# *****************************************************************************
 #       Copyright (C) 2011 Christian Nassau <nassau@nullhomotopie.de>
 #  Distributed under the terms of the GNU General Public License (GPL)
-#*****************************************************************************
+# *****************************************************************************
 
 from yacop.utils.region import region
 from yacop.utils.gradings import YacopGrading
 from yacop.utils.set_of_elements import SetOfMonomials
 from yacop.modules.module_base import SteenrodModuleBase
-from yacop.categories import YacopLeftModuleAlgebras, YacopGradedObjects, YacopGradedSets
+from yacop.categories import (
+    YacopLeftModuleAlgebras,
+    YacopGradedObjects,
+    YacopGradedSets,
+)
 from yacop.categories.functors import suspension, SuspendedObjectsCategory
 from yacop.categories.functors import truncation, TruncatedObjectsCategory
 from sage.rings.infinity import Infinity
@@ -109,7 +113,10 @@ from sage.structure.parent import Parent
 from sage.rings.finite_rings.finite_field_constructor import GF
 from sage.sets.set import Set
 from sage.sets.family import Family, LazyFamily
-from sage.categories.examples.infinite_enumerated_sets import NonNegativeIntegers, InfiniteEnumeratedSets
+from sage.categories.examples.infinite_enumerated_sets import (
+    NonNegativeIntegers,
+    InfiniteEnumeratedSets,
+)
 from sage.categories.all import AlgebrasWithBasis
 from sage.sets.integer_range import IntegerRange
 from sage.algebras.all import SteenrodAlgebra, Sq
@@ -163,41 +170,47 @@ r"""
 
 """
 
-class ProjectiveSpaceBasis(InfiniteGradedSet,UniqueRepresentation):
 
-    def __init__(self,module):
-        InfiniteGradedSet.__init__(self,module._top < Infinity)
+class ProjectiveSpaceBasis(InfiniteGradedSet, UniqueRepresentation):
+    def __init__(self, module):
+        InfiniteGradedSet.__init__(self, module._top < Infinity)
         self._field = module._field
         self._bot = module._bot
         self._top = module._top
 
     def bbox(self):
-        return region(s=0,e=0,tmin=self._field*self._bot,tmax=self._field*self._top)
+        return region(
+            s=0, e=0, tmin=self._field * self._bot, tmax=self._field * self._top
+        )
 
-    def degree(self,elem):
-        return region(s=0,e=0,t=self._field*elem)
+    def degree(self, elem):
+        return region(s=0, e=0, t=self._field * elem)
 
     def _repr_(self):
-        return "ProjectiveSpaceBasis (field,bot,top) = (%s,%s,%s)" % (self._field,self._bot,self._top)
+        return "ProjectiveSpaceBasis (field,bot,top) = (%s,%s,%s)" % (
+            self._field,
+            self._bot,
+            self._top,
+        )
 
-    def _truncate_region(self,reg):
+    def _truncate_region(self, reg):
         from copy import copy
+
         reg = copy(reg)
         reg = reg.intersect(self.bbox())
-        emin,emax = reg.erange
-        smin,smax = reg.srange
-        tmin,tmax = reg.trange
-        if smax<0 or smin>0 or emax<0 or emin>0 or tmin>tmax:
+        emin, emax = reg.erange
+        smin, smax = reg.srange
+        tmin, tmax = reg.trange
+        if smax < 0 or smin > 0 or emax < 0 or emin > 0 or tmin > tmax:
             return Set(())
-        tmin = max((tmin+self._field-1)//self._field,self._bot)
-        if tmax<Infinity:
-            tmax = min(self._top,tmax//self._field)
+        tmin = max((tmin + self._field - 1) // self._field, self._bot)
+        if tmax < Infinity:
+            tmax = min(self._top, tmax // self._field)
         else:
             tmax = self._top
-        if tmax<Infinity:
-            tmax=Integer(tmax+1)
-        return IntegerRange(Integer(tmin),tmax)
-
+        if tmax < Infinity:
+            tmax = Integer(tmax + 1)
+        return IntegerRange(Integer(tmin), tmax)
 
 
 class GenericProjectiveSpace(SteenrodModuleBase):
@@ -212,16 +225,18 @@ class GenericProjectiveSpace(SteenrodModuleBase):
     """
 
     @staticmethod
-    def __classcall_private__(cls,fielddim,topexp=None,botexp=None,prefix=None):
+    def __classcall_private__(cls, fielddim, topexp=None, botexp=None, prefix=None):
         if topexp is None:
             topexp = +Infinity
         if botexp is None:
             botexp = 0
         if prefix is None:
             prefix = "x"
-        return super(GenericProjectiveSpace,cls).__classcall__(cls,fielddim,topexp,botexp,prefix)
+        return super(GenericProjectiveSpace, cls).__classcall__(
+            cls, fielddim, topexp, botexp, prefix
+        )
 
-    def __init__(self,fielddim,topexp,botexp,prefix,category=None):
+    def __init__(self, fielddim, topexp, botexp, prefix, category=None):
         """
         mod 2 cohomology of kP^topexp/kP^{botexp-1} where dim_R k = fielddim
         """
@@ -231,14 +246,13 @@ class GenericProjectiveSpace(SteenrodModuleBase):
         self._field = fielddim
         self._prefix = prefix
         if self._top < Infinity:
-            n = Set(list(range(self._bot,self._top)))
+            n = Set(list(range(self._bot, self._top)))
         else:
-            n = IntegerRange(Integer(self._bot),self._top)
+            n = IntegerRange(Integer(self._bot), self._top)
 
         if category is None:
-            category=YacopLeftModuleAlgebras(SteenrodAlgebra(self._prime))
+            category = YacopLeftModuleAlgebras(SteenrodAlgebra(self._prime))
         SteenrodModuleBase.__init__(self, ProjectiveSpaceBasis(self), category=category)
-
 
     def _repr_(self):
         fld = "divalg(%d)" % self._field
@@ -253,24 +267,28 @@ class GenericProjectiveSpace(SteenrodModuleBase):
         trunc = ""
         if self._bot != 1:
             trunc = "_{%d}" % (self._bot)
-        return "mod 2 cohomology of %s projective space P^{%s}%s" % (fld,self._top,trunc)
+        return "mod 2 cohomology of %s projective space P^{%s}%s" % (
+            fld,
+            self._top,
+            trunc,
+        )
 
-    def _repr_term(self,exp):
+    def _repr_term(self, exp):
         letter = self._prefix
         if exp > 1 or exp == 0:
-            return "%s^%d" % (letter,exp)
+            return "%s^%d" % (letter, exp)
         elif exp < 0:
-            return "%s^(%d)" % (letter,exp)
+            return "%s^(%d)" % (letter, exp)
         return letter
 
-    def _latex_term(self,exp):
+    def _latex_term(self, exp):
         letter = self._prefix
         if exp != 1:
-            return "%s^{%d}" % (letter,exp)
+            return "%s^{%d}" % (letter, exp)
         return letter
 
     def an_element(self):
-        return self.sum([self.monomial(u) for u in (1,3,32) if u < self._top])
+        return self.sum([self.monomial(u) for u in (1, 3, 32) if u < self._top])
 
     def one_basis(self):
         return 0
@@ -281,16 +299,16 @@ class GenericProjectiveSpace(SteenrodModuleBase):
     def gens(self):
         return (self.monomial(1),)
 
-    def product_on_basis(self,left,right):
+    def product_on_basis(self, left, right):
         cf = 1
-        s = left+right
+        s = left + right
         if s > self._top:
-           cf = 0
+            cf = 0
         if s < self._bot:
-           raise ValueError("product out of parent")
-        return self.linear_combination( ((self.monomial(left+right), cf),) )
+            raise ValueError("product out of parent")
+        return self.linear_combination(((self.monomial(left + right), cf),))
 
-    def left_steenrod_action_milnor(self,a,m):
+    def left_steenrod_action_milnor(self, a, m):
         sum = 0
         deg = m
         exp = 2
@@ -301,14 +319,14 @@ class GenericProjectiveSpace(SteenrodModuleBase):
             if 0 != (sum & i) or deg > self._top:
                 return self.zero()
             sum = sum + i
-            deg = deg + (exp-1) * i
+            deg = deg + (exp - 1) * i
             exp = exp * 2
-        rest = m-sum
+        rest = m - sum
         if 0 != (rest & sum) or deg > self._top:
             return self.zero()
         return self.monomial(deg)
 
-    def left_steenrod_action_milnor_conj(self,a,m):
+    def left_steenrod_action_milnor_conj(self, a, m):
         """
         TESTS::
 
@@ -331,69 +349,73 @@ class GenericProjectiveSpace(SteenrodModuleBase):
             if 0 != (sum & i) or deg > self._top:
                 return self.zero()
             sum = sum + i
-            deg = deg + (exp-1) * i
-            psum = psum + exp*i
+            deg = deg + (exp - 1) * i
+            psum = psum + exp * i
             exp = exp * 2
-        rest = -1-m-psum
+        rest = -1 - m - psum
         if 0 != (rest & sum) or deg > self._top:
             return self.zero()
         return self.monomial(deg)
 
-def RealProjectiveSpace(topexp=+Infinity,botexp=1,prefix="x",**args):
-   """
-   Cohomology of a real projective space P^n or a truncation P^n_k.
 
-    EXAMPLE::
+def RealProjectiveSpace(topexp=+Infinity, botexp=1, prefix="x", **args):
+    """
+    Cohomology of a real projective space P^n or a truncation P^n_k.
 
-        sage: from yacop.modules.projective_spaces import *
-        sage: RealProjectiveSpace()
-        mod 2 cohomology of real projective space P^{+Infinity}
-        sage: RealProjectiveSpace(7,botexp=3,prefix="u")
-        mod 2 cohomology of real projective space P^{7}_{3}
-   """
-   return GenericProjectiveSpace(1,topexp,botexp=botexp,prefix=prefix,**args)
+     EXAMPLE::
 
-def ComplexProjectiveSpace(topexp=+Infinity,botexp=1,prefix="x",**args):
-   """
-   Cohomology of a complex projective space P^n or a truncation P^n_k.
+         sage: from yacop.modules.projective_spaces import *
+         sage: RealProjectiveSpace()
+         mod 2 cohomology of real projective space P^{+Infinity}
+         sage: RealProjectiveSpace(7,botexp=3,prefix="u")
+         mod 2 cohomology of real projective space P^{7}_{3}
+    """
+    return GenericProjectiveSpace(1, topexp, botexp=botexp, prefix=prefix, **args)
 
-    EXAMPLE::
 
-        sage: from yacop.modules.projective_spaces import *
-        sage: ComplexProjectiveSpace()
-        mod 2 cohomology of complex projective space P^{+Infinity}
-        sage: ComplexProjectiveSpace(7,botexp=3,prefix="u")
-        mod 2 cohomology of complex projective space P^{7}_{3}
-   """
-   return GenericProjectiveSpace(2,topexp,botexp=botexp,prefix=prefix,**args)
+def ComplexProjectiveSpace(topexp=+Infinity, botexp=1, prefix="x", **args):
+    """
+    Cohomology of a complex projective space P^n or a truncation P^n_k.
 
-def QuaternionicProjectiveSpace(topexp=+Infinity,botexp=1,prefix="x",**args):
-   """
-   Cohomology of a quaternionic projective space P^n or a truncation P^n_k.
+     EXAMPLE::
 
-    EXAMPLE::
+         sage: from yacop.modules.projective_spaces import *
+         sage: ComplexProjectiveSpace()
+         mod 2 cohomology of complex projective space P^{+Infinity}
+         sage: ComplexProjectiveSpace(7,botexp=3,prefix="u")
+         mod 2 cohomology of complex projective space P^{7}_{3}
+    """
+    return GenericProjectiveSpace(2, topexp, botexp=botexp, prefix=prefix, **args)
 
-        sage: from yacop.modules.projective_spaces import *
-        sage: QuaternionicProjectiveSpace()
-        mod 2 cohomology of quaternionic projective space P^{+Infinity}
-        sage: QuaternionicProjectiveSpace(7,botexp=3,prefix="u")
-        mod 2 cohomology of quaternionic projective space P^{7}_{3}
-   """
-   return GenericProjectiveSpace(4,topexp,botexp=botexp,prefix=prefix,**args)
 
-def OctonionicProjectiveSpace(topexp=+Infinity,botexp=1,prefix="x",**args):
-   """
-   Cohomology of a octonionic projective space P^n or a truncation P^n_k.
+def QuaternionicProjectiveSpace(topexp=+Infinity, botexp=1, prefix="x", **args):
+    """
+    Cohomology of a quaternionic projective space P^n or a truncation P^n_k.
 
-    EXAMPLE::
+     EXAMPLE::
 
-        sage: from yacop.modules.projective_spaces import *
-        sage: OctonionicProjectiveSpace()
-        mod 2 cohomology of octonionic projective space P^{+Infinity}
-        sage: OctonionicProjectiveSpace(7,botexp=3,prefix="u")
-        mod 2 cohomology of octonionic projective space P^{7}_{3}
-   """
-   return GenericProjectiveSpace(8,topexp,botexp=botexp,prefix=prefix,**args)
+         sage: from yacop.modules.projective_spaces import *
+         sage: QuaternionicProjectiveSpace()
+         mod 2 cohomology of quaternionic projective space P^{+Infinity}
+         sage: QuaternionicProjectiveSpace(7,botexp=3,prefix="u")
+         mod 2 cohomology of quaternionic projective space P^{7}_{3}
+    """
+    return GenericProjectiveSpace(4, topexp, botexp=botexp, prefix=prefix, **args)
+
+
+def OctonionicProjectiveSpace(topexp=+Infinity, botexp=1, prefix="x", **args):
+    """
+    Cohomology of a octonionic projective space P^n or a truncation P^n_k.
+
+     EXAMPLE::
+
+         sage: from yacop.modules.projective_spaces import *
+         sage: OctonionicProjectiveSpace()
+         mod 2 cohomology of octonionic projective space P^{+Infinity}
+         sage: OctonionicProjectiveSpace(7,botexp=3,prefix="u")
+         mod 2 cohomology of octonionic projective space P^{7}_{3}
+    """
+    return GenericProjectiveSpace(8, topexp, botexp=botexp, prefix=prefix, **args)
 
 
 # Local Variables:

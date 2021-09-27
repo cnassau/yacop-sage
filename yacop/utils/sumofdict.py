@@ -14,12 +14,13 @@ INTRODUCTION:
 CLASS DOCUMENTATION:
 """
 
-#*****************************************************************************
+# *****************************************************************************
 #       Copyright (C) 2009 Christian Nassau <nassau@nullhomotopie.de>
 #  Distributed under the terms of the GNU General Public License (GPL)
-#*****************************************************************************
+# *****************************************************************************
 
 from sage.structure.formal_sum import FormalSum, FormalSums
+
 
 class FormalSumOfDict(FormalSum):
     """
@@ -28,7 +29,7 @@ class FormalSumOfDict(FormalSum):
 
     def __getitem__(self, key):
         res = None
-        for (cf,gen) in list(self):
+        for (cf, gen) in list(self):
             if not res is None:
                 if gen[key] != res:
                     raise KeyError("inconsistent entries for key %s" % key)
@@ -37,10 +38,6 @@ class FormalSumOfDict(FormalSum):
         if res is None:
             raise KeyError("cannot determine '%s' because sum is zero" % key)
         return res
-
-
-
-
 
 
 # Local Variables:

@@ -80,10 +80,10 @@ CLASS DOCUMENTATION:
 
 """
 
-#*****************************************************************************
+# *****************************************************************************
 #       Copyright (C) 2011 Christian Nassau <nassau@nullhomotopie.de>
 #  Distributed under the terms of the GNU General Public License (GPL)
-#*****************************************************************************
+# *****************************************************************************
 from sage.algebras.all import SteenrodAlgebra, Sq
 from sage.misc.cachefunc import cached_method
 from yacop.categories import YacopLeftModules
@@ -93,25 +93,28 @@ from yacop.modules.module_base import SteenrodModuleBase, SteenrodModuleGrading
 from yacop.utils.finite_graded_set import FiniteGradedSet
 from copy import copy
 
-class SerreCartanModuleBase(SteenrodModuleBase):
 
-    def __init__(self,basis,grading=None,category=None):
-        SteenrodModuleBase.__init__(self,basis,grading=grading,category=category)
-        self._SCA = SteenrodAlgebra(self._prime,basis='serre-cartan')
-        self._SCM = SteenrodAlgebra(self._prime,basis='milnor')
+class SerreCartanModuleBase(SteenrodModuleBase):
+    def __init__(self, basis, grading=None, category=None):
+        SteenrodModuleBase.__init__(self, basis, grading=grading, category=category)
+        self._SCA = SteenrodAlgebra(self._prime, basis="serre-cartan")
+        self._SCM = SteenrodAlgebra(self._prime, basis="milnor")
 
     @cached_method
-    def left_steenrod_action_milnor(self,a,m):
+    def left_steenrod_action_milnor(self, a, m):
         # check whether result is zero for dimensional reasons
         # FIXME: implement this
         smds = []
         # transform to Serre-Cartan basis
-        for (key,cf) in self._SCA(self._SCM.monomial(a)):
+        for (key, cf) in self._SCA(self._SCM.monomial(a)):
             # FIXME: as is, this works only for p=2
             m2 = self.monomial(m)
             for exponent in reversed(key):
-                m2 = self.linear_combination((self.left_steenrod_action_serre_cartan(exponent,keym2),cfm2) for (keym2,cfm2) in m2)
-            smds.append((m2,cf))
+                m2 = self.linear_combination(
+                    (self.left_steenrod_action_serre_cartan(exponent, keym2), cfm2)
+                    for (keym2, cfm2) in m2
+                )
+            smds.append((m2, cf))
         return self.linear_combination(smds)
 
 
@@ -144,14 +147,24 @@ class SerreCartanModule(SerreCartanModuleBase):
     """
 
     @staticmethod
-    def __classcall_private__(cls,basering,basis,operations=None,latexnames=None,category=None):
+    def __classcall_private__(
+        cls, basering, basis, operations=None, latexnames=None, category=None
+    ):
         basis = tuple(basis)
         if latexnames is None:
             latexnames = ()
-        return super(SerreCartanModule,cls).__classcall__(cls,basering,basis,
-                operations=operations,latexnames=latexnames,category=category)
+        return super(SerreCartanModule, cls).__classcall__(
+            cls,
+            basering,
+            basis,
+            operations=operations,
+            latexnames=latexnames,
+            category=category,
+        )
 
-    def __init__(self,basering,basis,operations=None,latexnames=None,category=None):
+    def __init__(
+        self, basering, basis, operations=None, latexnames=None, category=None
+    ):
         if category is None:
             category = YacopLeftModules(basering)
         dct = dict()
@@ -160,34 +173,36 @@ class SerreCartanModule(SerreCartanModuleBase):
         for itm in basis:
             edeg = 0
             sdeg = 0
-            if len(itm)==2:
-                elem,tdeg = itm
-            elif len(itm)==3:
-                elem,tdeg,edeg = itm
-            elif len(itm)==4:
-                elem,tdeg,edeg,sdeg = itm
+            if len(itm) == 2:
+                elem, tdeg = itm
+            elif len(itm) == 3:
+                elem, tdeg, edeg = itm
+            elif len(itm) == 4:
+                elem, tdeg, edeg, sdeg = itm
             else:
                 raise ValueError("item %s to understood" % itm)
             if elem in items:
                 raise ValueError("duplicate item in basis")
             items.append(elem)
-            grades[elem] = (tdeg,edeg,sdeg)
-            reg = region(s=sdeg,e=edeg,t=tdeg)
+            grades[elem] = (tdeg, edeg, sdeg)
+            reg = region(s=sdeg, e=edeg, t=tdeg)
             try:
                 u = dct[reg]
             except KeyError:
                 u = []
             u.append(elem)
             dct[reg] = u
-        #grading = YacopGradingFromDict((k,tuple(v)) for (k,v) in dct.iteritems())
+        # grading = YacopGradingFromDict((k,tuple(v)) for (k,v) in dct.iteritems())
         self._latex_names = dict(latexnames)
-        grbasis = FiniteGradedSet(items,tesfunc=lambda x : grades[x])
-        grading = SteenrodModuleGrading(grbasis,self)
-        SerreCartanModuleBase.__init__(self,grbasis,grading=grading,category=category)
+        grbasis = FiniteGradedSet(items, tesfunc=lambda x: grades[x])
+        grading = SteenrodModuleGrading(grbasis, self)
+        SerreCartanModuleBase.__init__(
+            self, grbasis, grading=grading, category=category
+        )
         # self.monomial is only available after refining the category, so we can
         # only set the proper grading now
-        #grading = YacopGradingFromDict((k,tuple(self.monomial(_) for _ in v)) for (k,v) in dct.iteritems())
-        #self._set_grading(grading)
+        # grading = YacopGradingFromDict((k,tuple(self.monomial(_) for _ in v)) for (k,v) in dct.iteritems())
+        # self._set_grading(grading)
 
         self._assign_names([str(_) for _ in items])
         self._ops = dict()
@@ -196,78 +211,80 @@ class SerreCartanModule(SerreCartanModuleBase):
 
         # list of keys that we accept in the element constructor
         # this can become bigger than the original keys if we deal
-        # with a truncation where certain keys are to be treated as zero 
+        # with a truncation where certain keys are to be treated as zero
         self._coerce_keys = list(self.basis().keys())
 
     def _basis(self):
         ans = []
         for g in self.gens():
-            ans.append((str(g),g.t,g.e,g.s))
+            ans.append((str(g), g.t, g.e, g.s))
         return ans
 
     def operations(self):
         """
         FIXME: needs doctest
         """
-        return [(Sq(i),self(j),k) for ((i,j),k) in self._ops.items()]
+        return [(Sq(i), self(j), k) for ((i, j), k) in self._ops.items()]
 
-    def _repr_term(self,x):
+    def _repr_term(self, x):
         return str(x)
 
-    def _latex_term(self,x):
+    def _latex_term(self, x):
         try:
             return self._latex_names[x]
         except:
             return self._repr_term(x)
 
-    def set_operation(self,op,src,dst,clear_cache=True):
+    def set_operation(self, op, src, dst, clear_cache=True):
         cnt = 0
-        for (key,cf) in self._SCA(op):
-            if cnt>0 or len(key) != 1:
+        for (key, cf) in self._SCA(op):
+            if cnt > 0 or len(key) != 1:
                 raise ValueError("operation must be a Sq^j or P^j or the Bockstein")
             cnt += 1
         assert src.parent() is self
         assert dst.parent() is self
         assert len(src.monomials()) == 1
-        (skey,scf), = src
-        self._ops[(key[0],skey)] = cf/scf*dst
+        ((skey, scf),) = src
+        self._ops[(key[0], skey)] = cf / scf * dst
         if clear_cache:
             self.left_steenrod_action_milnor.clear_cache()
 
-    def set_operations(self,operations):
-        for (op,src,dst) in operations:
-            self.set_operation(op,src,dst,clear_cache=False)
+    def set_operations(self, operations):
+        for (op, src, dst) in operations:
+            self.set_operation(op, src, dst, clear_cache=False)
         self.left_steenrod_action_milnor.clear_cache()
 
-    def left_steenrod_action_serre_cartan(self,exp,key):
+    def left_steenrod_action_serre_cartan(self, exp, key):
         if exp == 0:
             return self.monomial(key)
         try:
-            return self._ops[(exp,key)]
+            return self._ops[(exp, key)]
         except KeyError:
             return self.zero()
 
-    def __contains__(self,x):
+    def __contains__(self, x):
         try:
             if x.parent() is self:
                 return True
         except:
             pass
-        if hasattr(x,"monomials") and all(_ in self._coerce_keys for (_,cf) in x):
+        if hasattr(x, "monomials") and all(_ in self._coerce_keys for (_, cf) in x):
             return True
         if x in list(self.basis().keys()):
             return True
         return False
 
-    def _element_constructor_(self,x):
+    def _element_constructor_(self, x):
         try:
             if x.parent() is self:
                 return x
         except:
             pass
-        if hasattr(x,"monomials") and all(_ in self._coerce_keys for (_,cf) in x):
+        if hasattr(x, "monomials") and all(_ in self._coerce_keys for (_, cf) in x):
             # keys from self._coerce_keys setminus self.basis().keys() map to zero
-            return self._from_dict({key:cf for (key,cf) in x if key in list(self.basis().keys())})
+            return self._from_dict(
+                {key: cf for (key, cf) in x if key in list(self.basis().keys())}
+            )
         if x in list(self.basis().keys()):
             return self.monomial(x)
         elif x in self._coerce_keys:
@@ -278,17 +295,26 @@ class SerreCartanModule(SerreCartanModuleBase):
         except:
             pass
         if False:
-            print("x=",x,"type",type(x),"keys=",list(self.basis().keys()),"ckeys=",self._coerce_keys)
-            print("list(x)=",list(x))
+            print(
+                "x=",
+                x,
+                "type",
+                type(x),
+                "keys=",
+                list(self.basis().keys()),
+                "ckeys=",
+                self._coerce_keys,
+            )
+            print("list(x)=", list(x))
             return self.zero()
-        raise ValueError("cannot cast %s to %s" % (x,self))
+        raise ValueError("cannot cast %s to %s" % (x, self))
 
     def _xxcoerce_map_from_(self, S):
-        if isinstance(S,SerreCartanModule):
+        if isinstance(S, SerreCartanModule):
             return True
 
     @staticmethod
-    def SuspendedObjectsFactory(module,*args,**kwopts):
+    def SuspendedObjectsFactory(module, *args, **kwopts):
         """
         TESTS::
 
@@ -324,28 +350,34 @@ class SerreCartanModule(SerreCartanModuleBase):
         # FIXME: why does the category framework not handle this
         # FIXME: the internal differential is lost (?)
         limits = region(kwopts)
-        t,s,e = 0,0,0
+        t, s, e = 0, 0, 0
         try:
             s = limits.s
-        except: 
+        except:
             pass
         try:
             t = limits.t
-        except: 
+        except:
             pass
         try:
             e = limits.e
-        except: 
+        except:
             pass
-        newbasis = [(key,tdeg+t,edeg+e,sdeg+s) for (key,tdeg,edeg,sdeg) in module._basis()]
-        ans = SerreCartanModule(module._yacop_base_ring,newbasis,
-                latexnames=tuple(module._latex_names.items()))
-        newops = [(a,ans(x),ans(y)) for (a,x,y) in module.operations()]
+        newbasis = [
+            (key, tdeg + t, edeg + e, sdeg + s)
+            for (key, tdeg, edeg, sdeg) in module._basis()
+        ]
+        ans = SerreCartanModule(
+            module._yacop_base_ring,
+            newbasis,
+            latexnames=tuple(module._latex_names.items()),
+        )
+        newops = [(a, ans(x), ans(y)) for (a, x, y) in module.operations()]
         ans.set_operations(newops)
         return ans
 
     @staticmethod
-    def TruncatedObjectsFactory(module,*args,**kwopts):
+    def TruncatedObjectsFactory(module, *args, **kwopts):
         """
         TESTS::
 
@@ -379,24 +411,38 @@ class SerreCartanModule(SerreCartanModuleBase):
         tmin, tmax = limits.trange
         smin, smax = limits.srange
         emin, emax = limits.erange
-        gens = [(k,module.monomial(k)) for k in list(module.basis().keys())]
-        tbasis = [(k,g.t,g.e,g.s) for (k,g) in gens 
-            if g.t >= tmin and g.t <= tmax
-            and g.s >= smin and g.s <= smax
-            and g.e >= emin and g.e <= emax]
-        ans = SerreCartanModule(module._yacop_base_ring,tbasis)
-        emb = ans.module_morphism(codomain=module,on_basis=module.monomial)
+        gens = [(k, module.monomial(k)) for k in list(module.basis().keys())]
+        tbasis = [
+            (k, g.t, g.e, g.s)
+            for (k, g) in gens
+            if g.t >= tmin
+            and g.t <= tmax
+            and g.s >= smin
+            and g.s <= smax
+            and g.e >= emin
+            and g.e <= emax
+        ]
+        ans = SerreCartanModule(module._yacop_base_ring, tbasis)
+        emb = ans.module_morphism(codomain=module, on_basis=module.monomial)
         ans.register_embedding(emb)
-        conv = module.module_morphism(codomain=ans,function=ans._element_constructor_)
+        conv = module.module_morphism(codomain=ans, function=ans._element_constructor_)
         ans.register_conversion(conv)
-        ans._coerce_keys += [k for (k,g) in gens if g.t>tmax]
-        ans._ops = { (op,m):ans(n) for ((op,m),n) in module._ops.items() 
-               if m in list(ans.basis().keys()) and not ans(n).is_zero() }
+        ans._coerce_keys += [k for (k, g) in gens if g.t > tmax]
+        ans._ops = {
+            (op, m): ans(n)
+            for ((op, m), n) in module._ops.items()
+            if m in list(ans.basis().keys()) and not ans(n).is_zero()
+        }
         return ans
 
     @staticmethod
-    def Clone(module,reg=None,names="{letter}{tdeg}{abasnum}",
-                latex="{letter}_{{{tdeg}{abasnum}}}",letter="g"):
+    def Clone(
+        module,
+        reg=None,
+        names="{letter}{tdeg}{abasnum}",
+        latex="{letter}_{{{tdeg}{abasnum}}}",
+        letter="g",
+    ):
         """
         Clone some other module as a SerreCartan module. This can be used
         to produce a better performing version of another module, or to
@@ -432,8 +478,8 @@ class SerreCartanModule(SerreCartanModuleBase):
             -     f10  <-  x^(-5)  -> f10
             -     f12  <-  x^(-6)  -> f12
             -     f14  <-  x^(-7)  -> f14
-            -      f6  <-  x^(-3)  -> f6 
-            -      f8  <-  x^(-4)  -> f8 
+            -      f6  <-  x^(-3)  -> f6
+            -      f8  <-  x^(-4)  -> f8
 
             sage: from yacop.modules.dual_steenrod_algebra import DualSteenrodAlgebra
             sage: from yacop.categories.functors import suspension
@@ -461,7 +507,7 @@ class SerreCartanModule(SerreCartanModuleBase):
         for _ in module.graded_basis(limits):
             for d in _.homogeneous_decomposition():
                 degrees[d] = 1
-        signindic = lambda s : 'pos' if s>0 else 'neg' if s<0 else ''
+        signindic = lambda s: "pos" if s > 0 else "neg" if s < 0 else ""
         clonedict = {}
         map = {}
         elems = []
@@ -471,83 +517,119 @@ class SerreCartanModule(SerreCartanModuleBase):
         for deg in sorted(degrees):
             bas = []
             gb = list(module.graded_basis(deg))
-            for (num,elem) in enumerate(gb):
-                if len(gb)>1:
-                    abasnum = chr(ord('a')+num)
+            for (num, elem) in enumerate(gb):
+                if len(gb) > 1:
+                    abasnum = chr(ord("a") + num)
                 else:
-                    abasnum = ''
+                    abasnum = ""
                 # sdegrees 0,1,.. map to a,b,c... negative homological degrees use Z,Y,X,...
-                sletter=chr(ord('a')+elem.s) if elem.s>=0 else chr(ord('Z')+elem.s+1)
-                origname=str(elem)
-                name = names.format(tdeg=abs(elem.t),sdeg=abs(elem.s),edeg=abs(elem.e),repr=str(elem),
-                    tsgn=signindic(elem.t),esgn=signindic(elem.e),ssgn=signindic(elem.s),
-                    basnum=num,abasnum=abasnum,letter=letter,sletter=sletter,origname=origname)
-                lname = latex.format(tdeg=abs(elem.t),sdeg=abs(elem.s),edeg=abs(elem.e),repr=str(elem),
-                    tsgn=signindic(elem.t),esgn=signindic(elem.e),ssgn=signindic(elem.s),
-                    basnum=num,abasnum=abasnum,letter=letter,sletter=sletter,origname=origname)
-                elems.append((name,deg.t,deg.e,deg.s))
+                sletter = (
+                    chr(ord("a") + elem.s)
+                    if elem.s >= 0
+                    else chr(ord("Z") + elem.s + 1)
+                )
+                origname = str(elem)
+                name = names.format(
+                    tdeg=abs(elem.t),
+                    sdeg=abs(elem.s),
+                    edeg=abs(elem.e),
+                    repr=str(elem),
+                    tsgn=signindic(elem.t),
+                    esgn=signindic(elem.e),
+                    ssgn=signindic(elem.s),
+                    basnum=num,
+                    abasnum=abasnum,
+                    letter=letter,
+                    sletter=sletter,
+                    origname=origname,
+                )
+                lname = latex.format(
+                    tdeg=abs(elem.t),
+                    sdeg=abs(elem.s),
+                    edeg=abs(elem.e),
+                    repr=str(elem),
+                    tsgn=signindic(elem.t),
+                    esgn=signindic(elem.e),
+                    ssgn=signindic(elem.s),
+                    basnum=num,
+                    abasnum=abasnum,
+                    letter=letter,
+                    sletter=sletter,
+                    origname=origname,
+                )
+                elems.append((name, deg.t, deg.e, deg.s))
                 bas.append(name)
                 ldict[name] = lname
                 clonedict[name] = elem
-            map[deg] = bas 
-        ans = SerreCartanModuleClone(module,tuple(elems),latexnames=tuple(ldict.items()))
+            map[deg] = bas
+        ans = SerreCartanModuleClone(
+            module, tuple(elems), latexnames=tuple(ldict.items())
+        )
         for deg in degrees:
             gb = list(module.graded_basis(deg))
-            for (num,elem) in enumerate(gb):
+            for (num, elem) in enumerate(gb):
                 thisbasis = map[deg]
                 curelem = ans(thisbasis[num])
-                for i in range(1,limits.tmax-deg.t+1):
+                for i in range(1, limits.tmax - deg.t + 1):
                     op = A.Sq(i)
-                    x = op*elem
+                    x = op * elem
                     if not x.is_zero():
-                        #print "op",op,elem,x
+                        # print "op",op,elem,x
                         tardeg = x.degree()
                         try:
                             tarbasis = map[tardeg]
-                            coeffs = module.graded_basis_coefficients(x,tardeg)
-                            #print "coeffs",coeffs
-                            x2 = ans.linear_combination((ans(key),cf) for (cf,key) in zip(coeffs,tarbasis))
-                            ops.append((op,curelem,x2))
+                            coeffs = module.graded_basis_coefficients(x, tardeg)
+                            # print "coeffs",coeffs
+                            x2 = ans.linear_combination(
+                                (ans(key), cf) for (cf, key) in zip(coeffs, tarbasis)
+                            )
+                            ops.append((op, curelem, x2))
                         except KeyError:
                             pass
         ans.set_operations(ops)
-        ans._set_cloning_map(module,clonedict,map)
-        #module.register_coercion(ans.cloning_map_reverse())
+        ans._set_cloning_map(module, clonedict, map)
+        # module.register_coercion(ans.cloning_map_reverse())
         return ans
 
-class SerreCartanModuleClone(SerreCartanModule):
 
-    def __init__(self,module,basis,operations=None,latexnames=None,category=None):
+class SerreCartanModuleClone(SerreCartanModule):
+    def __init__(self, module, basis, operations=None, latexnames=None, category=None):
         basering = module._yacop_base_ring
-        SerreCartanModule.__init__(self,basering,basis,
-                            operations=operations,
-                            latexnames=latexnames,
-                            category=category)
-        self._cloning_map_reverse = self.module_morphism(codomain=module,
-            on_basis = self._to_clone_source)
-        self._cloning_map = module.module_morphism(codomain=self,
-            function = self._from_clone_source)
+        SerreCartanModule.__init__(
+            self,
+            basering,
+            basis,
+            operations=operations,
+            latexnames=latexnames,
+            category=category,
+        )
+        self._cloning_map_reverse = self.module_morphism(
+            codomain=module, on_basis=self._to_clone_source
+        )
+        self._cloning_map = module.module_morphism(
+            codomain=self, function=self._from_clone_source
+        )
         self.register_embedding(copy(self.cloning_map_reverse()))
         self.register_coercion(copy(self.cloning_map()))
 
-    def _set_cloning_map(self,module,cdict,map):
+    def _set_cloning_map(self, module, cdict, map):
         self._cloning_origin = module
         self._cloning_dict = cdict
         self._basis_by_degree = map
 
-    def _to_clone_source(self,key):
+    def _to_clone_source(self, key):
         return self._cloning_dict[key]
 
-    def _from_clone_source(self,elem):
+    def _from_clone_source(self, elem):
         if elem.is_zero():
             return self.zero()
         ans = []
-        for (deg,smd) in elem.homogeneous_decomposition().items():
+        for (deg, smd) in elem.homogeneous_decomposition().items():
             try:
                 b = self._basis_by_degree[deg]
-                coeffs = self._cloning_origin.graded_basis_coefficients(elem,deg)
-                for (cf,key) in zip(coeffs,b):
-                    ans.append((self(key),cf))
+                coeffs = self._cloning_origin.graded_basis_coefficients(elem, deg)
+                for (cf, key) in zip(coeffs, b):
+                    ans.append((self(key), cf))
             except KeyError:
                 pass
         return self.linear_combination(ans)
@@ -560,7 +642,6 @@ class SerreCartanModuleClone(SerreCartanModule):
     def cloning_map_reverse(self):
         return self._cloning_map_reverse
 
-    
 
 # Local Variables:
 # eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)

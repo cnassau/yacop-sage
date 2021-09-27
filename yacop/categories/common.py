@@ -120,7 +120,9 @@ class yacop_category:
         if not isinstance(meth, FunctionType):
             # probably a cached or abstract method
             return True
-        if hasattr(meth, "yacop_module_method") and getattr(meth, "yacop_module_method"):
+        if hasattr(meth, "yacop_module_method") and getattr(
+            meth, "yacop_module_method"
+        ):
             return True
         return False
 
@@ -343,20 +345,27 @@ class CommonParentMethods:
                 tester.assertEqual(
                     y,
                     steenrod_antipode(e) % x,
-                    LazyFormat("conjugate action check failed: e.antipode()%x != e*x for x=%s, e=%s") % (x, e),
+                    LazyFormat(
+                        "conjugate action check failed: e.antipode()%x != e*x for x=%s, e=%s"
+                    )
+                    % (x, e),
                 )
             if is_right:
                 y = x * e  # does right action work?
                 tester.assertEqual(
                     y,
                     x % steenrod_antipode(e),
-                    LazyFormat("conjugate action check failed: x%e.antipode() != x*e for x=%s, e=%s") % (x, e),
+                    LazyFormat(
+                        "conjugate action check failed: x%e.antipode() != x*e for x=%s, e=%s"
+                    )
+                    % (x, e),
                 )
             if is_left and is_right:
                 tester.assertEqual(
                     (e * x) * e,
                     e * (x * e),
-                    LazyFormat("bimodule check failed: (ex)e != e(xe) for x=%s, e=%s") % (x, e),
+                    LazyFormat("bimodule check failed: (ex)e != e(xe) for x=%s, e=%s")
+                    % (x, e),
                 )
         if False:
             tester.assertTrue(
@@ -496,7 +505,9 @@ class notused:
         cat = cat.category().meet((self.category(), codomain.category()))
         kwargs["category"] = cat
         kwargs["codomain"] = codomain
-        ans = ModulesWithBasis(Y.base_ring().base_ring()).parent_class.module_morphism(self, *args, **kwargs)
+        ans = ModulesWithBasis(Y.base_ring().base_ring()).parent_class.module_morphism(
+            self, *args, **kwargs
+        )
         # there is a known issue with morphism categories (see sage code)
         # disable the _test_category and _test_pickling method for this instance:
 
@@ -589,7 +600,10 @@ class notused:
                         )
                         tester.assertTrue(
                             self(T(m)) == m,
-                            LazyFormat("casting from/to truncation broken for %s (elem %s)") % (T, n),
+                            LazyFormat(
+                                "casting from/to truncation broken for %s (elem %s)"
+                            )
+                            % (T, n),
                         )
                         tester.assertTrue(
                             T(m).parent() is T,
@@ -666,7 +680,9 @@ class notused:
                 tester.assertEqual(
                     x,
                     x2,
-                    LazyFormat("x.suspend(...) != parent.suspend_element(x,...):\n   A=%s\n   B=%s")
+                    LazyFormat(
+                        "x.suspend(...) != parent.suspend_element(x,...):\n   A=%s\n   B=%s"
+                    )
                     % (
                         x,
                         x2,
@@ -703,7 +719,9 @@ class notused:
                     raise_on_failure=is_sub_testsuite,
                 )
                 f = X.cartesian_projection(0)
-                tester.info("\n  Running the test suite of the projection (self (+) self) -> self")
+                tester.info(
+                    "\n  Running the test suite of the projection (self (+) self) -> self"
+                )
                 TestSuite(f).run(
                     verbose=tester._verbose,
                     prefix=tester._prefix + "  ",
@@ -711,7 +729,9 @@ class notused:
                     skip=["_test_category", "_test_nonzero_equal", "_test_pickling"],
                 )
                 f = X.summand_embedding(1)
-                tester.info("\n  Running the test suite of the embedding self -> (self (+) self)")
+                tester.info(
+                    "\n  Running the test suite of the embedding self -> (self (+) self)"
+                )
                 TestSuite(f).run(
                     verbose=tester._verbose,
                     prefix=tester._prefix + "  ",

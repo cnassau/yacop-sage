@@ -7,10 +7,10 @@ AUTHORS: - Christian Nassau (2011-05-13: version 1.0)
 CLASS DOCUMENTATION:
 """
 
-#*****************************************************************************
+# *****************************************************************************
 #       Copyright (C) 2011 Christian Nassau <nassau@nullhomotopie.de>
 #  Distributed under the terms of the GNU General Public License (GPL)
-#*****************************************************************************
+# *****************************************************************************
 
 from yacop.utils.region import region
 from yacop.utils.gradings import YacopGrading
@@ -45,6 +45,7 @@ from yacop.modules.xitauring import XiTauRing
     sage: from yacop.modules.dual_steenrod_algebra import *
     sage: __main__.DualSteenrodAlgebra = DualSteenrodAlgebra
 """
+
 
 class DualSteenrodAlgebra(SteenrodAlgebraBase):
 
@@ -152,7 +153,6 @@ class DualSteenrodAlgebra(SteenrodAlgebraBase):
     """
 
     class Degrees(object):
-
         def __init__(self, prime, generic):
             self._prime = prime
             self._generic = generic
@@ -167,15 +167,22 @@ class DualSteenrodAlgebra(SteenrodAlgebraBase):
                 # xi_(idx/2+1)
                 return (-fac * (self._prime ** (1 + (idx >> 1)) - 1), 0, 0)
 
-    def __init__(self, prime, generic='auto', category=None):
-        if generic == 'auto':
+    def __init__(self, prime, generic="auto", category=None):
+        if generic == "auto":
             generic = False if prime == 2 else True
         self._generic = generic
         degs = DualSteenrodAlgebra.Degrees(prime, generic)
         self._prime = prime
-        SteenrodAlgebraBase.__init__(self, XiTauRing(prime,degrees=degs), degs, None,
-                                     SteenrodAlgebra(prime, generic=generic),
-                                     left_action=True, right_action=True, category=category)
+        SteenrodAlgebraBase.__init__(
+            self,
+            XiTauRing(prime, degrees=degs),
+            degs,
+            None,
+            SteenrodAlgebra(prime, generic=generic),
+            left_action=True,
+            right_action=True,
+            category=category,
+        )
 
     def octants(self):
         return [(-1, -1, 0)]
@@ -203,12 +210,13 @@ class DualSteenrodAlgebra(SteenrodAlgebraBase):
 
     def variable_names(self):
         if not self._generic:
-            return ["xi", ]
+            return [
+                "xi",
+            ]
         else:
             return ["xi", "tau"]
 
     class GenFactory(SageObject):
-
         def __init__(self, par, even):
             self.par = par
             self.even = even
@@ -236,27 +244,24 @@ class DualSteenrodAlgebra(SteenrodAlgebraBase):
 
     def _monomial_gen(self, idx, expo=1):
         """
-         TESTS::
+        TESTS::
 
-            sage: from yacop.modules.dual_steenrod_algebra import *
-            sage: D=DualSteenrodAlgebra(5)
-            sage: for u in range(0,4):
-            ....:     print(u,D._monomial_gen(u))
-            0 1
-            1 tau[0]
-            2 xi[1]
-            3 tau[1]
-            sage: D._tau(0)
-            tau[0]
-            sage: D._xipower(3,5)
-            xi[3]**5
-            sage: D._xipower(0,2)
-            1
+           sage: from yacop.modules.dual_steenrod_algebra import *
+           sage: D=DualSteenrodAlgebra(5)
+           sage: for u in range(0,4):
+           ....:     print(u,D._monomial_gen(u))
+           0 1
+           1 tau[0]
+           2 xi[1]
+           3 tau[1]
+           sage: D._tau(0)
+           tau[0]
+           sage: D._xipower(3,5)
+           xi[3]**5
+           sage: D._xipower(0,2)
+           1
         """
-        return (
-            self.monomial(
-                tuple([0 if x < idx else expo for x in range(1, idx + 1)]))
-        )
+        return self.monomial(tuple([0 if x < idx else expo for x in range(1, idx + 1)]))
 
     def _xipower(self, idx, pow=1):
         return self._monomial_gen(idx << 1, pow)
@@ -281,14 +286,14 @@ class DualSteenrodAlgebra(SteenrodAlgebraBase):
 
     def tau(self, idx):
         """
-         TESTS::
+        TESTS::
 
-            sage: from yacop.modules.dual_steenrod_algebra import *
-            sage: D=DualSteenrodAlgebra(5)
-            sage: D.tau(3)
-            tau[3]
-            sage: D.tau(-1)
-            1
+           sage: from yacop.modules.dual_steenrod_algebra import *
+           sage: D=DualSteenrodAlgebra(5)
+           sage: D.tau(3)
+           tau[3]
+           sage: D.tau(-1)
+           1
         """
         if not self._generic:
             raise ValueError("tau generator not defined in %s" % self)
@@ -297,7 +302,9 @@ class DualSteenrodAlgebra(SteenrodAlgebraBase):
         return self._tau(idx)
 
     def gens(self):
-        ans = [DualSteenrodAlgebra.GenFactory(self, 1), ]
+        ans = [
+            DualSteenrodAlgebra.GenFactory(self, 1),
+        ]
         if self._generic:
             ans.append(DualSteenrodAlgebra.GenFactory(self, 0))
         return ans
@@ -326,7 +333,7 @@ class DualSteenrodAlgebra(SteenrodAlgebraBase):
                 yield self._xipower(n - i, ppow), self._xipower(i)
                 ppow = ppow * self._prime
         else:
-            n = (idx >> 1)
+            n = idx >> 1
             # Delta(tau_n) = sum xi_{n-i}^{p^i}*tau_i + tau_n*1
             ppow = 1
             yield self._tau(n), self._xipower(0)
@@ -336,7 +343,7 @@ class DualSteenrodAlgebra(SteenrodAlgebraBase):
 
     def __toqp(self, elem):
         # hack: elem must be monomial with coefficient 1
-        elem, = elem.monomial_coefficients()
+        (elem,) = elem.monomial_coefficients()
         q = 0
         msk = 1
         for idx in elem[::2]:
@@ -373,8 +380,6 @@ class DualSteenrodAlgebra(SteenrodAlgebraBase):
         for (ff, sf) in self._coproduct_gen(idx):
             q, p = self.__toqp(ff)
             yield self._coaction_tensor(sf, q, p)
-
-
 
 
 # Local Variables:

@@ -9,13 +9,13 @@ AUTHORS:
  - Christian Nassau (2011): initial revision
 
 """
-#*****************************************************************************
+# *****************************************************************************
 #  Copyright (C) 2011      Christian Nassau <nassau@nullhomotopie.de>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
-#******************************************************************************
-#pylint: disable=E0213
+# ******************************************************************************
+# pylint: disable=E0213
 
 from inspect import Attribute
 from sage.rings.infinity import Infinity
@@ -25,9 +25,23 @@ from sage.misc.lazy_attribute import lazy_attribute
 from sage.categories.category_singleton import Category_singleton
 from sage.categories.category_types import Category_over_base_ring
 from sage.categories.homsets import HomsetsCategory
-from sage.categories.all import Category, Sets, Hom, Rings, Modules, LeftModules, RightModules, Bimodules, ModulesWithBasis, AlgebrasWithBasis
+from sage.categories.all import (
+    Category,
+    Sets,
+    Hom,
+    Rings,
+    Modules,
+    LeftModules,
+    RightModules,
+    Bimodules,
+    ModulesWithBasis,
+    AlgebrasWithBasis,
+)
 from sage.categories.objects import Objects
-from sage.categories.cartesian_product import CartesianProductsCategory, cartesian_product
+from sage.categories.cartesian_product import (
+    CartesianProductsCategory,
+    cartesian_product,
+)
 from sage.categories.subquotients import SubquotientsCategory
 from sage.categories.algebra_functor import AlgebrasCategory
 from sage.categories.dual import DualObjectsCategory
@@ -51,21 +65,25 @@ from sage.rings.finite_rings.finite_field_constructor import FiniteField
 import sage.categories.action
 import operator
 
+
 def is_yacop_category(C):
     # fixme: this is slow code, used for debugging & testing only
     import re
-    if re.search("(?i)yacop",str(C)):
+
+    if re.search("(?i)yacop", str(C)):
         return True
     return False
 
+
 def yacop_supercategories(C):
     return [_ for _ in C.all_super_categories() if is_yacop_category(_)]
+
 
 class SteenrodAlgebraAction(sage.categories.action.Action):
     def __init__(self, A, M, thefunc, is_left=True, op=operator.mul):
         # if A is a subalgebra of the Steenrod algebra we nevertheless register an action
         # of the full Steenrod algebra (which raises an error in _act_ if necessary)
-        self._Aeff = SteenrodAlgebra(A.prime(),generic=A.is_generic())
+        self._Aeff = SteenrodAlgebra(A.prime(), generic=A.is_generic())
         sage.categories.action.Action.__init__(self, self._Aeff, M, is_left, op)
         self._module = M
         self._algebra = A
@@ -76,10 +94,11 @@ class SteenrodAlgebraAction(sage.categories.action.Action):
         if not self._is_left:
             a, x = x, a
         if a in self._gf:
-            return self._module._scalar_action(a,x)
+            return self._module._scalar_action(a, x)
         if not self._Aeff is self._algebra:
             a = self._algebra(a)
-        return self._thefunc(a,x)
+        return self._thefunc(a, x)
+
 
 @cached_function
 def steenrod_antipode(x):
@@ -87,6 +106,7 @@ def steenrod_antipode(x):
     a cached version of the antipode for testing purposes
     """
     return x.antipode()
+
 
 def steenrod_algebra_intersect(algebras):
     """
@@ -102,30 +122,48 @@ def steenrod_algebra_intersect(algebras):
          Finite Field of size 3
     """
     from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
+
     for dummy in (0,):
         A0 = algebras[0]
         if not all(A.characteristic() == A0.characteristic() for A in algebras):
             break
         for A in algebras:
-            if not hasattr(A,"is_generic"):
+            if not hasattr(A, "is_generic"):
                 # this algebra is not a Steenrod algebra
                 return FiniteField(A.characteristic())
         if not all(A.is_generic() == A0.is_generic() for A in algebras):
             break
-        rtrunc = +Infinity if all(A._truncation_type>0 for A in algebras) else 0
+        rtrunc = +Infinity if all(A._truncation_type > 0 for A in algebras) else 0
         isgen = A0.is_generic()
-        profiles = [A._profile for A in algebras] if isgen else [(A._profile,()) for A in algebras]
-        proflen = max([0,] + [len(p[0]) for p in profiles] + [len(p[1]) for p in profiles])
-        nprof0 = [min(A.profile(i,component=0) for A in algebras) for i in range(1,proflen+1)]
-        nprof1 = [min(A.profile(i,component=1) for A in algebras) for i in range(0,proflen)]
-        prof = (nprof0,nprof1) if isgen else nprof0
-        #return prof
-        res = SteenrodAlgebra(A0.prime(),generic=isgen,profile=prof,truncation_type=rtrunc)
+        profiles = (
+            [A._profile for A in algebras]
+            if isgen
+            else [(A._profile, ()) for A in algebras]
+        )
+        proflen = max(
+            [
+                0,
+            ]
+            + [len(p[0]) for p in profiles]
+            + [len(p[1]) for p in profiles]
+        )
+        nprof0 = [
+            min(A.profile(i, component=0) for A in algebras)
+            for i in range(1, proflen + 1)
+        ]
+        nprof1 = [
+            min(A.profile(i, component=1) for A in algebras) for i in range(0, proflen)
+        ]
+        prof = (nprof0, nprof1) if isgen else nprof0
+        # return prof
+        res = SteenrodAlgebra(
+            A0.prime(), generic=isgen, profile=prof, truncation_type=rtrunc
+        )
         return res
     raise ValueError("algebras not compatible")
 
 
-def category_meet(self,other):
+def category_meet(self, other):
     """
     TESTS::
         sage: from yacop.categories.utils import category_meet
@@ -144,9 +182,10 @@ def category_meet(self,other):
     """
 
     import yacop.categories
+
     oR = other.base_ring()
-    B = steenrod_algebra_intersect((self.base_ring(),oR))
-    if not hasattr(B,"is_generic"):
+    B = steenrod_algebra_intersect((self.base_ring(), oR))
+    if not hasattr(B, "is_generic"):
         return Modules(FiniteField(B.characteristic()))
 
     G = B.base_ring()
@@ -155,9 +194,9 @@ def category_meet(self,other):
     R = RightModules(G)
 
     is_algebra = self in A and other in A
-    is_right   = self in R and other in R
-    is_left    = self in L and other in L
-    is_bimod   = is_left and is_right
+    is_right = self in R and other in R
+    is_left = self in L and other in L
+    is_bimod = is_left and is_right
 
     if is_algebra:
         if is_bimod:

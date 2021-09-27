@@ -2,12 +2,12 @@ r"""
 Yacop category of gradings
 
 """
-#*****************************************************************************
+# *****************************************************************************
 #  Copyright (C) 2011 Christian Nassau <nassau@nullhomotopie.de>
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #                  http://www.gnu.org/licenses/
-#******************************************************************************
+# ******************************************************************************
 
 from sage.rings.infinity import Infinity
 from sage.categories.category import Category
@@ -47,6 +47,7 @@ Fix pickling doc tests::
     sage: from yacop.categories.gradings import Gradings
     sage: __main__.Gradings = Gradings
 """
+
 
 class Gradings(Category_singleton):
     """
@@ -104,101 +105,108 @@ class Gradings(Category_singleton):
             sage: Gradings().super_categories()
             [Category of yacop objects]
         """
-        return [YacopObjects(),]
+        return [
+            YacopObjects(),
+        ]
 
     class ParentMethods:
+        @abstract_method(optional=False)
+        def basis(self, region=None):
+            """
+            return a basis for the region
+            """
 
-       @abstract_method(optional=False)
-       def basis(self,region=None):
-          """
-          return a basis for the region
-          """
+        @abstract_method(optional=False)
+        def bbox(self):
+            """
+            return a bounding box
+            """
 
-       @abstract_method(optional=False)
-       def bbox(self):
-          """
-          return a bounding box
-          """
+        @abstract_method(optional=False)
+        def split_element(self, elem):
+            """
+            split the element `e` into homogeneous pieces `e = sum_i e_i`
+            and return the dictionary { i : e_i }
+            """
 
-       @abstract_method(optional=False)
-       def split_element(self,elem):
-          """
-          split the element `e` into homogeneous pieces `e = sum_i e_i`
-          and return the dictionary { i : e_i }
-          """
+        def nontrivial_degrees(self, region=None):
+            """
+            return the degrees in which ``self.basis(region)`` is concentrated
+            """
+            return self._nontrivial_degrees_from_basis(region)
 
-       def nontrivial_degrees(self,region=None):
-          """
-          return the degrees in which ``self.basis(region)`` is concentrated
-          """
-          return self._nontrivial_degrees_from_basis(region)
+        def _nontrivial_degrees_from_basis(self, region):
+            """
+            default implementation of ``nontrivial_degrees``
+            """
 
-       def _nontrivial_degrees_from_basis(self,region):
-          """
-          default implementation of ``nontrivial_degrees``
-          """
-          class nontrivdeg_walker(Walker):
-             def __init__(self,grading):
-                Walker.__init__(self)
-                self.gr = grading
-             def __iter__(self):
-                self.basis_iter = self.gr.basis(region).__iter__()
-                self.dct = dict()
-                self.xdegs = []
-                return self
-             def __next__(self):
-                if len(self.xdegs)>0:
-                   return self.xdegs.pop()
-                # the next line will eventually raise our StopIteration
-                x = next(self.basis_iter)
-                for k in list(self.gr.split_element(x).keys()):
-                   if k not in self.dct:
-                      self.dct[k] = 1
-                      self.xdegs.append(k)
-                return next(self)
-             def _repr_(self):
-                return "nontrivial degree walker of %s" % self.gr
-          return Family(nontrivdeg_walker(self),lambda x:x,lazy=True)
+            class nontrivdeg_walker(Walker):
+                def __init__(self, grading):
+                    Walker.__init__(self)
+                    self.gr = grading
 
-       def degree(self,elem):
-          degs = list(self.split_element(elem).keys())
-          if len(degs) == 0:
-              raise ValueError("degree of zero is undefined")
-          if len(degs) == 1:
-              return degs[0]
-          raise ValueError("element is not homogeneous")
+                def __iter__(self):
+                    self.basis_iter = self.gr.basis(region).__iter__()
+                    self.dct = dict()
+                    self.xdegs = []
+                    return self
 
-       def _format_(self,other):
-          return "%s" % other
+                def __next__(self):
+                    if len(self.xdegs) > 0:
+                        return self.xdegs.pop()
+                    # the next line will eventually raise our StopIteration
+                    x = next(self.basis_iter)
+                    for k in list(self.gr.split_element(x).keys()):
+                        if k not in self.dct:
+                            self.dct[k] = 1
+                            self.xdegs.append(k)
+                    return next(self)
 
-       def _format_term(self,elem):
-           return self._format_(elem)
+                def _repr_(self):
+                    return "nontrivial degree walker of %s" % self.gr
 
-       def _latex_term(self,elem):
-           from sage.misc.latex import latex
-           return elem
+            return Family(nontrivdeg_walker(self), lambda x: x, lazy=True)
 
-       @abstract_method(optional=False)
-       def suspenders(self):
-           """
-           Group of suspenders that act on this grading.
+        def degree(self, elem):
+            degs = list(self.split_element(elem).keys())
+            if len(degs) == 0:
+                raise ValueError("degree of zero is undefined")
+            if len(degs) == 1:
+                return degs[0]
+            raise ValueError("element is not homogeneous")
 
-           EXAMPLE::
-               sage: from yacop.modules.projective_spaces import RealProjectiveSpace
-               sage: M = RealProjectiveSpace()
-               sage: S = M.grading().suspenders() ; S
-               Group of suspenders for graded modules over the Steenrod algebra
-               sage: from yacop.categories.gradings import Suspender
-               sage: S is Suspender
-               True
-           """
-           pass
+        def _format_(self, other):
+            return "%s" % other
 
-       @abstract_method(optional=True)
-       def SubquotientGrading(subquotient):
-          """
-          Create a grading for a subquotient.
-          """
+        def _format_term(self, elem):
+            return self._format_(elem)
+
+        def _latex_term(self, elem):
+            from sage.misc.latex import latex
+
+            return elem
+
+        @abstract_method(optional=False)
+        def suspenders(self):
+            """
+            Group of suspenders that act on this grading.
+
+            EXAMPLE::
+                sage: from yacop.modules.projective_spaces import RealProjectiveSpace
+                sage: M = RealProjectiveSpace()
+                sage: S = M.grading().suspenders() ; S
+                Group of suspenders for graded modules over the Steenrod algebra
+                sage: from yacop.categories.gradings import Suspender
+                sage: S is Suspender
+                True
+            """
+            pass
+
+        @abstract_method(optional=True)
+        def SubquotientGrading(subquotient):
+            """
+            Create a grading for a subquotient.
+            """
 
     class ElementMethods:
         pass
@@ -219,84 +227,89 @@ class Gradings(Category_singleton):
         def extra_super_categories(self):
             return [self.base_category()]
 
+
 class SampleGrading(Parent, metaclass=ClasscallMetaclass):
+    def __init__(self, range, modulus):
+        self._range = range
+        self._mod = modulus
+        CategoryObject.__init__(self, category=Gradings())
 
-    def __init__(self,range,modulus):
-       self._range = range
-       self._mod = modulus
-       CategoryObject.__init__(self,category = Gradings())
-
-    def _format_(self,other):
+    def _format_(self, other):
         return self._repr_()
 
     def _repr_(self):
-       return "mod %d decomposition of the range %s" % (self._mod,self._range)
+        return "mod %d decomposition of the range %s" % (self._mod, self._range)
 
     def bbox(self):
-       return IntegerRange(Integer(0),Integer(self._mod))
+        return IntegerRange(Integer(0), Integer(self._mod))
 
-    def split_element(self,elements):
+    def split_element(self, elements):
         from sage.rings.integer_ring import ZZ
+
         if elements in ZZ:
-           elements = (elements,)
+            elements = (elements,)
         m = self._mod
         ans = dict()
         for e in elements:
             try:
-               x = ans[e%m]
+                x = ans[e % m]
             except:
-               x = []
+                x = []
             x.append(e)
-            ans[e%m]=x
+            ans[e % m] = x
         return ans
 
-    def basis(self,reg):
-       return [i for i in self._range if (i % self._mod) in reg]
+    def basis(self, reg):
+        return [i for i in self._range if (i % self._mod) in reg]
 
     def suspenders(self):
-       #from sage.rings import Integers
-       return Integers()
+        # from sage.rings import Integers
+        return Integers()
+
 
 class SampleGrading_SuspendedObjects(SampleGrading):
-
-       @staticmethod
-       def __classcall_private__(cls,other,offset):
-          if offset == 0:
-             return other
-          return type.__call__(cls,other,offset)
-
-       def __init__(self,other,offset):
-          self._other = other
-          self._off = offset
-          SampleGrading.__init__(self,other._range,other._mod)
-
-       def _format_(self,other):
-          return "suspension with offset %d of %s" % (self._off,self._other)
-
-       def _repr_(self):
-          return "suspension with offset %d of %s" % (self._off,self._other)
-
-       def bbox(self):
-          r = self._other.bbox()
-          f,l = r.first(), r.last()
-          o = self._off
-          return IntegerRange(Integer(f+o),Integer(l+1+o))
-
-       def basis(self,reg=region()):
-          oreg = [u-self._off for u in reg]
-          return self._other.basis(oreg)
-
-       def split_element(self,lst):
-          l = [(k+self._off,v) for (k,v) in list(self._other.split_element(lst).items())]
-          return dict(l)
-
-class SampleGrading_SuspendedObjects2(SampleGrading_SuspendedObjects):
-
     @staticmethod
-    def __classcall_private__(cls,other,offset):
+    def __classcall_private__(cls, other, offset):
         if offset == 0:
             return other
-        return SampleGrading_SuspendedObjects(other._other,other._off+offset)
+        return type.__call__(cls, other, offset)
+
+    def __init__(self, other, offset):
+        self._other = other
+        self._off = offset
+        SampleGrading.__init__(self, other._range, other._mod)
+
+    def _format_(self, other):
+        return "suspension with offset %d of %s" % (self._off, self._other)
+
+    def _repr_(self):
+        return "suspension with offset %d of %s" % (self._off, self._other)
+
+    def bbox(self):
+        r = self._other.bbox()
+        f, l = r.first(), r.last()
+        o = self._off
+        return IntegerRange(Integer(f + o), Integer(l + 1 + o))
+
+    def basis(self, reg=region()):
+        oreg = [u - self._off for u in reg]
+        return self._other.basis(oreg)
+
+    def split_element(self, lst):
+        l = [
+            (k + self._off, v)
+            for (k, v) in list(self._other.split_element(lst).items())
+        ]
+        return dict(l)
+
+
+class SampleGrading_SuspendedObjects2(SampleGrading_SuspendedObjects):
+    @staticmethod
+    def __classcall_private__(cls, other, offset):
+        if offset == 0:
+            return other
+        return SampleGrading_SuspendedObjects(other._other, other._off + offset)
+
 
 SampleGrading.SuspendedObjects = SampleGrading_SuspendedObjects
 SampleGrading_SuspendedObjects.SuspendedObjects = SampleGrading_SuspendedObjects2
