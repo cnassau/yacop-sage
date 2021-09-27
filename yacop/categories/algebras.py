@@ -695,7 +695,7 @@ class YacopDifferentialModules(Category_over_base_ring):
 
         """
         if self._is_bimod:
-            return YacopBiModules(self._R)
+            return YacopBimodules(self._R)
         elif self._is_right:
             return YacopRightModules(self._R)
         else:
@@ -718,14 +718,14 @@ class YacopDifferentialModules(Category_over_base_ring):
 
         if is_algebra:
             if is_bimod:
-                return YacopBiModuleAlgebras(R)
+                return YacopBimoduleAlgebras(R)
             elif is_right:
                 return YacopRightModuleAlgebras(R)
             else:
                 return YacopLeftModuleAlgebras(R)
         else:
             if is_bimod:
-                return YacopBiModules(R)
+                return YacopBimodules(R)
             elif is_right:
                 return YacopRightModules(R)
             else:
@@ -2250,9 +2250,9 @@ class YacopRightModules(YacopDifferentialModules):
         )
 
 
-class YacopBiModules(YacopDifferentialModules):
+class YacopBimodules(YacopDifferentialModules):
     def __init__(self, R):
-        super(YacopBiModules, self).__init__(
+        super(YacopBimodules, self).__init__(
             R, is_left=True, is_right=True, is_bimod=True, is_algebra=False
         )
 
@@ -2271,9 +2271,9 @@ class YacopRightModuleAlgebras(YacopDifferentialModules):
         )
 
 
-class YacopBiModuleAlgebras(YacopDifferentialModules):
+class YacopBimoduleAlgebras(YacopDifferentialModules):
     def __init__(self, R):
-        super(YacopBiModuleAlgebras, self).__init__(
+        super(YacopBimoduleAlgebras, self).__init__(
             R, is_left=True, is_right=True, is_bimod=True, is_algebra=True
         )
 
@@ -2297,8 +2297,8 @@ def make_functor_class(cls, fname, tmpl):
     return ncls
 
 
-# for cls in (YacopLeftModules, YacopRightModules, YacopBiModules,
-#            YacopLeftModuleAlgebras, YacopRightModuleAlgebras, YacopBiModuleAlgebras):
+# for cls in (YacopLeftModules, YacopRightModules, YacopBimodules,
+#            YacopLeftModuleAlgebras, YacopRightModuleAlgebras, YacopBimoduleAlgebras):
 # cls.CartesianProducts = make_functor_class(cls,"CartesianProducts",YacopDifferentialModules._CartesianProducts)
 # cls.SuspendedObjects,make_functor_class(cls,"SuspendedObjects",YacopDifferentialModules._SuspendedObjects))
 # cls.TensorProducts = make_functor_class(cls,"TensorProducts",YacopDifferentialModules._TensorProducts)
@@ -2315,16 +2315,16 @@ def make_functor_class(cls, fname, tmpl):
       sage: __main__.YacopDifferentialModules = YacopDifferentialModules
       sage: __main__.YacopLeftModules = YacopLeftModules
       sage: __main__.YacopRightModules = YacopRightModules
-      sage: __main__.YacopBiModules = YacopBiModules
+      sage: __main__.YacopBimodules = YacopBimodules
       sage: __main__.YacopLeftModuleAlgebras = YacopLeftModuleAlgebras
       sage: __main__.YacopRightModuleAlgebras = YacopRightModuleAlgebras
-      sage: __main__.YacopBiModuleAlgebras = YacopBiModuleAlgebras
+      sage: __main__.YacopBimoduleAlgebras = YacopBimoduleAlgebras
       sage: TestSuite(YacopLeftModules(SteenrodAlgebra(3))).run()
       sage: TestSuite(YacopRightModules(SteenrodAlgebra(3))).run()
-      sage: TestSuite(YacopBiModules(SteenrodAlgebra(3))).run()
+      sage: TestSuite(YacopBimodules(SteenrodAlgebra(3))).run()
       sage: TestSuite(YacopLeftModuleAlgebras(SteenrodAlgebra(3))).run()
       sage: TestSuite(YacopRightModuleAlgebras(SteenrodAlgebra(3))).run()
-      sage: TestSuite(YacopBiModuleAlgebras(SteenrodAlgebra(3))).run()
+      sage: TestSuite(YacopBimoduleAlgebras(SteenrodAlgebra(3))).run()
 """
 
 """
@@ -2352,7 +2352,7 @@ TESTS::
     True
     sage: YacopLeftModules(A)._meet_(YacopLeftModuleAlgebras(B)) is YacopLeftModules(B)
     True
-    sage: YacopBiModules(B)._meet_(YacopRightModuleAlgebras(B)) is YacopRightModules(B)
+    sage: YacopBimodules(B)._meet_(YacopRightModuleAlgebras(B)) is YacopRightModules(B)
     True
 
 """

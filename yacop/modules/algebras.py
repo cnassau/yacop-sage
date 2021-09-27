@@ -140,10 +140,10 @@ from yacop.utils.gradings import YacopGrading
 from yacop.utils.finite_graded_set import FiniteGradedSet
 from yacop.modules.module_base import SteenrodModuleBase
 from yacop.categories import (
-    YacopBiModules,
+    YacopBimodules,
     YacopLeftModuleAlgebras,
     YacopRightModuleAlgebras,
-    YacopBiModuleAlgebras,
+    YacopBimoduleAlgebras,
     YacopGradedSets,
     YacopGradedObjects,
 )
@@ -419,7 +419,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
         if category is None:
             if left_action:
                 if right_action:
-                    category = YacopBiModuleAlgebras(algebra)
+                    category = YacopBimoduleAlgebras(algebra)
                 else:
                     category = YacopLeftModuleAlgebras(algebra)
             else:

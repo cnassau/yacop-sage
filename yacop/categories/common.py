@@ -214,7 +214,7 @@ class CommonCategoryMethods:
             [Category of yacop differential modules over mod 3 Steenrod algebra, milnor basis,
              Category of vector spaces with basis over Finite Field of size 3,
              Category of right modules over mod 3 Steenrod algebra, milnor basis]
-            sage: YacopBiModules(A).super_categories()
+            sage: YacopBimodules(A).super_categories()
             [Category of yacop differential modules over mod 3 Steenrod algebra, milnor basis,
              Category of vector spaces with basis over Finite Field of size 3,
              Category of bimodules over mod 3 Steenrod algebra, milnor basis on the left and mod 3 Steenrod algebra, milnor basis on the right]
@@ -228,7 +228,7 @@ class CommonCategoryMethods:
              Category of vector spaces with basis over Finite Field of size 3,
              Category of right modules over mod 3 Steenrod algebra, milnor basis,
              Category of algebras with basis over Finite Field of size 3]
-            sage: YacopBiModuleAlgebras(A).super_categories()
+            sage: YacopBimoduleAlgebras(A).super_categories()
             [Category of yacop differential modules over mod 3 Steenrod algebra, milnor basis,
              Category of vector spaces with basis over Finite Field of size 3,
              Category of bimodules over mod 3 Steenrod algebra, milnor basis on the left and mod 3 Steenrod algebra, milnor basis on the right,

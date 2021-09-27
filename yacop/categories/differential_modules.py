@@ -117,14 +117,14 @@ class YacopDifferentialModules(Category_over_base_ring):
 
         if is_algebra:
             if is_bimod:
-                return YacopBiModuleAlgebras(R)
+                return YacopBimoduleAlgebras(R)
             elif is_right:
                 return YacopRightModuleAlgebras(R)
             else:
                 return YacopLeftModuleAlgebras(R)
         else:
             if is_bimod:
-                return YacopBiModules(R)
+                return YacopBimodules(R)
             elif is_right:
                 return YacopRightModules(R)
             else:

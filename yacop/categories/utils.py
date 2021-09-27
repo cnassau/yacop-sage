@@ -200,14 +200,14 @@ def category_meet(self, other):
 
     if is_algebra:
         if is_bimod:
-            return yacop.categories.bimodules.YacopBiModuleAlgebras(B)
+            return yacop.categories.bimodules.YacopBimoduleAlgebras(B)
         elif is_right:
             return yacop.categories.right_modules.YacopRightModuleAlgebras(B)
         else:
             return yacop.categories.left_modules.YacopLeftModuleAlgebras(B)
     else:
         if is_bimod:
-            return yacop.categories.bimodules.YacopBiModules(B)
+            return yacop.categories.bimodules.YacopBimodules(B)
         elif is_right:
             return yacop.categories.right_modules.YacopRightModules(B)
         else:

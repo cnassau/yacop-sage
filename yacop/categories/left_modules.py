@@ -704,32 +704,6 @@ class YacopLeftModules(Category_over_base_ring):
             def _can_test_pickling(self):
                 return all(m._can_test_pickling() for m in self._sets)
 
-    class xxDualObjects(DualObjectsCategory):
-        def extra_super_categories(self):
-            r"""
-            Returns the dual category
-
-            EXAMPLES:
-
-            The category of algebras over the Rational Field is dual
-            to the category of coalgebras over the same field::
-
-                sage: C = Algebras(QQ)
-                sage: C.dual()
-                Category of duals of algebras over Rational Field
-                sage: C.dual().extra_super_categories()
-                [Category of coalgebras over Rational Field]
-            """
-            from sage.categories.coalgebras import Coalgebras
-
-            return [Coalgebras(self.base_category().base_ring())]
-
-        def Subquotients(self):
-            """
-            A subobject or quotient of a direct sum is no longer a direct sum
-            """
-            return self.base_category().Subquotients()
-
     class SuspendedObjects(SuspendedObjectsCategory):
 
         """
@@ -832,24 +806,6 @@ class YacopLeftModules(Category_over_base_ring):
             def _test_nonzero_equal(self, **options):
                 "disabled test method"
                 pass
-
-            def xxkernel(self):
-                M = self.domain()
-                if hasattr(M, "KernelOf"):
-                    return M.KernelOf(self)
-                raise NotImplementedError("kernel of map from %s not implemented" % M)
-
-            def xximage(self):
-                N = self.codomain()
-                if hasattr(N, "ImageOf"):
-                    return N.ImageOf(self)
-                raise NotImplementedError("image of map into %s not implemented" % N)
-
-            def xxcokernel(self):
-                N = self.codomain()
-                if hasattr(N, "CokernelOf"):
-                    return N.CokernelOf(self)
-                raise NotImplementedError("cokernel of map into %s not implemented" % N)
 
             @staticmethod
             def SuspendedObjectsFactory(self, *args, **kwopts):
@@ -989,23 +945,6 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
 
         """
         return [self.ModuleCategory(), AlgebrasWithBasis(self.base_ring().base_ring())]
-
-    @cached_method
-    def xxis_subcategory(self, other):
-        """
-        Subcategory detection was broken by Trac #16618. This is a hack to fix some of those problems.
-
-        TESTS::
-
-            sage: from yacop.categories import *
-            sage: YacopLeftModules(SteenrodAlgebra(2)).is_subcategory(ModulesWithBasis(GF(2)))
-            True
-
-        """
-        for scat in self.super_categories():
-            if scat.is_subcategory(other):
-                return True
-        return super(YacopLeftModuleAlgebras, self).is_subcategory(other)
 
     class ParentMethods:
         pass
