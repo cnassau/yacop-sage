@@ -12,6 +12,7 @@ The Yacop base category for modules over the Steenrod algebra.
 # ******************************************************************************
 # pylint: disable=E0213
 
+from sage.categories.bimodules import Bimodules
 from sage.categories.category import Category, CategoryWithParameters
 from yacop.categories.left_modules import YacopLeftModules, YacopLeftModuleAlgebras
 from yacop.categories.right_modules import YacopRightModules, YacopRightModuleAlgebras
@@ -170,6 +171,18 @@ class YacopBimoduleAlgebras(CategoryWithParameters):
         x.append(YacopLeftModuleAlgebras(self._left_base_ring))
         x.append(YacopRightModuleAlgebras(self._right_base_ring))
         return x
+
+    def Subquotients(self):
+        """
+        TESTS::
+
+            sage: from yacop.categories import *
+            sage: A1 = SteenrodAlgebra(2,profile=(2,1))
+            sage: A1.rename("A1")
+            sage: Y=YacopBimoduleAlgebras(A1,A1)
+            sage: Y.Subquotients()
+        """
+        return YacopBimodules(self._left_base_ring,self._right_base_ring).Subquotients()
 
     class ParentMethods:
         pass

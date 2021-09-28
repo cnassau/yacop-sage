@@ -150,7 +150,7 @@ class Gradings(Category_singleton):
         sage: Gradings()
         Category of gradings
         sage: Gradings().super_categories()
-        [Category of yacop graded objects]
+        [Category of yacop objects]
 
         sage: G=SampleGrading(IntegerRange(1,19),7) ; G
         mod 7 decomposition of the range {1, ..., 18}

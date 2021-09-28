@@ -363,7 +363,7 @@ class PsiMap(Parent, UniqueRepresentation):
         if ptsonly:
             funcname += "_PtsOnly"
         res = self.tcl.eval(
-            """
+            r"""
                set result {}
                resolution db eval {
                    select %s(%d,group_concat(frag_decode(format,data),' '),targen) as spol from fragments

@@ -93,7 +93,7 @@ class DualSteenrodAlgebra(SteenrodAlgebraBase):
        sage: D.an_element()
        2 + 3*tau[0]
        sage: D.category()
-       Category of Yacop bimodule algebras over mod 5 Steenrod algebra, milnor basis
+       Category of yacop bimodule algebras over mod 5 Steenrod algebra, milnor basis
        sage: TestSuite(D).run()
        sage: D.bbox()
        region(-Infinity < e <= 0, s = 0, -Infinity < t <= 0)

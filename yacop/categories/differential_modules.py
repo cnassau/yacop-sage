@@ -86,96 +86,11 @@ class YacopDifferentialModules(Category_over_base_ring):
         else:
             return RealProjectiveSpace()
 
-    def ModuleCategory(self):
-        """
-        Forget the algebra structure if present:
-
-        TESTS::
-
-           sage: from yacop.categories import *
-           sage: YacopRightModuleAlgebras(SteenrodAlgebra(3)).ModuleCategory() is YacopRightModules(SteenrodAlgebra(3))
-           True
-
-        """
-        return self
-
-    @cached_method
-    def _meet_(self, other):
-        "FIXME"
-        from yacop.categories import steenrod_algebra_intersect
-
-        try:
-            oR = other.base_ring()
-            R = steenrod_algebra_intersect((self.base_ring(), oR))
-        except:
-            return super(YacopDifferentialModules, self)._meet_(other)
-
-        is_algebra = self._is_algebra and other._is_algebra
-        is_bimod = self._is_bimod and other._is_bimod
-        is_right = self._is_right and other._is_right
-        is_left = self._is_left and other._is_left
-
-        if is_algebra:
-            if is_bimod:
-                return YacopBimoduleAlgebras(R)
-            elif is_right:
-                return YacopRightModuleAlgebras(R)
-            else:
-                return YacopLeftModuleAlgebras(R)
-        else:
-            if is_bimod:
-                return YacopBimodules(R)
-            elif is_right:
-                return YacopRightModules(R)
-            else:
-                return YacopLeftModules(R)
-
-    def __contains__(self, x):
-        """
-        a hacked, hopefully safer way to test membership. the default implementation
-        fails for us - we might be doing something unexpected/wrong somewhere. without this
-        hack the following fails::
-
-            sage: from yacop.modules.projective_spaces import RealProjectiveSpace
-            sage: from yacop.categories.functors import suspension
-            sage: M=RealProjectiveSpace()
-            sage: S=suspension(M,s=2)
-            sage: X=cartesian_product((S,S))
-            sage: SC = S.category()
-            sage: XC = X.category()
-            sage: MC = SC._meet_(XC)
-            sage: [S in cat for cat in [SC, XC, MC]]
-            [True, False, True]
-            sage: [X in cat for cat in [SC, XC, MC]]
-            [False, True, True]
-        """
-        ans = super(YacopDifferentialModules, self).__contains__(x)
-        return ans
-        "FIXME"
-        if not ans:
-            ans = self in x.categories()
-        return ans
-
     def _repr_object_names(self):
         return "yacop differential modules over %s" % self.base_ring()
 
-    @cached_method
-    def is_subcategory(self, other):
-        "FIXME"
-        """
-        Subcategory detection was broken by Trac #16618. This is a hack to fix some of those problems.
-
-        TESTS::
-
-            sage: from yacop.categories import *
-            sage: YacopLeftModules(SteenrodAlgebra(2)).is_subcategory(ModulesWithBasis(GF(2)))
-            True
-
-        """
-        for scat in self.super_categories():
-            if scat.is_subcategory(other):
-                return True
-        return super(YacopDifferentialModules, self).is_subcategory(other)
+    def ModuleCategory(self):
+        return self
 
     @cached_method
     def super_categories(self):
@@ -198,12 +113,53 @@ class YacopDifferentialModules(Category_over_base_ring):
 
     class ParentMethods:
         @cached_method
-        def __yacop_category__(self):
+        def __xxyacop_category__(self):
             for cat in self.categories():
                 if hasattr(cat, "_is_yacop_module_category"):
                     if cat._is_yacop_module_category:
                         return cat
             raise ValueError("internal error: cannot detect yacop category")
+
+
+        def _Hom_(X, Y, category):
+            # here we overwrite the Rings._Hom_ implementation
+            return Homset(X, Y, category=category)
+
+        def module_morphism(self, *args, **kwargs):
+            """
+            TESTS::
+
+                sage: from yacop.categories import *
+                sage: from yacop.modules.all import RealProjectiveSpace
+                sage: M = RealProjectiveSpace()
+                sage: X = cartesian_product((M,M))
+                sage: f = X.cartesian_projection(0)
+                sage: C = YacopLeftModules(SteenrodAlgebra(2))
+                sage: f in C.Homsets() # random, works in sage shell
+                True
+                sage: hasattr(f,"kernel") # indirect test that f is in the Homsets category
+                True
+
+            """
+            # hack to fix the automatic category detection
+            Y = self.__yacop_category__()
+            cat = kwargs.pop("category", Y)
+            codomain = kwargs.pop("codomain", self)
+            cat = cat.category().meet((self.category(), codomain.category()))
+            kwargs["category"] = cat
+            kwargs["codomain"] = codomain
+            ans = ModulesWithBasis(Y.base_ring().base_ring()).parent_class.module_morphism(
+                self, *args, **kwargs
+            )
+            # there is a known issue with morphism categories (see sage code)
+            # disable the _test_category and _test_pickling method for this instance:
+
+            def dummy(*args, **kwopts):
+                pass
+
+            setattr(ans, "_test_category", dummy)
+            setattr(ans, "_test_pickling", dummy)
+            return ans
 
         def differential(self, elem):
             return self.differential_morphism()(elem)
@@ -260,76 +216,6 @@ class YacopDifferentialModules(Category_over_base_ring):
                 return self._differential_dict[key]
             except KeyError:
                 return self.zero()
-
-        def _Hom_(X, Y, category):
-            # here we overwrite the Rings._Hom_ implementation
-            return Homset(X, Y, category=category)
-
-        def module_morphism(self, *args, **kwargs):
-            """
-            TESTS::
-
-               sage: from yacop.categories import *
-               sage: from yacop.modules.all import RealProjectiveSpace
-               sage: M = RealProjectiveSpace()
-               sage: X = cartesian_product((M,M))
-               sage: f = X.cartesian_projection(0)
-               sage: C = YacopLeftModules(SteenrodAlgebra(2))
-               sage: f in C.Homsets() # random, works in sage shell
-               True
-               sage: hasattr(f,"kernel") # indirect test that f is in the Homsets category
-               True
-
-            """
-            # hack to fix the automatic category detection
-            Y = self.__yacop_category__()
-            cat = kwargs.pop("category", Y)
-            codomain = kwargs.pop("codomain", self)
-            cat = cat.category().meet((self.category(), codomain.category()))
-            kwargs["category"] = cat
-            kwargs["codomain"] = codomain
-            ans = ModulesWithBasis(
-                Y.base_ring().base_ring()
-            ).parent_class.module_morphism(self, *args, **kwargs)
-            # there is a known issue with morphism categories (see sage code)
-            # disable the _test_category and _test_pickling method for this instance:
-            def dummy(*args, **kwopts):
-                pass
-
-            setattr(ans, "_test_category", dummy)
-            setattr(ans, "_test_pickling", dummy)
-            return ans
-
-        # some routines (for example the combinatorial free modules' cartesian_product
-        # cartesian_projection) use the underscored version instead
-        _module_morphism = module_morphism
-
-        def KernelOf(self, f, **options):
-            """
-            create the kernel of the map ``f``. ``domain(f)`` must be self.
-            """
-            from yacop.modules.morph_module import KernelImpl
-
-            assert f.domain() is self
-            return KernelImpl(f, **options)
-
-        def ImageOf(self, f, **options):
-            """
-            create the image of the map ``f`` ``codomain(f)`` must be self.
-            """
-            from yacop.modules.morph_module import ImageImpl
-
-            assert f.codomain() is self
-            return ImageImpl(f, **options)
-
-        def CokernelOf(self, f, **options):
-            """
-            create the cokernel of the map ``f`` ``codomain(f)`` must be self.
-            """
-            from yacop.modules.morph_module import CokerImpl
-
-            assert f.codomain() is self
-            return CokerImpl(f, **options)
 
         def _xx_test_truncation(self, tester=None, **options):
             from yacop.categories.functors import truncation
@@ -652,6 +538,19 @@ class YacopDifferentialModules(Category_over_base_ring):
             def _can_test_pickling(self):
                 return self.parent()._can_test_pickling()
 
+        class Subquotients(SubquotientsCategory):
+            """
+            A subobject or quotient of a tensor product is no longer a tensor product
+            """
+            def _repr_object_names(self):
+                return "subquotients of %s" % self.base_category()._repr_object_names()
+
+            def extra_super_categories(self):
+                return []
+
+            def super_categories(self):
+                return [self.base_category().base_category().Subquotients()]
+
     class CartesianProducts(CartesianProductsCategory):
         """
         direct sums of modules.
@@ -673,11 +572,18 @@ class YacopDifferentialModules(Category_over_base_ring):
             """
             return [self.base_category()]
 
-        def Subquotients(self):
+        class Subquotients(SubquotientsCategory):
             """
             A subobject or quotient of a direct sum is no longer a direct sum
             """
-            return self.base_category().Subquotients()
+            def _repr_object_names(self):
+                return "subquotients of %s" % self.base_category()._repr_object_names()
+
+            def extra_super_categories(self):
+                return []
+
+            def super_categories(self):
+                return [self.base_category().base_category().Subquotients()]
 
         class ElementMethods:
             def _can_test_pickling(self):

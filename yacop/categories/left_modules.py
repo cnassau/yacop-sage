@@ -1003,8 +1003,20 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
                 self.base_category().ModuleCategory().CartesianProducts(),
             ]
 
-        def Subquotients(self):
+        def xxSubquotients(self):
             return self.base_category().Subquotients()
+
+        class Subquotients(SubquotientsCategory):
+            def _repr_object_names(self):
+                return "subquotients of %s" % self.base_category()._repr_object_names()
+
+            def extra_super_categories(self):
+                return []
+
+            def super_categories(self):
+                # subquotients of algebras (computed in modules) are not algebras
+                return [self.base_category().base_category().Subquotients()]
+
 
     class TensorProducts(TensorProductsCategory):
         def _repr_object_names(self):

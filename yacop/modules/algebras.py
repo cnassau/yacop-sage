@@ -973,6 +973,12 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
         )
 
     class Element(SteenrodModuleBase.Element):
+        def __hash__(self):
+            """
+            elements should be hashable because we use sets in some of our test methods.
+            """
+            return hash(str(self))
+
         def __eq__(left, right):
             if not have_same_parent(left, right):
                 from sage.structure.element import get_coercion_model

@@ -305,16 +305,17 @@ class CommonParentMethods:
 
         tester = self._tester(**options)
         id = self.module_morphism(codomain=self, function=lambda x: x)
+        wanted = self.__yacop_category__().Subquotients()
         tester.assertTrue(
-            id.kernel() in self.category(),
+            id.kernel() in wanted,
             LazyFormat("identity of %s has a bad kernel" % (self,)),
         )
         tester.assertTrue(
-            id.cokernel() in self.category(),
+            id.cokernel() in wanted,
             LazyFormat("identity of %s has a bad cokernel" % (self,)),
         )
         tester.assertTrue(
-            id.image() in self.category(),
+            id.image() in wanted,
             LazyFormat("identity of %s has a bad image" % (self,)),
         )
 
