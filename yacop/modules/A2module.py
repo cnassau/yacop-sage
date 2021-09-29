@@ -59,7 +59,7 @@ class A2Module(SubModule, UniqueRepresentation):
         self.idx = idx
         gen = A2GeneratorList()[idx]
         if category is None:
-            category = YacopLeftModules(SteenrodAlgebra(2)).Subquotients()
+            category = YacopLeftModules(SteenrodAlgebra(2))
         SubModule.__init__(self, gen.parent(), (gen,), category=category)
 
     def _repr_(self):
