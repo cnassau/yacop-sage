@@ -238,7 +238,7 @@ class region(SageObject):
         return 0 == r1.__cmp__(r2)
 
     def __le__(r1, r2):
-        return 0 < r1.__cmp__(r2)
+        return 0 > r1.__cmp__(r2)
 
     def __cmp__(r1, r2):
         for v in sorted(r1.vars().union(r2.vars())):
