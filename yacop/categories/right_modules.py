@@ -923,6 +923,20 @@ class YacopRightModules(Category_over_base_ring):
             """
             return [self.base_category().ModuleCategory()]
 
+        def Subquotients(self):
+            """
+            Subquotients of subquotients should still be subquotients
+
+            TESTS::
+
+                sage: from yacop.categories.right_modules import YacopRightModules
+                sage: Y=YacopRightModules(SteenrodAlgebra(2))
+                sage: Y.Subquotients().Subquotients()
+                Category of subquotients of yacop right modules over mod 2 Steenrod algebra, milnor basis
+
+            """
+            return self
+
         class ParentMethods:
             """
             The Steenrod action on a subquotient is induced from the original module.
@@ -969,7 +983,6 @@ class YacopRightModules(Category_over_base_ring):
                 for (deg, smd) in elem.homogeneous_decomposition().items():
                     ans.append(self._retract_homogeneous(deg, smd))
                 return self.parent().sum(ans)
-
 
 @yacop_category(right_action=True, is_algebra=True, module_category=YacopRightModules)
 class YacopRightModuleAlgebras(Category_over_base_ring):

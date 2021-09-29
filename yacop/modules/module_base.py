@@ -319,7 +319,7 @@ class SteenrodModuleBase_Tensor(CombinatorialFreeModule.Tensor, SteenrodModuleBa
     def __init__(self, modules, **options):
         CombinatorialFreeModule.Tensor.__init__(self, modules, **options)
         # with sage 5.7.beta4 the basis has the wrong category
-        if False:
+        if True:
             try:
                 from sage.sets.family import Family
 

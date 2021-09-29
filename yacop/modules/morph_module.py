@@ -292,6 +292,20 @@ class MorphModule(SteenrodModuleBase):
         ]
         return sp._from_dict(dict(ans))
 
+    if False:
+        # hack: in some circumstances an __init_extra__ is invoked
+        # before the full list of bases to self has been installed
+        # we need dummy wrappers for the functions expected in __init_extra__
+        # to cope with this:
+        def left_steenrod_action_on_basis(self,*args):
+            return super().left_steenrod_action_on_basis(*args)
+        def left_conj_steenrod_action_on_basis(self,*args):
+            return super().left_conj_steenrod_action_on_basis(*args)
+        def right_steenrod_action_on_basis(self,*args):
+            return super().right_steenrod_action_on_basis(*args)
+        def right_conj_steenrod_action_on_basis(self,*args):
+            return super().right_conj_steenrod_action_on_basis(*args)
+
     class Element(SteenrodModuleBase.Element):
         def _repr_(elem):
             return elem.parent().lift(elem)._repr_()

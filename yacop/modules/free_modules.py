@@ -16,7 +16,7 @@ Free modules over the Steenrod algebra.
       sage: F = YacopFreeModule(A,('g','h'),right_action=True,left_action=True) ; F
       free module over A on [g, h]
       sage: F.category()
-      Category of Yacop bimodules over A
+      Category of yacop bimodules over A
       sage: TestSuite(F).run()
       sage: F.inject_variables()
       Defining g, h
@@ -98,6 +98,7 @@ Free modules over the Steenrod algebra.
 #  Distributed under the terms of the GNU General Public License (GPL)
 # *****************************************************************************
 
+from functools import total_ordering
 from yacop.utils.region import region
 from yacop.utils.gradings import YacopGrading
 from yacop.utils.finite_graded_set import FiniteGradedSet
@@ -473,7 +474,7 @@ class FreeModuleBasis(Parent, UniqueRepresentation):
         # print "degree of %s = %s" % (elem,tot)
         return tot
 
-
+@total_ordering
 class FreeModuleBasis_Element(Element):
     def __init__(self, par, a, g):
         Element.__init__(self, par)
@@ -493,17 +494,13 @@ class FreeModuleBasis_Element(Element):
         except:
             return False
 
-    def __ne__(a, b):
-        return not a.__eq__(b)
-
-    def __cmp__(a, b):
-        ans = cmp(a._g, b._g)
-        if ans != 0:
-            return -ans
-        ans = cmp(a._a, b._a)
-        if ans != 0:
-            return ans
-        return 0
+    def __gt__(self, other):
+        a, g = self._a, self._g
+        try:
+            b, h = other._a, other._g
+            return (h > g) or (g == h) and (a > b)
+        except:
+            return False
 
     def __hash__(self):
         return hash(self._a) ^ hash(self._g)
