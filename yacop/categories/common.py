@@ -479,49 +479,10 @@ class notused:
                 pass
         raise ValueError("internal error: cannot detect yacop category")
 
-    def _Hom_(X, Y, category):
-        # here we overwrite the Rings._Hom_ implementation
-        return Homset(X, Y, category=category)
-
-    def module_morphism(self, *args, **kwargs):
-        """
-        TESTS::
-
-            sage: from yacop.categories import *
-            sage: from yacop.modules.all import RealProjectiveSpace
-            sage: M = RealProjectiveSpace()
-            sage: X = cartesian_product((M,M))
-            sage: f = X.cartesian_projection(0)
-            sage: C = YacopLeftModules(SteenrodAlgebra(2))
-            sage: f in C.Homsets() # random, works in sage shell
-            True
-            sage: hasattr(f,"kernel") # indirect test that f is in the Homsets category
-            True
-
-        """
-        # hack to fix the automatic category detection
-        Y = self.__yacop_category__()
-        cat = kwargs.pop("category", Y)
-        codomain = kwargs.pop("codomain", self)
-        cat = cat.category().meet((self.category(), codomain.category()))
-        kwargs["category"] = cat
-        kwargs["codomain"] = codomain
-        ans = ModulesWithBasis(Y.base_ring().base_ring()).parent_class.module_morphism(
-            self, *args, **kwargs
-        )
-        # there is a known issue with morphism categories (see sage code)
-        # disable the _test_category and _test_pickling method for this instance:
-
-        def dummy(*args, **kwopts):
-            pass
-
-        setattr(ans, "_test_category", dummy)
-        setattr(ans, "_test_pickling", dummy)
-        return ans
 
     # some routines (for example the combinatorial free modules' cartesian_product
     # cartesian_projection) use the underscored version instead
-    _module_morphism = module_morphism
+    #_module_morphism = module_morphism
 
     def KernelOf(self, f, **options):
         """
@@ -786,7 +747,36 @@ class notused:
 class CommonElementMethods:
     pass
 
-
-# Local Variables:
-# eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
-# End:
+def allyc(R):
+    from sage.categories.category_types import JoinCategory
+    import re
+    lst = []
+    def descend(x):
+        if not re.match(".*yacop",str(x)):
+            return
+        if x in lst or len(lst)>100:
+            return
+        if isinstance(x,JoinCategory):
+            for y in x.super_categories():
+                descend(y)
+            return
+        lst.append(x)
+        #print(x)
+        try:
+            descend(x.CartesianProducts())
+        except:
+            pass
+        try:
+            descend(x.TensorProducts())
+        except:
+            pass
+        try:
+            descend(x.SuspendedObjects())
+        except:
+            pass
+        try:
+            descend(x.Subquotients())
+        except:
+            pass
+    descend(R)
+    return sorted(str(x) for x in lst)

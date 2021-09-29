@@ -119,6 +119,7 @@ class YacopRightModules(Category_over_base_ring):
         return "yacop right modules over %s" % (self.base_ring())
 
     class ParentMethods:
+
         def __init_extra__(self):
             from yacop.categories.utils import SteenrodAlgebraAction
             import operator
@@ -126,13 +127,13 @@ class YacopRightModules(Category_over_base_ring):
             # register actions
             Y = self.__yacop_category__()
             self._yacop_base_ring = Y.base_ring()
-            if False:
+            if not True:
                 self.register_action(
                     SteenrodAlgebraAction(
                         Y.base_ring(),
                         self,
                         self.right_steenrod_action_on_basis,
-                        is_right=True,
+                        is_left=True,
                     )
                 )
                 self.register_action(
@@ -140,7 +141,7 @@ class YacopRightModules(Category_over_base_ring):
                         Y.base_ring(),
                         self,
                         self.right_conj_steenrod_action_on_basis,
-                        is_right=True,
+                        is_left=True,
                         op=operator.mod,
                     )
                 )
@@ -430,7 +431,29 @@ class YacopRightModules(Category_over_base_ring):
         def extra_super_categories(self):
             return [self.base_category()]
 
+        yacop_no_default_inheritance = 1
+
         def Subquotients(self):
+            """
+            A subobject or quotient of a tensor product is no longer a tensor product.
+            This is not easy to enforce because the Sage RegressiveCovariantConstructionCategory
+            concept insists that X.Subquotients() always has X as super category.
+            (See `meth: RegressiveCovariantConstructionCategory.default_super_categories`)
+            We achieve this through a dirty hack in our startup script.
+
+            TESTS::
+
+                sage: from yacop.categories.right_modules import YacopRightModules
+                sage: D=YacopRightModules(SteenrodAlgebra(3)).TensorProducts()
+                sage: D in D.Subquotients().all_super_categories()
+                False
+                sage: from sage.categories.groups import Groups
+                sage: from sage.categories.category_types import JoinCategory
+                sage: J=JoinCategory((D,Groups()))
+                sage: D in J.Subquotients().all_super_categories()
+                False
+
+            """
             return self.base_category().Subquotients()
 
         def _repr_object_names(self):
@@ -623,9 +646,28 @@ class YacopRightModules(Category_over_base_ring):
         def extra_super_categories(self):
             return [self.base_category()]
 
+        yacop_no_default_inheritance = 1
+
         def Subquotients(self):
             """
-            A subobject or quotient of a direct sum is no longer a direct sum
+            A subobject or quotient of a direct sum is no longer a direct sum.
+            This is not easy to enforce because the Sage RegressiveCovariantConstructionCategory
+            concept insists that X.Subquotients() always has X as super category.
+            (See `meth: RegressiveCovariantConstructionCategory.default_super_categories`)
+            We achieve this through a dirty hack in our startup script.
+
+            TESTS::
+
+                sage: from yacop.categories.right_modules import YacopRightModules
+                sage: D=YacopRightModules(SteenrodAlgebra(3)).CartesianProducts()
+                sage: D in D.Subquotients().all_super_categories()
+                False
+                sage: from sage.categories.groups import Groups
+                sage: from sage.categories.category_types import JoinCategory
+                sage: J=JoinCategory((D,Groups()))
+                sage: D in J.Subquotients().all_super_categories()
+                False
+
             """
             return self.base_category().Subquotients()
 
@@ -766,9 +808,6 @@ class YacopRightModules(Category_over_base_ring):
             if hasattr(N, "CokernelOf"):
                 return N.CokernelOf(self)
             raise NotImplementedError("cokernel of map into %s not implemented" % N)
-
-        def blubb(self):
-            return "wtf"
 
     class Homsets(HomsetsCategory):
         """
@@ -972,7 +1011,10 @@ class YacopRightModuleAlgebras(Category_over_base_ring):
             # subquotients of algebras (computed in modules) are not algebras
             return [self.base_category().ModuleCategory().Subquotients()]
 
-    class CartesianProducts(CartesianProductsCategory):
+    class CartesianProducts(YacopRightModules.CartesianProducts):
+        pass
+
+    class xxCartesianProducts(CartesianProductsCategory):
         def _repr_object_names(self):
             return (
                 "Cartesian products of %s" % self.base_category()._repr_object_names()
@@ -1003,7 +1045,7 @@ class YacopRightModuleAlgebras(Category_over_base_ring):
                 self.base_category().ModuleCategory().CartesianProducts(),
             ]
 
-        class Subquotients(SubquotientsCategory):
+        class xxSubquotients(SubquotientsCategory):
             def _repr_object_names(self):
                 return "subquotients of %s" % self.base_category()._repr_object_names()
 
@@ -1013,6 +1055,7 @@ class YacopRightModuleAlgebras(Category_over_base_ring):
             def super_categories(self):
                 # subquotients of algebras (computed in modules) are not algebras
                 return [self.base_category().base_category().Subquotients()]
+
 
     class TensorProducts(TensorProductsCategory):
         def _repr_object_names(self):
@@ -1044,7 +1087,10 @@ class YacopRightModuleAlgebras(Category_over_base_ring):
                 self.base_category().ModuleCategory().Homsets(),
             ]
 
+def classcopy(C):
+    return type(C.__name__ + 'copy',C.__bases__,dict(C.__dict__))
+#YacopRightModuleAlgebras.CartesianProducts.Subquotients = classcopy(YacopRightModuleAlgebras.Subquotients)
 
-# Local Variables:
-# eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
-# End:
+class cSubquotients(YacopRightModules.Subquotients):
+    pass
+#YacopRightModuleAlgebras.CartesianProducts.Subquotients = cSubquotients

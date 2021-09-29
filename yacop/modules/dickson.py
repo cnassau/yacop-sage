@@ -1,7 +1,7 @@
 r"""
 The Dickson-Mui algebras as algebras over the Steenrod algebra.
 
-  THIS FILE IS WORK IN PROGRESS - NOT EVERYTHING IS WORKING (OR EVEN IMPLEMENTED) 
+  THIS FILE IS WORK IN PROGRESS - NOT EVERYTHING IS WORKING (OR EVEN IMPLEMENTED)
   ===============================================================================
 
 Some references:
@@ -12,7 +12,7 @@ https://arxiv.org/abs/0903.4912
 
 Steenrod operations on the modular invariants
 Sum Nguyen
-Source: Kodai Math. J. Volume 17, Number 3 (1994), 585-595. 
+Source: Kodai Math. J. Volume 17, Number 3 (1994), 585-595.
 
 http://projecteuclid.org/euclid.kmj/1138040053
 
@@ -59,7 +59,6 @@ from yacop.utils.finite_graded_set import InfiniteGradedSet
 from yacop.utils.bitstuff import N0, binom_modp
 from yacop.modules.module_base import SteenrodModuleBase
 from yacop.categories import YacopLeftModules, YacopGradedObjects, YacopGradedSets
-from yacop.categories import SteenrodAlgebraAction
 from yacop.modules.xitauring import XiTauRing
 from sage.misc.lazy_attribute import lazy_attribute
 from sage.misc.cachefunc import cached_method

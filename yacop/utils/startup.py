@@ -191,7 +191,6 @@ def __startup__():
     if C not in Modules(ZZ):
         _sagecode = Category_over_base_ring.__contains__
         Category_over_base_ring.__contains_sage__ = _sagecode
-        # __class__ = Category_over_base_ring
         def __contains_yacop__(self, Z):
             ans = self.__contains_sage__(Z)
             if not ans:
@@ -203,6 +202,15 @@ def __startup__():
 
         Category_over_base_ring.__contains__ = __contains_yacop__
 
+    # Sage insists that Subquotients of CartesianProducts are again CartesianProducts
+    # (and similarly for TensorProducts). We forcefully disagree:
+    from sage.categories.covariant_functorial_construction import RegressiveCovariantConstructionCategory
+    @classmethod
+    def default_super_categories_yacop(cls, category, *args):
+        sageresult = Category.join([category, super(RegressiveCovariantConstructionCategory, cls).default_super_categories(category, *args)])
+        j = [cat for cat in sageresult.super_categories() if not hasattr(cat,"yacop_no_default_inheritance")]
+        return Category.join(j)
+    RegressiveCovariantConstructionCategory.default_super_categories = default_super_categories_yacop
 
 def __print_banner__():
     import yacop
@@ -217,8 +225,3 @@ def __print_banner__():
     a("\n│ %-66s │\n" % ("Imported package Yacop (version %s)" % yacop.__version__))
     a("└" + bars + "┘")
     print("".join(s))
-
-
-# Local Variables:
-# eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
-# End:

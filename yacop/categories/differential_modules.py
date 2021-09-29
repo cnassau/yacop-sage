@@ -161,6 +161,37 @@ class YacopDifferentialModules(Category_over_base_ring):
             setattr(ans, "_test_pickling", dummy)
             return ans
 
+        # some routines (for example the combinatorial free modules' cartesian_product
+        # cartesian_projection) use the underscored version instead
+        _module_morphism = module_morphism
+
+        def KernelOf(self, f, **options):
+            """
+            create the kernel of the map ``f``. ``domain(f)`` must be self.
+            """
+            from yacop.modules.morph_module import KernelImpl
+
+            assert f.domain() is self
+            return KernelImpl(f, **options)
+
+        def ImageOf(self, f, **options):
+            """
+            create the image of the map ``f`` ``domain(f)`` must be self.
+            """
+            from yacop.modules.morph_module import ImageImpl
+
+            assert f.codomain() is self
+            return ImageImpl(f, **options)
+
+        def CokernelOf(self, f, **options):
+            """
+            create the cokernel of the map ``f`` ``domain(f)`` must be self.
+            """
+            from yacop.modules.morph_module import CokerImpl
+
+            assert f.codomain() is self
+            return CokerImpl(f, **options)
+
         def differential(self, elem):
             return self.differential_morphism()(elem)
 
@@ -854,7 +885,3 @@ class YacopDifferentialModules(Category_over_base_ring):
       sage: __main__.YacopDifferentialModules = YacopDifferentialModules
       sage: TestSuite(YacopDifferentialModules(SteenrodAlgebra(3))).run()
 """
-
-# Local Variables:
-# eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
-# End:
