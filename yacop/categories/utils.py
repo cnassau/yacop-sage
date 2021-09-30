@@ -192,17 +192,9 @@ def category_meet(self, other):
     if not hasattr(B, "is_generic"):
         return Modules(FiniteField(B.characteristic()))
 
-    G = B
-    A = AlgebrasWithBasis(G.base_ring())
-    L = yacop.categories.left_modules.YacopLeftModules.parent_class
-    R = yacop.categories.right_modules.YacopRightModules.parent_class
-
-    scat = self.all_super_categories()
-    ocat = other.all_super_categories()
-
-    is_algebra = A in scat and A in ocat
-    is_right = self.xxx
-    is_left = L in scat and L in ocat
+    is_algebra = self._yacop_has_multiplication() and other._yacop_has_multiplication()
+    is_right = self._yacop_has_right_action() and other._yacop_has_right_action()
+    is_left = self._yacop_has_left_action() and other._yacop_has_left_action()
     is_bimod = is_left and is_right
 
     if is_algebra:

@@ -160,11 +160,17 @@ class yacop_category:
 
         cls.is_subcategory = is_subcategory
 
-        new_features = []
-        if self.left: new_features.append('left_action')
-        if self.right: new_features.append('right_action')
-        if self.algebra: new_features.append('multiplication')
-        cls.SubcategoryMethods._yacop_structures = new_features
+        def yes(self):
+            return True
+
+        if self.left:
+            cls.SubcategoryMethods._yacop_has_left_action = yes
+
+        if self.right:
+            cls.SubcategoryMethods._yacop_has_right_action = yes
+
+        if self.algebra:
+            cls.SubcategoryMethods._yacop_has_multiplication = yes
 
         return cls
 
