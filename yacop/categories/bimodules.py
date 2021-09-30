@@ -170,7 +170,7 @@ class YacopBimoduleAlgebras(CategoryWithParameters):
         """
         x = []
         # adding this leads to C3 troubles:
-        #   x.append(YacopBimodules(self._left_base_ring,self._right_base_ring))
+        #  x.append(YacopBimodules(self._left_base_ring,self._right_base_ring))
         x.append(YacopLeftModuleAlgebras(self._left_base_ring))
         x.append(YacopRightModuleAlgebras(self._right_base_ring))
         return x
