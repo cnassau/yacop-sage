@@ -151,10 +151,13 @@ class FreeModuleBasis(Parent, UniqueRepresentation):
        sage: A.rename("A")
        sage: B.rename("A(2)")
        sage: X = FreeModuleBasis(A,gens,B) ; X
+       WARNING: you should supply a reasonable facade
        basis of a free module over A//A(2) with generators [i]
        sage: Y = FreeModuleBasis(B,gens) ; Y
+       WARNING: you should supply a reasonable facade
        basis of a free module over A(2) with generators [i]
        sage: Z = FreeModuleBasis(A,gens) ; Z
+       WARNING: you should supply a reasonable facade
        basis of a free module over A with generators [i]
        sage: X.an_element()
        () i
@@ -176,13 +179,14 @@ class FreeModuleBasis(Parent, UniqueRepresentation):
        sage: sorted(list(islice(Z.nontrivial_degrees(region(tmax=3)),100)))
        [region(e = 1, s = 3, t = 1), region(e = 1, s = 3, t = 2), region(e = 1, s = 3, t = 3)]
        sage: X.category()
-       Join of Category of infinite enumerated sets and Category of yacop graded sets
+       Join of Category of infinite enumerated sets and Category of facade sets and Category of yacop graded sets
        sage: TestSuite(X).run()
        sage: TestSuite(Y).run()
        sage: TestSuite(Z).run()
 
        sage: # test a free module with an infinite basis
        sage: I=FreeModuleBasis(A,X)
+       WARNING: you should supply a reasonable facade
        sage: TestSuite(I).run()
 
     """
@@ -328,6 +332,15 @@ class FreeModuleBasis(Parent, UniqueRepresentation):
             return self._make_element(one, elem)
         raise ValueError("%s not in %s" % (elem, self._gens))
 
+    def __contains__(self, elem):
+        if elem in self._gens:
+            return True
+        try:
+            x = self(elem)
+            return True
+        except:
+            return False
+
     def _make_element(self, a, b):
         return self.element_class(self, a, b)
 
@@ -453,9 +466,9 @@ class FreeModuleBasis(Parent, UniqueRepresentation):
         return FreeModuleBasis(
             self._algebra,
             self._gens,
-            self._subalg,
-            self._unstable,
-            self._trunc.intersect(reg),
+            subalgebra=self._subalg,
+            unstable=self._unstable,
+            bbox=self._trunc.intersect(reg),
             facade=self.facade_for(),
         )
 
@@ -559,7 +572,7 @@ class FreeModuleImpl(SteenrodModuleBase):
         self._left_action = left_action
         self.Am = algebra.an_element().change_basis("milnor").parent()
         self._gens = gens
-        b = FreeModuleBasis(algebra, gens, subalgebra, facade=self)
+        b = FreeModuleBasis(algebra, gens, subalgebra=subalgebra, facade=self)
         SteenrodModuleBase.__init__(self, b, category=category)
 
     def __call__(self, elem):
@@ -721,14 +734,14 @@ class FreeModuleImpl(SteenrodModuleBase):
         return self.linear_combination(ans)
 
     def dump_element(self, el):
-        bas = list(self.basis().keys())
+        bas = self.basis().keys()
         dct = dict(el)
         return "%s" % [
             (bas.dump_element(k), dct[k]) for k in sorted(dct) if dct[k] != 0
         ]
 
     def load_element(self, str):
-        bas = list(self.basis().keys())
+        bas = self.basis().keys()
         return self._from_dict(
             dict([(bas.load_element(k), cf) for (k, cf) in eval(str)])
         )

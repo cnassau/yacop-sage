@@ -101,6 +101,9 @@ class YacopBimodules(CategoryWithParameters):
     class ElementMethods:
         pass
 
+    class SubcategoryMethods:
+        pass
+
 @yacop_category()
 class YacopBimoduleAlgebras(CategoryWithParameters):
 
@@ -188,4 +191,7 @@ class YacopBimoduleAlgebras(CategoryWithParameters):
         pass
 
     class ElementMethods:
+        pass
+
+    class SubcategoryMethods:
         pass

@@ -984,6 +984,9 @@ class YacopRightModules(Category_over_base_ring):
                     ans.append(self._retract_homogeneous(deg, smd))
                 return self.parent().sum(ans)
 
+    class SubcategoryMethods:
+        pass
+
 @yacop_category(right_action=True, is_algebra=True, module_category=YacopRightModules)
 class YacopRightModuleAlgebras(Category_over_base_ring):
     def super_categories(self):
@@ -1100,10 +1103,5 @@ class YacopRightModuleAlgebras(Category_over_base_ring):
                 self.base_category().ModuleCategory().Homsets(),
             ]
 
-def classcopy(C):
-    return type(C.__name__ + 'copy',C.__bases__,dict(C.__dict__))
-#YacopRightModuleAlgebras.CartesianProducts.Subquotients = classcopy(YacopRightModuleAlgebras.Subquotients)
-
-class cSubquotients(YacopRightModules.Subquotients):
-    pass
-#YacopRightModuleAlgebras.CartesianProducts.Subquotients = cSubquotients
+    class SubcategoryMethods:
+        pass

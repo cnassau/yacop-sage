@@ -180,6 +180,23 @@ class YacopObjects(Category_singleton):
         def SuspendedObjects(self):
             return SuspendedObjectsCategory.category_of(self)
 
+        def _yacop_has_left_action(self):
+            return False
+
+        def _yacop_has_right_action(self):
+            return False
+
+        def _yacop_has_multiplcation(self):
+            return False
+
+        @cached_method
+        def _yacop_structure(self):
+            ans = set()
+            for cls in self.__class__.__bases__:
+                d = cls.__dict__
+                if "_yacop_structures" in d:
+                    ans.update(d["_yacop_structures"])
+            return ans
 
 class YacopGradedObjects(Category_singleton):
     """

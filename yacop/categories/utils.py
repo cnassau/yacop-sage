@@ -178,6 +178,10 @@ def category_meet(self, other):
         sage: B2=YacopLeftModules(SteenrodAlgebra(2,profile=(2,1,1)))
         sage: category_meet(A2,B2)
         Category of yacop left modules over sub-Hopf algebra of mod 2 Steenrod algebra, milnor basis, profile function [2, 1, 1]
+        sage: A2=YacopRightModules(SteenrodAlgebra(2))
+        sage: B2=YacopRightModules(SteenrodAlgebra(2,profile=(2,1,1)))
+        sage: category_meet(A2,B2)
+        Category of yacop right modules over sub-Hopf algebra of mod 2 Steenrod algebra, milnor basis, profile function [2, 1, 1]
 
     """
 
@@ -188,14 +192,17 @@ def category_meet(self, other):
     if not hasattr(B, "is_generic"):
         return Modules(FiniteField(B.characteristic()))
 
-    G = B.base_ring()
-    A = AlgebrasWithBasis(G)
-    L = LeftModules(G)
-    R = RightModules(G)
+    G = B
+    A = AlgebrasWithBasis(G.base_ring())
+    L = yacop.categories.left_modules.YacopLeftModules.parent_class
+    R = yacop.categories.right_modules.YacopRightModules.parent_class
 
-    is_algebra = self in A and other in A
-    is_right = self in R and other in R
-    is_left = self in L and other in L
+    scat = self.all_super_categories()
+    ocat = other.all_super_categories()
+
+    is_algebra = A in scat and A in ocat
+    is_right = self.xxx
+    is_left = L in scat and L in ocat
     is_bimod = is_left and is_right
 
     if is_algebra:
