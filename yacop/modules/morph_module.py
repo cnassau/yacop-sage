@@ -96,7 +96,7 @@ class MorphModule(SteenrodModuleBase):
         keys.__contains__ = types.MethodType(contains, keys)
         SteenrodModuleBase.__init__(self, keys, grading=gr, category=category)
 
-        if False:
+        if True:
             # fix various basis issues
             b = self.basis()
             b.rename(
@@ -110,7 +110,7 @@ class MorphModule(SteenrodModuleBase):
                 return list(islice(fam, 5))
 
             b.some_elements = types.MethodType(some_elements, b)
-            k = list(b.keys())
+            k = b.keys()
             k.rename("<<private and inefficient key family: don't use this>>")
             k.max_test_enumerated_set_loop = 5
 

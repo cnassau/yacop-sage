@@ -8,7 +8,7 @@ Here we implement projective spaces as modules over the 2-primary Steenrod algeb
 EXAMPLES AND TESTS:
 
 The construction of these modules is straightforward::
-    
+
     sage: from yacop.modules.projective_spaces import *
     sage: M=ComplexProjectiveSpace(12,prefix='w')
     sage: print(M)
@@ -87,6 +87,19 @@ Tensor products can be formed::
     sage: tensor((x,M.one())) * tensor((x,M.one()))
     x^2 # x^0
 
+Truncation of tensor products works::
+
+    sage: from yacop.categories.functors import truncation
+    sage: M=RealProjectiveSpace()
+    sage: N=ComplexProjectiveSpace()
+    sage: X=tensor((M,N)) ; X
+    mod 2 cohomology of real projective space P^{+Infinity} # mod 2 cohomology of complex projective space P^{+Infinity}
+    sage: T=truncation(X,tmax=5)
+    sage: sorted(T.graded_basis())
+    [x # x, x # x^2, x^2 # x, x^3 # x]
+    sage: T.dimension()
+    4
+
 CLASS DOCUMENTATION:
 """
 
@@ -163,7 +176,7 @@ r"""
         sage: from yacop.modules.projective_spaces import RealProjectiveSpace
         sage: from yacop.utils.region import region
         sage: P=RealProjectiveSpace()
-        sage: P._manual_test_left_action(region(tmax=13)) 
+        sage: P._manual_test_left_action(region(tmax=13))
         131 non-zero multiplications checked
         sage: P._manual_test_left_conj_action(region(tmax=13))
         141 non-zero multiplications checked

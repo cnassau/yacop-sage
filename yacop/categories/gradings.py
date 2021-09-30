@@ -39,6 +39,7 @@ import operator
 from yacop.utils.suspenders import Suspender
 from yacop.utils.set_of_elements import SetOfMonomials, SetOfElements
 from yacop.utils.walker import Walker
+from sage.rings.finite_rings.integer_mod_ring import Integers
 
 """
 Fix pickling doc tests::

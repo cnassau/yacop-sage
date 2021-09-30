@@ -608,7 +608,7 @@ class YacopGrading_TruncatedObjects(YacopGrading, CachedRepresentation):
     @staticmethod
     def __classcall__(cls, other, **kwargs):
         reg = region(**kwargs)
-        if reg.is_full():
+        if reg.contains(other.bbox()):
             return other
         return super(YacopGrading_TruncatedObjects, cls).__classcall__(
             cls, other, **reg.as_dict()

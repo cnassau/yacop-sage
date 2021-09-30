@@ -42,6 +42,10 @@ TESTS::
     sage: S = SubModule(M,(Sq(1)*g,Sq(7)*g,(Sq(4,2)+Sq(0,1,1))*g))
     sage: S.dimension()
     53
+    sage: x = S(Sq(1)*g) ; x
+    sage: y = Sq(2)*x ; y
+    sage: S.lift(y)
+
 
 """
 

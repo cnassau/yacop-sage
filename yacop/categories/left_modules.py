@@ -628,6 +628,50 @@ class YacopLeftModules(Category_over_base_ring):
             def _can_test_pickling(self):
                 return self.parent()._can_test_pickling()
 
+        class TruncatedObjects(TruncatedObjectsCategory):
+
+            """
+            TESTS::
+
+                sage: import yacop.categories
+                sage: C=yacop.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
+                sage: C.TensorProducts().TruncatedObjects()
+                Category of truncations of yacop left module algebras over mod 3 Steenrod algebra, milnor basis
+
+            """
+
+            @cached_method
+            def extra_super_categories(self):
+                return [self.base_category()]
+
+            def base_ring(self):
+                return self.base_category().base_ring()
+
+            class ParentMethods:
+                pass
+
+        class SuspendedObjects(SuspendedObjectsCategory):
+
+            """
+            TESTS::
+
+                sage: import yacop.categories
+                sage: C=yacop.categories.YacopLeftModuleAlgebras(SteenrodAlgebra(3))
+                sage: C.TensorProducts().SuspendedObjects()
+                Category of truncations of yacop left module algebras over mod 3 Steenrod algebra, milnor basis
+
+            """
+
+            @cached_method
+            def extra_super_categories(self):
+                return [self.base_category()]
+
+            def base_ring(self):
+                return self.base_category().base_ring()
+
+            class ParentMethods:
+                pass
+
     class CartesianProducts(CartesianProductsCategory):
         """
         direct sums of modules.
@@ -1060,18 +1104,6 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
             return [
                 self.base_category().ModuleCategory().CartesianProducts(),
             ]
-
-        class xxSubquotients(SubquotientsCategory):
-            def _repr_object_names(self):
-                return "subquotients of %s" % self.base_category()._repr_object_names()
-
-            def extra_super_categories(self):
-                return []
-
-            def super_categories(self):
-                # subquotients of algebras (computed in modules) are not algebras
-                return [self.base_category().base_category().Subquotients()]
-
 
     class TensorProducts(TensorProductsCategory):
         def _repr_object_names(self):
