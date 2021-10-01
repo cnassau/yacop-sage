@@ -88,10 +88,12 @@ from yacop.utils.bitstuff import binom_modp
 
 r"""
 
-  TESTS::
+    TESTS::
 
-      sage: from yacop.modules.classifying_spaces import *
-      sage: TestSuite(BZp(3,prime=3)).run()
+        sage: from yacop.modules.classifying_spaces import *
+        sage: TestSuite(BZp(3,prime=3)).run()
+        sage: BZp(3) in YacopLeftModules(SteenrodAlgebra(3,profile=((1,),(2,2))))
+        True
 
 """
 

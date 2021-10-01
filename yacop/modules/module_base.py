@@ -440,7 +440,3 @@ class SteenrodModuleBase_CartesianProduct(
 
 
 SteenrodModuleBase.CartesianProduct = SteenrodModuleBase_CartesianProduct
-
-# Local Variables:
-# eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
-# End:

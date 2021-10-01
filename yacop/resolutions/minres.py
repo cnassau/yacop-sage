@@ -11,6 +11,7 @@ CLASS DOCUMENTATION:
 #  Distributed under the terms of the GNU General Public License (GPL)
 # *****************************************************************************
 
+from functools import total_ordering
 from tkinter import Tcl
 from yacop.utils.tcl import Yacop
 from yacop.utils.region import region
@@ -470,7 +471,7 @@ class GFR(Parent, UniqueRepresentation):
             True
             sage: g.pop("id")  # random
             37
-            sage: sorted(g.iteritems())
+            sage: sorted(g.items())
             [('e', 5), ('n', 0), ('num', 0), ('s', 5), ('t', 5)]
             sage: C.g(s=5,t=28)
             Traceback (most recent call last):
@@ -713,6 +714,7 @@ class Subset(Parent, UniqueRepresentation):
     def load_element(self, el):
         return self.element_class(self, self._res.g(id=el))
 
+    @total_ordering
     class Element(Element):
         def __init__(self, parent, dct):
             self._dct = dct
@@ -734,26 +736,15 @@ class Subset(Parent, UniqueRepresentation):
                 raise AttributeError
 
         def __eq__(a, b):
-            return 0 == a.__cmp__(b)
-
-        def __ne__(a, b):
-            return not a.__eq__(b)
-
-        def __cmp__(a, b):
             try:
-                x = cmp(a.parent()._res, b.parent()._res)
+                if a.parent() is b.parent():
+                    return a._dct["id"] == b._dct["id"]
             except:
-                return -1
-            if x != 0:
-                return x
-            try:
-                return a._dct["id"].__cmp__(b._dct["id"])
-            except:
-                pass
-            return -1
+                return False
 
-        def __richcmp__(a, b):
-            return a.__cmp__(b)
+        def __lt__(a, b):
+            if a.parent() is b.parent():
+                return a._dct["id"] < b._dct["id"]
 
         def __hash__(a):
             return a._dct["id"]

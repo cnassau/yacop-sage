@@ -477,7 +477,7 @@ class YacopDifferentialModules(Category_over_base_ring):
             """
             import base64
 
-            return loads(bse64.b64decode(str))
+            return loads(base64.b64decode(str))
 
         def _test_dump_element(self, tester=None, **options):
             tester = self._tester(tester=tester, **options)
@@ -490,7 +490,7 @@ class YacopDifferentialModules(Category_over_base_ring):
                 tester.assertEqual(
                     el,
                     oth,
-                    LazyFormat("load_element(dump_element(el)) != el for el = %s") % el,
+                    LazyFormat("load_element(dump_element(el)) != el for el = %s (got %s) type(%s)") % (el,oth,type(oth)),
                 )
 
         def _can_test_pickling(self):

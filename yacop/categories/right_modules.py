@@ -70,7 +70,7 @@ from yacop.categories.common import yacop_category
 from yacop.categories.differential_modules import YacopDifferentialModules
 from yacop.categories.graded_objects import YacopGradedObjects
 from yacop.categories.utils import SteenrodAlgebraAction, steenrod_antipode
-from yacop.categories.utils import category_meet
+from yacop.categories.utils import category_meet, steenrod_algebra_intersect
 import operator
 
 
@@ -117,6 +117,28 @@ class YacopRightModules(Category_over_base_ring):
             Category of yacop right modules over A2
         """
         return "yacop right modules over %s" % (self.base_ring())
+
+    def is_subcategory(self, c):
+        """
+        Note: this method has known imperfections. Its purpose is only to make sure that
+        an A module is automatically considered a B module when B is a subalgebra of
+        the Steenrod algebra A.
+
+        TESTS::
+
+            sage: from yacop.categories import YacopRightModules, YacopRightModuleAlgebras
+            sage: A=YacopRightModuleAlgebras(SteenrodAlgebra(2))
+            sage: B=YacopRightModules(SteenrodAlgebra(2,profile=(2,1)))
+            sage: C=YacopRightModuleAlgebras(SteenrodAlgebra(2,profile=(2,1)))
+            sage: A.is_subcategory(B)
+            True
+            sage: C.is_subcategory(B)
+            True
+
+        """
+        if isinstance(c,YacopRightModules) and steenrod_algebra_intersect((c.base_ring(),self.base_ring())) is c.base_ring():
+            return True
+        return super().is_subcategory(c)
 
     class ParentMethods:
 
@@ -1050,6 +1072,11 @@ class YacopRightModuleAlgebras(Category_over_base_ring):
 
     class ElementMethods:
         pass
+
+    def is_subcategory(self, c):
+        if isinstance(c,YacopRightModules) and steenrod_algebra_intersect((c.base_ring(),self.base_ring())) is c.base_ring():
+            return True
+        return super().is_subcategory(c)
 
     # fixme: is it right to add these functor categories ?
 

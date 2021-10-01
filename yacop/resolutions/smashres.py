@@ -1109,7 +1109,7 @@ class SmashResolution(SteenrodModuleBase_Tensor, UniqueRepresentation):
         C = self._sets[1]
         G = C._gens
         gen = G.load_element(gid)
-        bk = list(C.basis().keys())
+        bk = C.basis().keys()
         return (mkey, bk.element_class(bk, ael, gen))
 
     def tensor_constructor(self, modules):

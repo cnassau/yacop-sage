@@ -158,7 +158,8 @@ class yacop_category:
                     return True
             return super().is_subcategory(other)
 
-        cls.is_subcategory = is_subcategory
+        if not "is_subcategory" in cls.__dict__:
+            cls.is_subcategory = is_subcategory
 
         def yes(self):
             return True
