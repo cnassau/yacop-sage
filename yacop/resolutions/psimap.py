@@ -84,9 +84,7 @@ class PsiMap(Parent, UniqueRepresentation):
             % (self._filename, self._viewtype)
         )
 
-        from string import atoi
-
-        self._prime = atoi(self.tcl.eval("set resinfo(prime)"))
+        self._prime = int(self.tcl.eval("set resinfo(prime)"))
         self._profile = self.tcl.eval("set resinfo(algebra)")
         self._viewtype = self.tcl.eval("set resinfo(viewtype)")
         self._quiet = True

@@ -14,7 +14,7 @@ TESTS::
     ....:    # return a fresh in-memory resolution for the algebra A
     ....:    from __main__ import rescount
     ....:    rescount = rescount+1
-    ....:    return A.resolution(filename="file:testres%d?mode=memory" % rescount) 
+    ....:    return A.resolution(filename="file:testres%d?mode=memory" % rescount)
     sage: __main__.newres = newres
     sage: C=newres(SteenrodAlgebra(2))
 
@@ -94,13 +94,12 @@ def tclsteenrodop(algebra, str):
         sage: tclsteenrodop(A,"{1 2 {} 0} {2 1 1 0}")
         2 Q_0 P(1) + Q_1
     """
-    import string
 
     dct = {}
     for smd in str.split("} {"):
         op = smd.split(" ")
         op.pop()
-        op = [string.atoi(u) for u in [x.strip("{").rstrip("}") for x in op] if u != ""]
+        op = [int(u) for u in [x.strip("{").rstrip("}") for x in op] if u != ""]
         cf = op[0]
         r = tuple(op[2::])
         if algebra.is_generic():
@@ -198,16 +197,16 @@ class Smasher(Parent, UniqueRepresentation):
                yield "start"
                set q [subst {
                    select
-                   pydict('s',sg.sdeg,'i',sg.ideg,'e',sg.edeg, 
-                   'srcrgen',sg.resgen, 'srcmod', m.sagename, 
-                   'data', %s(%d,group_concat(frag_decode(f.format, f.data), ' ')), 
+                   pydict('s',sg.sdeg,'i',sg.ideg,'e',sg.edeg,
+                   'srcrgen',sg.resgen, 'srcmod', m.sagename,
+                   'data', %s(%d,group_concat(frag_decode(f.format, f.data), ' ')),
                    'tarmod', tm.sagename, 'tarrgen', tg.resgen) as p
-                   from smash_generators sg 
+                   from smash_generators sg
                    join module_generators m on m.rowid = sg.modgen
                    join smash_fragments f on f.srcgen = sg.rowid
                    join smash_generators tg on tg.rowid = f.targen
                    join module_generators tm on tm.rowid = tg.modgen
-                    $query 
+                    $query
                     group by f.srcgen, f.targen
                     order by sg.ideg-sg.sdeg, sg.edeg, sg.sdeg
                }]
@@ -245,13 +244,16 @@ class Smasher(Parent, UniqueRepresentation):
         self._errors.append(message)
 
     @cached_method
-    def _tclmodule(self, action, *args):
+    def _tclmodule(self, action, *args, **kwd):
         """
         This function is a wrapper that is invoked from the Tcl code.
         Its purpose is to provide access to the module.
         """
-        # print action,args
-        import string
+        def donothing(*args):
+            pass
+        dbgfunc = donothing
+        #dbgfunc = print
+        dbgfunc("tcl call to python module:", action, args)
 
         if action == "actR":
             try:
@@ -269,25 +271,26 @@ class Smasher(Parent, UniqueRepresentation):
                 # print "actR",args,"=",res,"=",ans,"aus",op,"%",el
                 return ans
             except Exception as e:
-                print(e)
+                dbgfunc(e)
                 raise e
         elif action == "generators":
             algebra = self._resolution._algebra
             fac = self._tfactor
             # 1 if algebra.is_generic() else 2
             x = args[0].split(" ")
-            reg = region(dict(list(zip(x[::2], (string.atoi(u) for u in x[1::2])))))
+            dbgfunc("x=",x)
+            reg = region(dict(list(zip(x[::2], (int(u) for u in x[1::2])))))
             # r2 = region(smax=reg.smax,
             #            tmax=(reg.smax+reg.nmax+(fac-1))/fac,
             #            emax=reg.emax)
             r2 = reg
             r2.tmin = fac * r2.tmin
             r2.tmax = fac * r2.tmax
-            # print reg,r2,args
+            dbgfunc(reg,r2,args)
             res = ""
             B = self._module.graded_basis(r2)
-            # print r2,list(B)
-            # print "basis of %s in %s = %s" % (self._module,r2,B)
+            dbgfunc(r2,list(B))
+            dbgfunc("basis of %s in %s = %s" % (self._module,r2,B))
             if not B.is_finite():
                 # print "b not finite",r2
                 raise ValueError("module not finite in region %s" % r2)
@@ -298,7 +301,7 @@ class Smasher(Parent, UniqueRepresentation):
                     fac * g.t,
                     g.e,
                 )
-            # print res
+            dbgfunc("answer=",res)
             return res
         elif action == "diff":
             # FIXME
@@ -654,7 +657,7 @@ class Smasher(Parent, UniqueRepresentation):
         code = """
                join [smashprod db eval {
                    select pydict('id',rowid,'s',sdeg,'t',%s,
-                     'e',edeg,'n',%s,'num',basid) 
+                     'e',edeg,'n',%s,'num',basid)
                      from homology_generators %s
                }] ,
         """ % (
@@ -737,7 +740,7 @@ class Smasher(Parent, UniqueRepresentation):
                 """
                 join [smashprod db eval {
                     select '(' || s.sdeg, %s, s.edeg, 'mat('||pymatrix(s.%s)||'))' from smash_boxes s
-                    %s 
+                    %s
                     order by s.sdeg, s.ideg, s.edeg
                 }] ,
             """
