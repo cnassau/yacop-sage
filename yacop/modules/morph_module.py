@@ -590,7 +590,7 @@ class SubModule(ImageImpl):
 
     def __init__(self, ambient, generators, category=None):
         from yacop.modules.free_modules import YacopFreeModule
-        self._generators = [ambient(_) for _ in generators]
+        self._generators = tuple([ambient(_) for _ in generators])
         A = ambient._yacop_base_ring
         F = YacopFreeModule(A, generators, tesfunc=lambda x: (x.t, x.e, x.s))
         f = F.left_linear_morphism(codomain=ambient, on_basis=lambda x:x)
