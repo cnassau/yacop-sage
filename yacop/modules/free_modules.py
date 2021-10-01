@@ -585,7 +585,7 @@ class FreeModuleImpl(SteenrodModuleBase):
                     elem = self._gens(elem)
                 except:
                     pass
-                return self.monomial(list(self.basis().keys())(elem))
+                return self.monomial(self.basis().keys()(elem))
             except:
                 raise
 

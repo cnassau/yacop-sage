@@ -650,8 +650,3 @@ class SerreCartanModuleClone(SerreCartanModule):
     @cached_method
     def cloning_map_reverse(self):
         return self._cloning_map_reverse
-
-
-# Local Variables:
-# eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
-# End:
