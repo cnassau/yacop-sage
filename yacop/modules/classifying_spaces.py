@@ -326,7 +326,6 @@ class BZpGeneric(SteenrodModuleBase):
 
         return self.linear_combination(((ans, cf),))
 
-
 def BZp(order, prime=None, varnames=None):
     if order == 2:
         from yacop.modules.projective_spaces import RealProjectiveSpace

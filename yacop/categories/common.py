@@ -332,6 +332,31 @@ class CommonParentMethods:
         )
 
     @module_method
+    def _test_simple_truncation(self, tester=None, **options):
+        """
+        Test whether the module can be truncated.
+        """
+        from sage.misc.lazy_format import LazyFormat
+        from yacop.categories.functors import truncation
+
+        tester = self._tester(**options)
+
+        pt = self.bbox().nearest_point(t=0,s=0,e=0)
+        T = truncation(self,**pt.as_dict())
+
+        tester.assertTrue(
+            T.bbox() == pt,
+            LazyFormat("bbox of %s seems wrong" % (T,)),
+        )
+
+        el = T.an_element()
+
+        tester.assertTrue(
+            el.degree() == pt,
+            LazyFormat("element %s of %s has wrong degree %s" % (el,T,el.degree())),
+        )
+
+    @module_method
     def _test_steenrod_action(self, tester=None, **options):
         from sage.misc.sage_unittest import TestSuite
         from sage.misc.lazy_format import LazyFormat

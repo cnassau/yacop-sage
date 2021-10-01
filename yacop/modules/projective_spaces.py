@@ -181,6 +181,10 @@ r"""
         sage: P._manual_test_left_conj_action(region(tmax=13))
         141 non-zero multiplications checked
 
+        sage: from yacop.modules.projective_spaces import RealProjectiveSpace
+        sage: from yacop.categories.functors import truncation
+        sage: truncation(RealProjectiveSpace(),tmin=5,tmax=17) is RealProjectiveSpace(botexp=5,topexp=17)
+
 """
 
 
@@ -301,7 +305,10 @@ class GenericProjectiveSpace(SteenrodModuleBase):
         return letter
 
     def an_element(self):
-        return self.sum([self.monomial(u) for u in (1, 3, 32) if u < self._top])
+        ans = [self.monomial(u) for u in (1, 3, 32) if u < self._top]
+        if 0 == len(ans):
+            ans = [self.monomial(self._bot) for u in (0, 2, 7, 15) if self._bot + u <= self._top]
+        return self.sum(ans)
 
     def one_basis(self):
         return 0
@@ -369,6 +376,14 @@ class GenericProjectiveSpace(SteenrodModuleBase):
         if 0 != (rest & sum) or deg > self._top:
             return self.zero()
         return self.monomial(deg)
+
+    def TruncatedObjectsFactory(self,module,*args,**kwargs):
+        reg = region(**kwargs)
+        topexp = min(reg.tmax,self._top)
+        botexp = max(reg.tmin,self._bot)
+        fielddim = self._field
+        prefix = self._prefix
+        return GenericProjectiveSpace(fielddim, topexp, botexp, prefix)
 
 
 def RealProjectiveSpace(topexp=+Infinity, botexp=1, prefix="x", **args):

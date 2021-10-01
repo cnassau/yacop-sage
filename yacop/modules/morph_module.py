@@ -34,7 +34,8 @@ from sage.structure.unique_representation import UniqueRepresentation
 from sage.misc.cachefunc import cached_method
 from sage.arith.all import binomial
 from sage.misc.lazy_format import LazyFormat
-
+from sage.categories.sets_cat import Sets
+from sage.categories.morphism import SetMorphism
 
 class MorphModule(SteenrodModuleBase):
     """
@@ -280,7 +281,7 @@ class MorphModule(SteenrodModuleBase):
             d = self._f(s)
             mt.append(N.graded_basis_coefficients(d, region))
         # have to specify the ring and nrows, ncols in order to get the
-        # right classand dimensions in case where mt is empty
+        # right class and dimensions in case where mt is empty
         return matrix(mt, ring=GF(self._prime), nrows=nrows, ncols=ncols)
 
     def suspend_element(self, elem, **options):
@@ -466,6 +467,13 @@ class ImageImpl(MorphModule):
         res.rename("image embedding of %s" % self)
         return res
 
+    def _convert_map_from_(self, S):
+        if S is self.ambient():
+            return SetMorphism(S.Hom(self, category=Sets()),
+                               lambda x: self.retract(x))
+
+        return super()._convert_map_from_(S)
+
     def _repr_(self):
         return "image of %s" % self._f
 
@@ -582,11 +590,10 @@ class SubModule(ImageImpl):
 
     def __init__(self, ambient, generators, category=None):
         from yacop.modules.free_modules import YacopFreeModule
-
-        self._generators = generators
+        self._generators = [ambient(_) for _ in generators]
         A = ambient._yacop_base_ring
         F = YacopFreeModule(A, generators, tesfunc=lambda x: (x.t, x.e, x.s))
-        f = F.left_linear_morphism(codomain=ambient, on_basis=lambda x: x)
+        f = F.left_linear_morphism(codomain=ambient, on_basis=lambda x:x)
         ImageImpl.__init__(self, f, category=category)
 
     def _repr_(self):

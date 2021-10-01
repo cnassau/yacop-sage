@@ -36,6 +36,7 @@ TESTS::
 
 TESTS::
 
+    sage: from yacop.modules.A2module import A2Module
     sage: M = A2Module(666)
     sage: g = M.bottom_class()
     sage: from yacop.modules.morph_module import SubModule
@@ -43,8 +44,11 @@ TESTS::
     sage: S.dimension()
     53
     sage: x = S(Sq(1)*g) ; x
+    xi[1]**2*xi[2]**2*xi[3]**2 + xi[1]**4*xi[2]*xi[4] + xi[1]**4*xi[2]**6 + xi[1]**5*xi[2]*xi[3]**2 + xi[1]**6*xi[2]**3*xi[3] + xi[1]**7*xi[4] + xi[1]**7*xi[2]**5 + xi[1]**9*xi[2]**2*xi[3] + xi[1]**2
     sage: y = Sq(2)*x ; y
+    xi[2]**2*xi[3]**2 + xi[1]**2*xi[2]**6 + xi[1]**4*xi[2]**3*xi[3] + xi[1]**5*xi[4] + xi[1]**10*xi[2]*xi[3] + xi[1]**13*xi[3] + xi[1]**20
     sage: S.lift(y)
+    xi[2]**2*xi[3]**2 + xi[1]**2*xi[2]**6 + xi[1]**4*xi[2]**3*xi[3] + xi[1]**5*xi[4] + xi[1]**10*xi[2]*xi[3] + xi[1]**13*xi[3] + xi[1]**20
 
 
 """
@@ -73,7 +77,17 @@ class A2Module(SubModule, UniqueRepresentation):
         )
 
     def bottom_class(self):
-        return self._generators[0]
+        """
+        TESTS::
+
+            sage: from yacop.modules.A2module import A2Module
+            sage: M = A2Module(321)
+            sage: g = M.bottom_class()
+            sage: g.parent() is M
+            True
+
+        """
+        return self(self._generators[0])
 
     # FIXME: more functions needed
 

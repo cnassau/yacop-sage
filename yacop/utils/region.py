@@ -402,6 +402,28 @@ class region(SageObject):
         else:
             dct[nm] = val
 
+    def nearest_point(self,**kwargs):
+        """
+        TESTS::
+
+            sage: from yacop.utils.region import region
+            sage: x=region(emin=10,emax=18,tmin=-5,smax=6)
+            sage: x.nearest_point(e=7,t=7,s=12)
+            region(e = 10, s = 6, t = 7)
+
+        """
+        r = region(**kwargs)
+        ans = {}
+        for v in r.vars():
+            if r.min(v) != r.max(v):
+                raise ValueError("expected a single point region")
+            val = r.min(v)
+            if val < self.min(v):
+                val = self.min(v)
+            if val > self.max(v):
+                val = self.max(v)
+            ans[v]=val
+        return region(ans)
 
 # Local Variables:
 # eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)

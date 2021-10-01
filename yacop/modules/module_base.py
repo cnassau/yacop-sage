@@ -47,6 +47,9 @@ class SteenrodModuleGrading(YacopGrading):
         self._basis = basis
         self._module = module
 
+    def _repr_(self):
+        return "%s with basis/module = %s/%s" % (type(self),self._basis,self._module)
+
     def split_element(self, elem):
         mono = self._module.monomial
         dct = dict()
