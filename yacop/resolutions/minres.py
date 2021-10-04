@@ -12,7 +12,6 @@ CLASS DOCUMENTATION:
 # *****************************************************************************
 
 from functools import total_ordering
-from tkinter import Tcl
 from yacop.utils.tcl import Yacop
 from yacop.utils.region import region
 from sage.structure.element import Element
@@ -22,9 +21,7 @@ from yacop.modules.free_modules import FreeModuleImpl
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.structure.parent import Parent
 from sage.rings.infinity import Infinity
-from sage.categories.objects import Objects
 from sage.categories.all import (
-    EnumeratedSets,
     FiniteEnumeratedSets,
     InfiniteEnumeratedSets,
     Sets,

@@ -100,7 +100,6 @@ Free modules over the Steenrod algebra.
 
 from functools import total_ordering
 from yacop.utils.region import region
-from yacop.utils.gradings import YacopGrading
 from yacop.utils.finite_graded_set import FiniteGradedSet
 from yacop.modules.module_base import SteenrodModuleBase
 from yacop.categories import (
@@ -108,32 +107,15 @@ from yacop.categories import (
     YacopLeftModules,
     YacopRightModules,
     YacopGradedSets,
-    YacopGradedObjects,
 )
-from yacop.categories.functors import suspension, SuspendedObjectsCategory
-from yacop.categories.functors import truncation, TruncatedObjectsCategory
 from sage.rings.infinity import Infinity
-
-# from sage.combinat.free_module import CombinatorialFreeModule
-from sage.structure.sage_object import SageObject
-from sage.rings.finite_rings.finite_field_constructor import GF
-from sage.sets.set import Set
-from sage.sets.finite_enumerated_set import FiniteEnumeratedSet
-from sage.sets.family import LazyFamily, Family
-from sage.categories.examples.infinite_enumerated_sets import NonNegativeIntegers
-from sage.categories.all import AlgebrasWithBasis
 from sage.sets.integer_range import IntegerRange
-from sage.algebras.all import SteenrodAlgebra, Sq
 from sage.rings.integer import Integer
-from sage.structure.formal_sum import FormalSum, FormalSums
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.categories.finite_enumerated_sets import FiniteEnumeratedSets
 from sage.categories.infinite_enumerated_sets import InfiniteEnumeratedSets
 from sage.structure.parent import Parent
 from sage.structure.element import Element
-from sage.misc.classcall_metaclass import ClasscallMetaclass
-from yacop.utils.finite_graded_set import InfiniteGradedSet
-
 
 class FreeModuleBasis(Parent, UniqueRepresentation):
     """

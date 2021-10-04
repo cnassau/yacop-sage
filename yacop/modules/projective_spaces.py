@@ -109,32 +109,13 @@ CLASS DOCUMENTATION:
 # *****************************************************************************
 
 from yacop.utils.region import region
-from yacop.utils.gradings import YacopGrading
-from yacop.utils.set_of_elements import SetOfMonomials
 from yacop.modules.module_base import SteenrodModuleBase
-from yacop.categories import (
-    YacopLeftModuleAlgebras,
-    YacopGradedObjects,
-    YacopGradedSets,
-)
-from yacop.categories.functors import suspension, SuspendedObjectsCategory
-from yacop.categories.functors import truncation, TruncatedObjectsCategory
+from yacop.categories import YacopLeftModuleAlgebras
 from sage.rings.infinity import Infinity
-from sage.combinat.free_module import CombinatorialFreeModule
-from sage.structure.sage_object import SageObject
-from sage.structure.parent import Parent
-from sage.rings.finite_rings.finite_field_constructor import GF
 from sage.sets.set import Set
-from sage.sets.family import Family, LazyFamily
-from sage.categories.examples.infinite_enumerated_sets import (
-    NonNegativeIntegers,
-    InfiniteEnumeratedSets,
-)
-from sage.categories.all import AlgebrasWithBasis
 from sage.sets.integer_range import IntegerRange
-from sage.algebras.all import SteenrodAlgebra, Sq
+from sage.algebras.all import SteenrodAlgebra
 from sage.rings.integer import Integer
-from sage.structure.formal_sum import FormalSum, FormalSums
 from sage.structure.unique_representation import UniqueRepresentation
 from yacop.utils.finite_graded_set import InfiniteGradedSet
 

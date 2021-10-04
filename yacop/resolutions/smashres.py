@@ -28,27 +28,22 @@ TESTS::
 from tkinter import Tcl, TclError
 from yacop.utils.tcl import Yacop
 from yacop.utils.region import region
-from sage.structure.element import Element
-from yacop.categories import YacopLeftModules, YacopGradedSets
+from yacop.categories import YacopLeftModules
 from threading import Thread
 from yacop.modules.free_modules import FreeModuleImpl
-from yacop.resolutions.minres import GFR, MinimalResolution, Subset
+from yacop.resolutions.minres import GFR, MinimalResolution
 from sage.structure.parent import Parent
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.rings.integer import Integer
 from sage.rings.infinity import Infinity
 from yacop.categories.functors import suspension
 from sage.misc.cachefunc import cached_method
-from sage.combinat.free_module import CombinatorialFreeModule
-from sage.categories.category import Category
-from sage.categories.vector_spaces import VectorSpaces
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 from sage.matrix.constructor import matrix
 from sage.modules.free_module_element import vector
 from sage.rings.finite_rings.finite_field_constructor import FiniteField
 from copy import copy
 import os
-
 
 # internal function for testing
 def __newres(A, shared=False):
@@ -61,7 +56,6 @@ def __newres(A, shared=False):
     if shared:
         fname += "&cache=shared"
     return A.resolution(filename=fname)
-
 
 """
     pickling doctest hack::

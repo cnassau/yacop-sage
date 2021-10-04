@@ -13,29 +13,10 @@ CLASS DOCUMENTATION:
 # *****************************************************************************
 
 from yacop.utils.region import region
-from yacop.utils.gradings import YacopGrading
-from yacop.utils.set_of_elements import SetOfMonomials, SetOfElements
 from yacop.modules.algebras import SteenrodAlgebraBase
-from yacop.categories import YacopLeftModuleAlgebras, YacopGradedObjects
-from yacop.categories.functors import suspension, SuspendedObjectsCategory
-from yacop.categories.functors import truncation, TruncatedObjectsCategory
 from sage.rings.infinity import Infinity
-from sage.combinat.free_module import CombinatorialFreeModule
 from sage.structure.sage_object import SageObject
-from sage.rings.finite_rings.finite_field_constructor import GF
-from sage.sets.set import Set
-from sage.sets.family import LazyFamily, Family
-from sage.categories.examples.infinite_enumerated_sets import NonNegativeIntegers
-from sage.categories.all import AlgebrasWithBasis
-from sage.categories.cartesian_product import cartesian_product
-from sage.sets.integer_range import IntegerRange
-from sage.algebras.all import SteenrodAlgebra, Sq
-from sage.rings.integer import Integer
-from sage.structure.formal_sum import FormalSum, FormalSums
-from sage.structure.unique_representation import UniqueRepresentation
-from sage.arith.all import is_prime
-from yacop.utils.finite_graded_set import InfiniteGradedSet
-from yacop.utils.bitstuff import N0
+from sage.algebras.all import SteenrodAlgebra
 from yacop.modules.xitauring import XiTauRing
 
 """
