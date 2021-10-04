@@ -136,9 +136,11 @@ class YacopLeftModules(Category_over_base_ring):
             True
 
         """
-        if isinstance(c,YacopLeftModules) and steenrod_algebra_intersect((c.base_ring(),self.base_ring())) is c.base_ring():
-            return True
-        return super().is_subcategory(c)
+        def is_subcategory(self, cat):
+            for c in cat.all_super_categories():
+                if isinstance(c,YacopLeftModules) and steenrod_algebra_intersect((c.base_ring(),self.base_ring())) is c.base_ring():
+                    return True
+            return super().is_subcategory(cat)
 
     class ParentMethods:
 
@@ -1073,10 +1075,11 @@ class YacopLeftModuleAlgebras(Category_over_base_ring):
     class ElementMethods:
         pass
 
-    def is_subcategory(self, c):
-        if isinstance(c,YacopLeftModules) and steenrod_algebra_intersect((c.base_ring(),self.base_ring())) is c.base_ring():
-            return True
-        return super().is_subcategory(c)
+    def is_subcategory(self, cat):
+        for c in cat.all_super_categories():
+            if isinstance(c,YacopLeftModules) and steenrod_algebra_intersect((c.base_ring(),self.base_ring())) is c.base_ring():
+                return True
+        return super().is_subcategory(cat)
 
     # fixme: is it right to add these functor categories ?
 

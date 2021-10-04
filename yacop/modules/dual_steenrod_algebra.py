@@ -13,7 +13,7 @@ CLASS DOCUMENTATION:
 # *****************************************************************************
 
 from yacop.utils.region import region
-from yacop.modules.algebras import SteenrodAlgebraBase
+from yacop.modules.algebra_base import SteenrodAlgebraBase
 from sage.rings.infinity import Infinity
 from sage.structure.sage_object import SageObject
 from sage.algebras.all import SteenrodAlgebra

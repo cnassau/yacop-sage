@@ -54,6 +54,7 @@ Negative dimensional classes can also be constructed::
 
 Projective spaces, like all modules, can be suspended::
 
+    sage: from yacop.categories.functors import suspension
     sage: Q = suspension(QuaternionicProjectiveSpace(),s=5) ; Q
     suspension (0,0,5) of mod 2 cohomology of quaternionic projective space P^{+Infinity}
     sage: Q.an_element()
@@ -129,6 +130,7 @@ r"""
 
   TESTS::
 
+        sage: from sage.misc.sage_unittest import TestSuite
         sage: from yacop.modules.projective_spaces import *
         sage: TestSuite(RealProjectiveSpace()).run()
         sage: TestSuite(ComplexProjectiveSpace()).run()

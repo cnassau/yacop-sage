@@ -3,7 +3,7 @@ A base class for algebras over the Steenrod algebra.
 
    TESTS::
 
-        sage: from yacop.modules.algebras import *
+        sage: from yacop.modules.algebra_base import *
         sage: # we implement the cohomology of "BZp smash BZp"
         sage: class Testclass(SteenrodAlgebraBase):
         ....:       def __init__(this,p,category=None):
@@ -303,7 +303,7 @@ class SteenrodAlgebraBasis(InfiniteGradedSet, UniqueRepresentation):
         Currently the limits on the negative exponents must be one.
 
         TESTS::
-            sage: from yacop.modules.algebras import SteenrodAlgebraBasis
+            sage: from yacop.modules.algebra_base import SteenrodAlgebraBasis
             sage: wiv = SteenrodAlgebraBasis.WeightedIntegerVectors
             sage: sorted(wiv(7,[2,-1,5],[Infinity,1,Infinity]))
             [(1, 0, 1), (4, 1, 0)]
@@ -628,7 +628,7 @@ class SteenrodAlgebraBase(SteenrodModuleBase):
 
         TESTS::
 
-           sage: from yacop.modules.algebras import *
+           sage: from yacop.modules.algebra_base import *
            sage: T = SteenrodAlgebraBase._coaction_tensor
            sage: from yacop.modules.dual_steenrod_algebra import DualSteenrodAlgebra
            sage: D = DualSteenrodAlgebra(5)

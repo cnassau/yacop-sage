@@ -36,7 +36,7 @@ CLASS DOCUMENTATION:
 from yacop.utils.region import region
 from yacop.utils.gradings import YacopGrading
 from yacop.utils.set_of_elements import SetOfMonomials, SetOfElements
-from yacop.modules.algebras import SteenrodAlgebraBase
+from yacop.modules.algebra_base import SteenrodAlgebraBase
 from yacop.categories import YacopLeftModuleAlgebras, YacopGradedObjects
 from yacop.categories.functors import suspension, SuspendedObjectsCategory
 from yacop.categories.functors import truncation, TruncatedObjectsCategory

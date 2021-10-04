@@ -29,9 +29,9 @@ doattach(yacop.modules.categories)
 import yacop.modules.free_modules
 
 doattach(yacop.modules.free_modules)
-import yacop.modules.algebras
+import yacop.modules.algebra_base
 
-doattach(yacop.modules.algebras)
+doattach(yacop.modules.algebra_base)
 import yacop.modules.dual_steenrod_algebra
 
 doattach(yacop.modules.dual_steenrod_algebra)
