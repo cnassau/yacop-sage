@@ -1019,13 +1019,14 @@ class DicksonAlgebra(DicksonBase):
         return self._act_from_coact(self._left_conjugate_coaction_on_basis, a, m)
 
     def _restriction_basis(self, dest, key):
+        #print("_restriction_basis",dest,key)
         idx = dest._index
         if len(key) > 2 * idx:
             return dest.zero()
         ans = []
         for (i, x) in enumerate(key):
             ans.append(x if 0 == i & 1 else self._prime * x)
-        while 0 == ans[-1]:
+        while len(ans) and 0 == ans[-1]:
             ans.pop()
         return dest._from_dict({tuple(ans): self.base_ring().one()})
 
@@ -1052,6 +1053,15 @@ class DicksonAlgebra(DicksonBase):
             sage: r = D.restriction(DicksonAlgebra(2,2))
             sage: r(d4), r(d6), r(d7)
             (d2**2, d3**2, 0)
+
+            sage: D=DicksonAlgebra(3,3) ; D
+            Dickson-Mui algebra D(3) for prime 3
+            sage: E=DicksonAlgebra(3,2) ; E
+            Dickson-Mui algebra D(2) for prime 3
+            sage: f=D.restriction(E) ; f
+            restriction from Dickson-Mui algebra D(3) for prime 3 to Dickson-Mui algebra D(2) for prime 3
+            sage: for x in list(D.graded_basis(tmax=20)):
+            ....:     y = f(x) # check this does not raise an exception
 
         """
         if not isinstance(other, DicksonAlgebra):
@@ -1342,8 +1352,3 @@ class PetersonPolynomials(SageObject):
             cf *= binom_modp(p, -n * pmo, sum)
             if 0 != cf:
                 yield [cf, expos]
-
-
-# Local Variables:
-# eval:(add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
-# End:

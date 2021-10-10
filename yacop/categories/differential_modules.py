@@ -9,55 +9,38 @@ The Yacop category for differential modules.
 # ******************************************************************************
 # pylint: disable=E0213
 
-from sage.rings.infinity import Infinity
-from sage.misc.abstract_method import abstract_method
 from sage.misc.cachefunc import cached_method
 from sage.misc.lazy_attribute import lazy_attribute
-from sage.categories.category_singleton import Category_singleton
 from sage.categories.category_types import Category_over_base_ring
 from sage.categories.homsets import HomsetsCategory
-from sage.categories.all import (
-    Category,
-    Sets,
-    Hom,
-    Rings,
-    Modules,
-    LeftModules,
-    RightModules,
-    Bimodules,
-    ModulesWithBasis,
-    AlgebrasWithBasis,
-)
-from sage.categories.objects import Objects
+from sage.categories.all import ModulesWithBasis
 from sage.categories.cartesian_product import (
     CartesianProductsCategory,
     cartesian_product,
 )
 from sage.categories.subquotients import SubquotientsCategory
-from sage.categories.algebra_functor import AlgebrasCategory
 from sage.categories.dual import DualObjectsCategory
-from sage.categories.tensor import TensorProductsCategory, tensor
-from sage.categories.morphism import SetMorphism
+from sage.categories.tensor import TensorProductsCategory
 from sage.misc.cachefunc import cached_method
-from sage.structure.sage_object import SageObject
-from sage.structure.element import have_same_parent
-from yacop.utils.region import region
 from yacop.categories.functors import SuspendedObjectsCategory
 from yacop.categories.functors import TruncatedObjectsCategory
-from sage.misc.cachefunc import cached_function
-from sage.misc.classcall_metaclass import typecall, ClasscallMetaclass
 from yacop.categories.functors import suspension
 from sage.misc.lazy_attribute import lazy_attribute
-from sage.rings.all import GF
 from sage.categories.homset import Homset
-from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
-
+from sage.misc.persist import dumps
+from sage.misc.persist import loads
 from yacop.categories.graded_objects import YacopGradedObjects
-
 
 class YacopDifferentialModules(Category_over_base_ring):
     """
     The category of differential Yacop modules over the Steenrod algebra.
+
+    This category serves as a common base category for both left and right Steenrod
+    algebra modules and algebras. We use this category to implement the hooks for
+    our implementation of kernels, images and submodules.
+
+    Also this category is responsible for dealing with the internal differential
+    of our modules.
 
     EXAMPLES::
 
@@ -110,6 +93,11 @@ class YacopDifferentialModules(Category_over_base_ring):
         x.append(ModulesWithBasis(R.base_ring()))
         x.append(YacopGradedObjects())
         return x
+
+    def is_subcategory(self, c):
+        if c in self.super_categories():
+            return True
+        return super().is_subcategory(c)
 
     class ParentMethods:
         @cached_method

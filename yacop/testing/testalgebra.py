@@ -4,7 +4,7 @@ Helper classes for doctesting the SteenrodAlgebraBase class.
 
 #pylint: disable=E0213
 
-from yacop.modules.algebras import SteenrodAlgebraBase
+from yacop.modules.algebra_base import SteenrodAlgebraBase
 from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
 from sage.rings.finite_rings.finite_field_constructor import FiniteField
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra

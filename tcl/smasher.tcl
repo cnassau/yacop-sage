@@ -451,18 +451,18 @@ oo::class create yacop::smashres {
     }
 
     method tabledump {sql} {
-	set fmt "|"
-	my db eval $sql h {
-	    if {$fmt eq "|"} {
-		foreach x $h(*) {
-		    append fmt " %9s |"
-		}
-		puts [format $fmt {*}$h(*)]
-	    }
-	    set row {}
-	    foreach x $h(*) { lappend row $h($x) }
-	    puts [format $fmt {*}$row]
-	}
+        set fmt "|"
+        my db eval $sql h {
+            if {$fmt eq "|"} {
+            foreach x $h(*) {
+                append fmt " %9s |"
+            }
+            puts [format $fmt {*}$h(*)]
+            }
+            set row {}
+            foreach x $h(*) { lappend row $h($x) }
+            puts [format $fmt {*}$row]
+        }
     }
 
     method update_module {modrange} {
@@ -477,30 +477,29 @@ oo::class create yacop::smashres {
                 }
             }
         }
-
-	my dbgprint "module generators:" {
-	    my tabledump {
-		select sdeg, ideg, edeg, count(*) dim
-		from module_generators
-		group by sdeg, ideg, edeg
-		order by sdeg, ideg, edeg
-	    }
-	}
+        my dbgprint "module generators:" {
+            my tabledump {
+            select sdeg, ideg, edeg, count(*) dim
+            from module_generators
+            group by sdeg, ideg, edeg
+            order by sdeg, ideg, edeg
+            }
+        }
     }
 
     method new-smashgen {rsdeg rideg redeg msdeg mideg medeg resgen modgen} {
-	set ebasid [my db onecolumn {
-	    select count(*) from smash_generators
-	    where sdeg=$rsdeg+$msdeg
-	    and ideg=$rideg+$mideg
-	    and edeg=$redeg+$medeg
-	}]
-	my db eval {
-	    insert or ignore into smash_generators
-	    (resgen,modgen,sdeg,ideg,edeg,ebasid,status)
-	    values
-	    ($resgen,$modgen,$rsdeg+$msdeg,$rideg+$mideg,$redeg+$medeg,$ebasid,'I')
-	}
+        set ebasid [my db onecolumn {
+            select count(*) from smash_generators
+            where sdeg=$rsdeg+$msdeg
+            and ideg=$rideg+$mideg
+            and edeg=$redeg+$medeg
+        }]
+        my db eval {
+            insert or ignore into smash_generators
+            (resgen,modgen,sdeg,ideg,edeg,ebasid,status)
+            values
+            ($resgen,$modgen,$rsdeg+$msdeg,$rideg+$mideg,$redeg+$medeg,$ebasid,'I')
+        }
     }
 
     method update_smash_boxes {} {
