@@ -4,7 +4,7 @@ set -e
 
 echo "Installing Yacop Tcl package"
 TCLLIB=$(echo 'puts [info lib]' | tclsh) 
-mkdir $TCLLIB/yacoptcl || true 
+sudo mkdir $TCLLIB/yacoptcl || true 
 sudo cp -rf tcl/* $TCLLIB/yacoptcl 
 
 echo "Installing Yacop Python package"
