@@ -3,7 +3,7 @@
 set -e
 
 echo "Installing Yacop Tcl package"
-TCLLIB=$(echo 'puts [info lib]' | tclsh86) 
+TCLLIB=$(echo 'puts [info lib]' | tclsh) 
 mkdir $TCLLIB/yacoptcl || true 
 cp -rf tcl/* $TCLLIB/yacoptcl 
 
