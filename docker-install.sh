@@ -5,7 +5,7 @@ set -e
 echo "Installing Yacop Tcl package"
 TCLLIB=$(echo 'puts [info lib]' | tclsh) 
 mkdir $TCLLIB/yacoptcl || true 
-cp -rf tcl/* $TCLLIB/yacoptcl 
+sudo cp -rf tcl/* $TCLLIB/yacoptcl 
 
 echo "Installing Yacop Python package"
 sage --python ./setup.py install
