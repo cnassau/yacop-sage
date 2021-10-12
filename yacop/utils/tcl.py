@@ -36,6 +36,7 @@ def tcl_interp():
             [tcl.eval("lappend auto_path {%s}" % path) for path in xdirs]
     tcl.eval(
         """
+        lappend auto_path $::env(SAGE_LOCAL)/tcl/lib
         lappend auto_path $::env(SAGE_LOCAL)/lib
         package require yacop::sage 1.0
             """
