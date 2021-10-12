@@ -3,7 +3,7 @@
 set -e
 
 echo "Installing Yacop Tcl package"
-TCLLIB=$(echo 'puts [info lib]' | tclsh) 
+TCLLIB=$SAGE_LOCAL/tcl/lib
 sudo mkdir $TCLLIB/yacoptcl || true 
 sudo cp -rf tcl/* $TCLLIB/yacoptcl 
 
