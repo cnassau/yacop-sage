@@ -8,7 +8,7 @@ sudo mkdir $TCLLIB/yacoptcl || true
 sudo cp -rf tcl/* $TCLLIB/yacoptcl 
 
 echo "Installing Yacop Python package"
-cp -ar yacop src
+cp -ar yacop $SAGE_LOCAL/src/
 sage --python ./setup.py install
 
 cat >> ~/.sage/init.sage <<EOF
