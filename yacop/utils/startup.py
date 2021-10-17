@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 def __startup__():
     import sage.algebras.steenrod.steenrod_algebra
     import types
@@ -207,9 +206,22 @@ def __startup__():
     from sage.categories.covariant_functorial_construction import RegressiveCovariantConstructionCategory
     @classmethod
     def default_super_categories_yacop(cls, category, *args):
+        """
+        TESTS::
+
+            sage: import yacop
+
+            sage: # an earlier version of this hack broke the MRO for quasi symmetric functions:
+            sage: QuasiSymmetricFunctions(GF(3))
+            Quasisymmetric functions over the Finite Field of size 3
+
+        """
         sageresult = Category.join([category, super(RegressiveCovariantConstructionCategory, cls).default_super_categories(category, *args)])
-        j = [cat for cat in sageresult.super_categories() if not hasattr(cat,"yacop_no_default_inheritance")]
-        return Category.join(j)
+        ans = sageresult
+        if isinstance(ans, sage.categories.category.JoinCategory):
+            j = [cat for cat in sageresult.super_categories() if not hasattr(cat,"yacop_no_default_inheritance")]
+            ans = Category.join(j)
+        return ans
     RegressiveCovariantConstructionCategory.default_super_categories = default_super_categories_yacop
 
 def __print_banner__():
