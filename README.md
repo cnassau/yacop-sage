@@ -33,5 +33,6 @@ docker run -e SAGE_BANNER=NO --rm -it cnassau/yacop-sage
 ### Running the Jupyter notebook
 
 ```bash
-docker run -p8888:8888 cnassau/yacop-sage sage-jupyter
+docker run -p8888:8888 cnassau/yacop-sage sage -n --ip=0.0.0.0 
+
 ```
