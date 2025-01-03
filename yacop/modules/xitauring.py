@@ -25,14 +25,14 @@ from sage.rings.finite_rings.finite_field_constructor import GF
 from sage.sets.set import Set
 from sage.sets.family import LazyFamily, Family
 from sage.categories.examples.infinite_enumerated_sets import NonNegativeIntegers
-from sage.categories.all import AlgebrasWithBasis
+from sage.categories.algebras_with_basis import AlgebrasWithBasis
 from sage.categories.cartesian_product import cartesian_product
 from sage.sets.integer_range import IntegerRange
 from sage.algebras.all import SteenrodAlgebra, Sq
 from sage.rings.integer import Integer
 from sage.structure.formal_sum import FormalSum, FormalSums
 from sage.structure.unique_representation import UniqueRepresentation
-from sage.arith.all import is_prime
+from sage.arith.misc import is_prime
 from yacop.utils.finite_graded_set import InfiniteGradedSet
 from yacop.utils.bitstuff import N0
 

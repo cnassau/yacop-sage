@@ -21,18 +21,16 @@ from sage.misc.lazy_attribute import lazy_attribute
 from sage.categories.category_singleton import Category_singleton
 from sage.categories.category_types import Category_over_base_ring
 from sage.categories.homsets import HomsetsCategory
-from sage.categories.all import (
-    Category,
-    Sets,
-    Hom,
-    Rings,
-    Modules,
-    LeftModules,
-    RightModules,
-    Bimodules,
-    ModulesWithBasis,
-    AlgebrasWithBasis,
-)
+from sage.categories.category import Category
+from sage.categories.sets_cat import Sets
+from sage.categories.homset import Hom
+from sage.categories.rings import Rings
+from sage.categories.modules import Modules
+from sage.categories.left_modules import LeftModules
+from sage.categories.right_modules import RightModules
+from sage.categories.bimodules import Bimodules
+from sage.categories.modules_with_basis import ModulesWithBasis
+from sage.categories.algebras_with_basis import AlgebrasWithBasis
 from sage.categories.objects import Objects
 from sage.categories.cartesian_product import (
     CartesianProductsCategory,
@@ -53,7 +51,7 @@ from sage.misc.cachefunc import cached_function
 from sage.misc.classcall_metaclass import typecall, ClasscallMetaclass
 from yacop.categories.functors import suspension
 from sage.misc.lazy_attribute import lazy_attribute
-from sage.rings.all import GF
+from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 from sage.categories.homset import Homset
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 

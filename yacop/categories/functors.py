@@ -19,17 +19,15 @@ from sage.misc.abstract_method import abstract_method
 from sage.misc.cachefunc import cached_method
 from sage.misc.lazy_attribute import lazy_attribute
 from sage.categories.category_types import Category_over_base_ring
-from sage.categories.all import (
-    Category,
-    Hom,
-    Rings,
-    Modules,
-    LeftModules,
-    RightModules,
-    Bimodules,
-    ModulesWithBasis,
-    AlgebrasWithBasis,
-)
+from sage.categories.category import Category
+from sage.categories.homset import Hom
+from sage.categories.rings import Rings
+from sage.categories.modules import Modules
+from sage.categories.left_modules import LeftModules
+from sage.categories.right_modules import RightModules
+from sage.categories.bimodules import Bimodules
+from sage.categories.modules_with_basis import ModulesWithBasis
+from sage.categories.algebras_with_basis import AlgebrasWithBasis
 from sage.categories.cartesian_product import (
     CartesianProductsCategory,
     cartesian_product,

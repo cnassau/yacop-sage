@@ -156,7 +156,7 @@ from sage.sets.set import Set
 from sage.sets.finite_enumerated_set import FiniteEnumeratedSet
 from sage.sets.family import LazyFamily, Family
 from sage.categories.examples.infinite_enumerated_sets import NonNegativeIntegers
-from sage.categories.all import AlgebrasWithBasis
+from sage.categories.algebras_with_basis import AlgebrasWithBasis
 from sage.sets.integer_range import IntegerRange
 from sage.algebras.all import SteenrodAlgebra, Sq
 from sage.rings.integer import Integer

@@ -70,7 +70,7 @@ from sage.sets.integer_range import IntegerRange
 from sage.algebras.all import SteenrodAlgebra
 from sage.rings.integer import Integer
 from sage.structure.unique_representation import UniqueRepresentation
-from sage.arith.all import is_prime
+from sage.arith.misc import is_prime
 from yacop.utils.finite_graded_set import InfiniteGradedSet
 from yacop.utils.bitstuff import binom_modp
 
