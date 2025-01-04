@@ -22,12 +22,10 @@ from sage.structure.unique_representation import UniqueRepresentation
 from sage.structure.parent import Parent
 from sage.rings.infinity import Infinity
 from sage.categories.objects import Objects
-from sage.categories.all import (
-    EnumeratedSets,
-    FiniteEnumeratedSets,
-    InfiniteEnumeratedSets,
-    Sets,
-)
+from sage.categories.enumerated_sets import EnumeratedSets
+from sage.categories.finite_enumerated_sets import FiniteEnumeratedSets
+from sage.categories.infinite_enumerated_sets import InfiniteEnumeratedSets
+from sage.categories.sets_cat import Sets
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 from sage.misc.cachefunc import cached_method
 

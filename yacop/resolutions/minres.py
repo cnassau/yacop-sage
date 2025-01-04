@@ -21,11 +21,9 @@ from yacop.modules.free_modules import FreeModuleImpl
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.structure.parent import Parent
 from sage.rings.infinity import Infinity
-from sage.categories.all import (
-    FiniteEnumeratedSets,
-    InfiniteEnumeratedSets,
-    Sets,
-)
+from sage.categories.finite_enumerated_sets import FiniteEnumeratedSets
+from sage.categories.infinite_enumerated_sets import InfiniteEnumeratedSets
+from sage.categories.sets_cat import Sets
 from sage.algebras.steenrod.steenrod_algebra import SteenrodAlgebra
 from sage.misc.cachefunc import cached_method
 from copy import copy
@@ -43,14 +41,16 @@ from sage.rings.finite_rings.finite_field_constructor import GF
 from sage.sets.set import Set
 from sage.sets.family import LazyFamily
 from sage.categories.examples.infinite_enumerated_sets import NonNegativeIntegers
-from sage.categories.all import AlgebrasWithBasis, EnumeratedSets, FiniteEnumeratedSets
+from sage.categories.algebras_with_basis import AlgebrasWithBasis
+from sage.categories.enumerated_sets import EnumeratedSets
+from sage.categories.finite_enumerated_sets import FiniteEnumeratedSets
 from sage.categories.sets_cat import Sets
 from sage.sets.integer_range import IntegerRange
 from sage.algebras.all import SteenrodAlgebra, Sq
 from sage.rings.integer import Integer
 from sage.structure.formal_sum import FormalSum, FormalSums
 from sage.misc.cachefunc import cached_method
-from sage.arith.all import binomial
+from sage.arith.misc import binomial
 from sage.misc.lazy_format import LazyFormat
 """
 

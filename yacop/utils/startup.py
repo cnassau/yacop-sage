@@ -43,7 +43,8 @@ def __startup__():
     def p_test_pickling(self, tester=None, **options):
         if not hasattr(self, "_can_test_pickling") or self._can_test_pickling():
             tester = self._tester(**options)
-            from sage.misc.all import loads, dumps
+            from sage.misc.persist import loads
+            from sage.misc.persist import dumps
 
             tester.assertEqual(loads(dumps(self)), self)
         else:
@@ -52,7 +53,8 @@ def __startup__():
     def e_test_pickling(self, tester=None, **options):
         if not hasattr(self, "_can_test_pickling") or self._can_test_pickling():
             tester = self._tester(**options)
-            from sage.misc.all import loads, dumps
+            from sage.misc.persist import loads
+            from sage.misc.persist import dumps
 
             tester.assertEqual(loads(dumps(self)), self)
         else:
@@ -63,7 +65,7 @@ def __startup__():
 
     # workaround for Sage Ticket #13814
     from sage.sets.family import LazyFamily
-    from sage.rings.all import Integers
+    from sage.rings.finite_rings.integer_mod_ring import IntegerModRing as Integers
 
     if LazyFamily(Integers(), lambda i: 2 * i) == LazyFamily(
         Integers(), lambda i: 2 * i

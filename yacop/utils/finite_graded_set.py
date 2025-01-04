@@ -48,7 +48,7 @@ TESTS::
 from sage.combinat.free_module import CombinatorialFreeModule
 from sage.structure.category_object import CategoryObject
 from sage.structure.parent import Parent
-from sage.categories.all import Category
+from sage.categories.category import Category
 from sage.categories.sets_cat import Sets
 from sage.categories.enumerated_sets import EnumeratedSets
 from sage.categories.finite_enumerated_sets import FiniteEnumeratedSets

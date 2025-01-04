@@ -11,7 +11,7 @@ Collection of utility functions related to binomials and multinomials
 from sage.rings.infinity import Infinity
 from sage.rings.integer import Integer
 from sage.misc.cachefunc import cached_function
-from sage.arith.all import binomial
+from sage.arith.misc import binomial
 
 
 @cached_function
