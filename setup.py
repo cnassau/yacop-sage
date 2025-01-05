@@ -23,4 +23,11 @@ setup(
   url = "http://nullhomotopie.de",
   description = "Yacop - Steenrod algebra cohomology",
   packages=["yacop","yacop.resolutions","yacop.modules","yacop.categories","yacop.utils","yacop.testing"],
+  extras_require={
+      'passagemath': [
+          'passagemath-combinat',
+          'passagemath-modules',
+          'passagemath-repl',
+      ],
+  },
 )
