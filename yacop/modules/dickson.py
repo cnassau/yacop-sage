@@ -50,7 +50,7 @@ from sage.categories.examples.infinite_enumerated_sets import NonNegativeInteger
 from sage.categories.algebras_with_basis import AlgebrasWithBasis
 from sage.categories.cartesian_product import cartesian_product
 from sage.sets.integer_range import IntegerRange
-from sage.algebras.all import SteenrodAlgebra, Sq
+from sage.algebras.steenrod.all import SteenrodAlgebra, Sq
 from sage.rings.integer import Integer
 from sage.structure.formal_sum import FormalSum, FormalSums
 from sage.structure.unique_representation import UniqueRepresentation
