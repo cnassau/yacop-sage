@@ -78,7 +78,7 @@ r"""
 
     TESTS::
 
-        sage: from yacop.categories * import YacopLeftModules
+        sage: from yacop.categories import YacopLeftModules
         sage: from yacop.modules.classifying_spaces import *
         sage: TestSuite(BZp(3,prime=3)).run()
         sage: BZp(3) in YacopLeftModules(SteenrodAlgebra(3,profile=((1,),(2,2))))
