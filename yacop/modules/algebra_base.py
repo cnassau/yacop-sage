@@ -158,7 +158,7 @@ from sage.sets.family import LazyFamily, Family
 from sage.categories.examples.infinite_enumerated_sets import NonNegativeIntegers
 from sage.categories.algebras_with_basis import AlgebrasWithBasis
 from sage.sets.integer_range import IntegerRange
-from sage.algebras.all import SteenrodAlgebra, Sq
+from sage.algebras.steenrod.all import SteenrodAlgebra, Sq
 from sage.rings.integer import Integer
 from sage.structure.element import have_same_parent
 from sage.structure.formal_sum import FormalSum, FormalSums

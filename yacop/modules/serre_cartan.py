@@ -84,7 +84,7 @@ CLASS DOCUMENTATION:
 #       Copyright (C) 2011 Christian Nassau <nassau@nullhomotopie.de>
 #  Distributed under the terms of the GNU General Public License (GPL)
 # *****************************************************************************
-from sage.algebras.all import SteenrodAlgebra, Sq
+from sage.algebras.steenrod.all import SteenrodAlgebra, Sq
 from sage.misc.cachefunc import cached_method
 from yacop.categories import YacopLeftModules
 from yacop.utils.gradings import YacopGradingFromDict

@@ -97,7 +97,10 @@ def __startup__():
     def __copy__(self):
         return self
 
-    AbstractFamily.__copy__ = __copy__
+    try:
+        AbstractFamily.__copy__ = __copy__
+    except TypeError:  # cython class
+        pass
 
     # LazyFamilies cannot be pickled... turn off the resulting noise
     def _test_pickling(self, tester=None, **options):

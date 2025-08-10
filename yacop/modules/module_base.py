@@ -29,7 +29,7 @@ from sage.categories.algebras_with_basis import AlgebrasWithBasis
 from sage.categories.enumerated_sets import EnumeratedSets
 from sage.categories.finite_enumerated_sets import FiniteEnumeratedSets
 from sage.sets.integer_range import IntegerRange
-from sage.algebras.all import SteenrodAlgebra, Sq
+from sage.algebras.steenrod.all import SteenrodAlgebra, Sq
 from sage.rings.integer import Integer
 from sage.structure.formal_sum import FormalSum, FormalSums
 from sage.structure.unique_representation import UniqueRepresentation

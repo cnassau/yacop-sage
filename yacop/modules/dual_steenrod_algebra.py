@@ -16,7 +16,7 @@ from yacop.utils.region import region
 from yacop.modules.algebra_base import SteenrodAlgebraBase
 from sage.rings.infinity import Infinity
 from sage.structure.sage_object import SageObject
-from sage.algebras.all import SteenrodAlgebra
+from sage.algebras.steenrod.all import SteenrodAlgebra
 from yacop.modules.xitauring import XiTauRing
 
 """

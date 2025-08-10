@@ -16,7 +16,7 @@ We use :meth:`YacopGrading` objects to represent such a grading::
    sage: dct.append((region(t=1,e=0,s=3),(1,2,3)))
    sage: dct.append((region(t=2,e=1,s=1),(4,)))
    sage: dct.append((region(t=0,e=7,s=1),(5,6)))
-   sage: G = YacopGradingFromDict(dct) ; G.__custom_name = "G" ; G
+   sage: G = YacopGradingFromDict(dct) ; G.rename("G") ; G
    G
    sage: G.bbox()
    region(0 <= e <= 7, 1 <= s <= 3, 0 <= t <= 2)
@@ -71,7 +71,7 @@ CARTESIAN PRODUCTS::
    sage: dct.append((region(t=1,e=0,s=3),(7)))
    sage: dct.append((region(t=2,e=1,s=1),(8,9)))
    sage: dct.append((region(t=-1,e=4,s=1),(10,11)))
-   sage: H = YacopGradingFromDict(dct) ; H.__custom_name = "H"
+   sage: H = YacopGradingFromDict(dct) ; H.rename("H")
    sage: T = cartesian_product([G,H]) ; T
    G (+) H
    sage: G.bbox()

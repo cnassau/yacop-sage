@@ -115,7 +115,7 @@ from yacop.categories import YacopLeftModuleAlgebras
 from sage.rings.infinity import Infinity
 from sage.sets.set import Set
 from sage.sets.integer_range import IntegerRange
-from sage.algebras.all import SteenrodAlgebra
+from sage.algebras.steenrod.all import SteenrodAlgebra
 from sage.rings.integer import Integer
 from sage.structure.unique_representation import UniqueRepresentation
 from yacop.utils.finite_graded_set import InfiniteGradedSet

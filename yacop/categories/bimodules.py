@@ -34,7 +34,7 @@ class YacopBimodules(CategoryWithParameters):
         self._left_base_ring = left_base
         self._right_base_ring = left_base if right_base is None else right_base
         assert self._left_base_ring.characteristic() == self._right_base_ring.characteristic()
-        Category.__init__(self, name)
+        super().__init__()
 
     def _make_named_class_key(self, name):
         return tuple(self.super_categories())
@@ -111,7 +111,7 @@ class YacopBimoduleAlgebras(CategoryWithParameters):
         self._left_base_ring = left_base
         self._right_base_ring = left_base if right_base is None else right_base
         assert self._left_base_ring.characteristic() == self._right_base_ring.characteristic()
-        Category.__init__(self, name)
+        super().__init__()
 
     def _make_named_class_key(self, name):
         return tuple(self.super_categories())

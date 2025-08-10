@@ -2,6 +2,12 @@
 
 Yet Another Cohomology Program
 
+## Installation in Python (no prior installation of SageMath required)
+
+```bash
+pip install "git+https://github.com/passagemath/passagemath-pkg-yacop.git[passagemath]"
+```
+
 ## Docker quickstart
 
 ### Basic invocation

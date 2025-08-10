@@ -67,7 +67,7 @@ from yacop.categories import YacopLeftModuleAlgebras
 from sage.rings.infinity import Infinity
 from sage.sets.set import Set
 from sage.sets.integer_range import IntegerRange
-from sage.algebras.all import SteenrodAlgebra
+from sage.algebras.steenrod.all import SteenrodAlgebra
 from sage.rings.integer import Integer
 from sage.structure.unique_representation import UniqueRepresentation
 from sage.arith.misc import is_prime
@@ -78,7 +78,7 @@ r"""
 
     TESTS::
 
-        sage: from yacop.categories * import YacopLeftModules
+        sage: from yacop.categories import YacopLeftModules
         sage: from yacop.modules.classifying_spaces import *
         sage: TestSuite(BZp(3,prime=3)).run()
         sage: BZp(3) in YacopLeftModules(SteenrodAlgebra(3,profile=((1,),(2,2))))
