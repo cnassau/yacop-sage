@@ -29,6 +29,11 @@ xhost local:docker
 docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --rm -it cnassau/yacop-sage
 ```
 
+Respectively with podman:
+```
+podman run --net=host -v ~/.Xauthority:/home/sage/.Xauthority:U -eXAUTHORITY=/home/sage/.Xauthority -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --rm -it cnassau/yacop-sage
+```
+
 ### Running without startup banner
 
 ```bash
