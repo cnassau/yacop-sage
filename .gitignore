@@ -10,3 +10,4 @@ manual/*toc
 manual/manual_doctest*
 manual/*.sagetex.*
 
+CLAUDE.local.md
