@@ -1,0 +1,792 @@
+\documentclass[11pt]{amsart}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1.15in]{geometry}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\F}{\mathbb{F}_p}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\Dk}{D_k}
+\newcommand{\Dperf}{D_k^{\mathrm{perf}}}
+\newcommand{\wt}{\widetilde{\omega}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\coef}[1]{\left[#1\right]}
+\DeclareMathOperator{\GL}{GL}
+
+\title[Peterson elements and the Dickson--M\`ui algebras]{Peterson elements and the Steenrod action\\ on the Dickson--M\`ui algebras}
+\date{\today}
+
+\begin{document}
+\sloppy
+
+\begin{abstract}
+We describe the algorithm used in \code{yacop/modules/dickson.py} to compute
+the action of the mod $p$ Steenrod algebra on the Dickson algebras $D_k$
+(and on their M\`ui extensions).  The algorithm rests on a family of
+invariants, the \emph{Peterson elements} $\wt_n$, and on a closed formula
+$P^R\wt_n = a(R,n)\,\wt_{n+d(R)}$ for the action of a Milnor basis element on
+them.  We define the Peterson elements, give an explicit monomial formula for
+them which generalises a formula of Hung and Peterson, and prove that the
+Dickson invariants are Peterson elements.  We extract the action formula from
+the code.  For odd $p$ it holds with the normalisation $\wt_n=(-1)^n\omega_n$,
+not with the one stated in the code's documentation.  We prove the formula
+on the Dickson generators for all $k$ and all Milnor basis elements.  This is
+exactly what the algorithm needs, so the algorithm is correct.  We also prove
+the formula for all Peterson elements when $k=1$, and report on computer
+verification of the remaining cases.  Finally we explain the auxiliary class
+\code{DicksonDualSteenrodAlgebra}.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+
+The program \code{yacop} computes the action of the Steenrod algebra $\A$ on
+the Dickson algebras
+$\Dk=H^*(BV_k;\F)^{\GL_k}$, where $V_k=\F^k$.  Here $\Dk$ is viewed as an
+algebra of invariants in the polynomial part of $H^*(BV_k)$.  Since $\Dk$ is a
+polynomial algebra, the Cartan formula reduces the problem to the action on
+the generators.  The code handles the generators by identifying each of them
+with a \emph{Peterson element} and then using a closed formula for the Milnor
+basis action on Peterson elements.  This note explains that formula and how
+much of it can be proved.
+
+\medskip\noindent\textbf{Summary of results.}  Let $R=(r_1,r_2,\dots)$ index the
+Milnor basis element $P^R$ (written $Sq(R)$ when $p=2$).  Put
+\[
+  |R|=\sum_j r_j,\qquad N(R)=\sum_j p^j r_j,\qquad
+  d(R)=\sum_j r_j\,\frac{p^j-1}{p-1},
+\]
+so that $(p-1)d(R)=N(R)-|R|$.  For $n\ge 0$ define the coefficient
+\begin{equation}\label{eq:aRn}
+  a(R,n)\;=\;\binom{(p-1)(n+d(R))}{N(R)}\binom{N(R)}{pr_1,\,p^2r_2,\,p^3r_3,\,\dots}\in\F ,
+\end{equation}
+where the second factor is a multinomial coefficient.  The code (functions
+\code{\_\_action\_exponents} and \code{\_\_action\_exponents2} in
+\code{dickson.py}) uses
+\[
+   P^R\,\wt_n \;=\; a(R,n)\,\wt_{n+d(R)} .\tag{$\ast$}
+\]
+\begin{itemize}
+\item Section~\ref{sec:peterson} defines Peterson elements and proves the
+  monomial formula and the identification of the Dickson invariants
+  (Proposition~\ref{prop:monomials}, Theorem~\ref{thm:A}).
+\item Section~\ref{sec:algorithm} describes the algorithm.  The code's
+  decomposition of Peterson elements into Dickson monomials is a Lagrange
+  inversion formula (Proposition~\ref{prop:lagrange}).
+\item Section~\ref{sec:proof} proves $(\ast)$ at the Dickson generators for
+  all $k$ and $R$ (Theorem~\ref{thm:gen}).  So the algorithm is correct
+  (Corollary~\ref{cor:algo}).  It also proves $(\ast)$ for all $n$ when $k=1$
+  (Theorem~\ref{thm:k1}).  The remaining cases of $(\ast)$, other degrees $n$
+  for $k\ge2$ and the conjugate formula, are stated as
+  Conjecture~\ref{conj:C}.  They have been checked by computer in the cases of
+  Table~\ref{tab:checks}.
+\item Section~\ref{sec:whole} explains how the code obtains the action on all
+  of $\Dk$ (and on the M\`ui generators), and Section~\ref{sec:dual} explains
+  \code{DicksonDualSteenrodAlgebra}.
+\end{itemize}
+
+\begin{remark}[A sign]\label{rem:sign}
+The code documents its Dickson generators as the Peterson elements
+$\omega_n=(x_1\cdots x_k)\,\chi(P^n)\bigl((x_1\cdots x_k)^{-1}\bigr)$.  For odd
+$p$, formula $(\ast)$ is \emph{false} for the $\omega_n$; for example
+$P^1\omega_1=-\omega_2$ in $H^*(B\mathbb{Z}/3)$, while $(\ast)$ predicts
+$+\omega_2$.  Formula $(\ast)$ is correct for
+$\wt_n=(-1)^n\omega_n$.  This is proved at the generators (Theorem~\ref{thm:gen}) and checked
+by computer in other degrees.  Both the decomposition formula and the Cartan formula
+are insensitive to this sign change: $n$ is additive under products, so a
+Dickson monomial in the $\wt$'s picks up the same sign $(-1)^n$ as $\wt_n$
+itself.  So the decomposition formula is the same for $\omega$ and $\wt$, and
+the code's generators are consistent with $\wt_{n_j}$.  With that reading the
+module computed by the code is the correct one.  Only the identification
+``generator $=\omega_n$'' in the documentation should read
+``generator $=\wt_n$''.  For $p=2$ there is no difference.
+\end{remark}
+
+\section{Recollections}\label{sec:recollections}
+
+\subsection{Steenrod operations}
+Write $H=\F[x_1,\dots,x_k]$, with $|x_i|=1$ for $p=2$ and $|x_i|=2$ for $p$
+odd.  This is the polynomial part of $H^*(BV_k)$.  (For odd $p$,
+$H^*(BV_k)=E(y_1,\dots,y_k)\otimes H$ with $|y_i|=1$, and the Bockstein maps
+$y_i\mapsto x_i$.)  We use the Milnor basis $\{P^R\}$ of the subalgebra of
+$\A$ generated by the reduced powers.  Let $t=(t_1,t_2,\dots)$ be indeterminates
+and put $t_0=1$.  The \emph{total Milnor operation}
+\[
+  \Lambda_t(y)=\sum_R t^R P^R(y),\qquad t^R=\prod_j t_j^{r_j},
+\]
+is a ring homomorphism $H\to H[t]$, extended $\F[t]$-linearly.  It is
+determined by
+\[
+  \Lambda_t(x)=T(x):=\sum_{j\ge0} t_j\,x^{p^j}\qquad(x\in H^{|x_1|}).
+\]
+Since the elements $\Lambda_t$ are group-like, the conjugate operation
+$\Lambda'_t(y)=\sum_R t^R\chi(P^R)(y)$ is the inverse of $\Lambda_t$.  On a
+degree-one (resp.\ degree-two) class it is $\Lambda'_t(x)=T^{-1}(x)$, where
+$T^{-1}$ is the compositional inverse of the additive series $T$.
+(Indeed $\Lambda_t\bigl(\sum_j c_jx^{p^j}\bigr)=\sum_j c_j T(x)^{p^j}$ for
+scalars $c_j\in\F[t]$.)
+
+\subsection{Dickson invariants}
+Let $V\subset H$ be the $\F$-span of $x_1,\dots,x_k$.  The Dickson polynomial
+\[
+  f_V(X)\;=\;\prod_{v\in V}(X-v)\;=\;\sum_{i=0}^k c_{k,i}\,X^{p^i},\qquad c_{k,k}=1,
+\]
+is additive in $X$.  Its coefficients $c_{k,i}$ are the (signed) Dickson
+invariants.  In the classical notation $c_{k,i}=(-1)^{k-i}Q_{k,i}$, and
+$|c_{k,i}|=(p^k-p^i)|x_1|$.  Dickson's theorem says
+$\Dk=H^{\GL_k}=\F[c_{k,0},\dots,c_{k,k-1}]$~\cite{Dickson}.  Two facts about
+additive polynomials will be used repeatedly:
+\begin{itemize}
+\item[(D1)] An additive polynomial with $\F$-coefficients is $\F$-linear.  So it
+  vanishes on $V$ as soon as it vanishes on $x_1,\dots,x_k$.
+\item[(D2)] Over a domain, a monic polynomial of degree $p^k$ that vanishes on
+  the $p^k$ distinct elements of $V$ equals $f_V$.
+\end{itemize}
+Since $\Lambda_t$ is a ring homomorphism,
+\begin{equation}\label{eq:Lf}
+  \Lambda_t(f_V)(X)=\prod_{v\in V}\bigl(X-T(v)\bigr)=f_{T(V)}(X).
+\end{equation}
+
+\subsection{The M\`ui extension}
+For odd $p$, M\`ui~\cite{Mui} computed the full ring of invariants
+$H^*(BV_k)^{\GL_k}$.  It is generated over $\Dk$ by exterior-type classes
+$R_{k,i}$ ($0\le i<k$) of degree $2(p^k-1)-2p^i+1$, with $R_{k,i}^2=0$.  These
+are built from Moore-type determinants with one row of $y$'s; see
+also~\cite{KamekoMimura}.  The \code{DicksonAlgebra} class with
+\code{generic=True} adds odd generators $\tau_i$ of degree $1-2p^i$ to $\Dk$.
+Their degrees are those of $R_{k,i}/Q_{k,0}$.  The code treats them as images
+of Milnor's $\tau_i$; see Section~\ref{sec:whole}.  This note concentrates on
+the polynomial part~$\Dk$.
+
+\section{Peterson elements}\label{sec:peterson}
+
+Let $S(z)=\sum_{j\ge0}z^{p^j}$.  This is the compositional inverse of the
+additive polynomial $z\mapsto z-z^p$, i.e.
+\begin{equation}\label{eq:S}
+  S(z)-S(z)^p=z .
+\end{equation}
+
+\begin{definition}\label{def:peterson}
+Let $e=x_1\cdots x_k$.  For $n\ge0$ the \emph{Peterson element}
+$\omega_n\in H$ is
+\[
+  \omega_n=e\cdot\chi(P^n)(e^{-1}).
+\]
+Here $e^{-1}$ lives in the localisation $H[e^{-1}]$, on which $\A$ acts by the
+Cartan formula.  The \emph{normalised} Peterson element is
+$\wt_n=(-1)^n\omega_n$.  It has degree $(p-1)n|x_1|$.  (Code:
+\code{PetersonPolynomials.omega}, with \code{\_omega\_safe} implementing the
+definition.)
+\end{definition}
+
+For $p=2$ these are the elements studied by Hung and
+Peterson~\cite[\S2]{HungPeterson98}.
+
+\begin{proposition}\label{prop:monomials}
+\begin{enumerate}
+\item In the completion of $H$,
+\[
+  \sum_{n\ge0}\wt_n\;=\;\prod_{i=1}^k\frac{x_i}{S(x_i)}\;=\;\prod_{i=1}^k\bigl(1-S(x_i)^{p-1}\bigr).
+\]
+\item Call $a\ge0$ \emph{admissible} if $a=0$ or the base-$p$ digit sum of $a$
+is exactly $p-1$.  For admissible $a=\sum_j\varepsilon_jp^j$, put
+$\varepsilon(a)!=\prod_j\varepsilon_j!$.  Then
+\[
+  \wt_n\;=\sum_{\substack{a_1+\dots+a_k=(p-1)n\\ a_i\ \text{admissible}}}
+  \ \prod_{i=1}^k\frac{1}{\varepsilon(a_i)!}\;x_1^{a_1}\cdots x_k^{a_k}.
+\]
+For $p=2$ the admissible numbers are $0$ and the powers of $2$, and all
+coefficients are $1$.  This recovers the Hung--Peterson formula.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) Apply $\Lambda'_t$ with $t=(-1,0,0,\dots)$.  Then
+$T(x)=x-x^p$, so $\Lambda'_t(x)=T^{-1}(x)=S(x)$ by~\eqref{eq:S}.  Hence
+$\sum_n(-1)^n\chi(P^n)(e^{-1})=\Lambda'_t(e^{-1})=\prod_iS(x_i)^{-1}$.  Multiply
+by $e$ and take the homogeneous component of degree $(p-1)n|x_1|$.  The second
+equality is $z/S(z)=(S(z)-S(z)^p)/S(z)=1-S(z)^{p-1}$.
+
+(2) Expand $S(z)^{p-1}=\sum\binom{p-1}{\varepsilon_0,\varepsilon_1,\dots}
+z^{\sum\varepsilon_jp^j}$ over $\sum\varepsilon_j=p-1$.  Different
+$\varepsilon$ give different exponents, since there are no carries.  By Wilson's
+theorem $-\binom{p-1}{\varepsilon}=-(p-1)!/\varepsilon!=1/\varepsilon!$ in
+$\F$.
+\end{proof}
+
+\begin{example}
+For $p=3$, $k=2$ we get $\wt_1=-(x_1^2+x_2^2)$ and
+$\wt_3=-(x_1^6+x_1^4x_2^2+x_1^2x_2^4+x_2^6)=c_{2,1}$.  Also
+$\wt_4=x_1^6x_2^2+x_1^4x_2^4+x_1^2x_2^6=c_{2,0}$.  The element $\wt_1$ is
+not invariant.  In general $\wt_n$ need not be $\GL_k$-invariant.  For $p=2$,
+$k=3$, the non-invariant ones with $n\le 40$ are $n=1,2,3,5,9,17,33$.  For $p=3$,
+$k=2$ they are $n=1,2,5,14$.
+\end{example}
+
+\begin{theorem}[Dickson invariants are Peterson elements]\label{thm:A}
+For $0\le i\le k$,
+\[
+  c_{k,i}=\wt_{(p^k-p^i)/(p-1)} .
+\]
+\end{theorem}
+
+\begin{proof}
+Let $F(X)=\sum_{i=0}^k\wt_{(p^k-p^i)/(p-1)}X^{p^i}$.  It is additive with
+$\F$-coefficients and monic of degree $p^k$, because $\wt_0=1$.  By (D1), (D2)
+and symmetry it suffices to show $F(x_1)=0$.  Introduce a grading variable
+$w$ and put $\wt(w)=\sum_n\wt_nw^{(p-1)n}=\prod_l(1-S(x_lw)^{p-1})$.  The
+coefficient of $w^{p^k}$ in $\wt(w)S(x_1w)=\sum_{i\ge0}\wt(w)(x_1w)^{p^i}$
+is $\sum_{i\le k}\wt_{(p^k-p^i)/(p-1)}x_1^{p^i}=F(x_1)$.  By~\eqref{eq:S},
+\[
+  \wt(w)\,S(x_1w)=\bigl(S(x_1w)-S(x_1w)^p\bigr)\prod_{l\ge2}\bigl(1-S(x_lw)^{p-1}\bigr)
+  = x_1w\prod_{l=2}^k\bigl(1-S(x_lw)^{p-1}\bigr).
+\]
+Its $w^{p^k}$-coefficient is $x_1$ times a sum of monomials
+$x_2^{a_2}\cdots x_k^{a_k}$ with admissible $a_l$ and $\sum a_l=p^k-1$.  The
+digit sum is subadditive, so the digit sum of $\sum a_l$ is at most
+$(k-1)(p-1)$.  But $p^k-1$ has digit sum $k(p-1)$.  So there are no such
+monomials, and $F(x_1)=0$.
+\end{proof}
+
+\begin{remark}
+For $p=2$, Theorem~\ref{thm:A} is the formula of~\cite[\S2]{HungPeterson98}.
+In the code, generator number $j$ of \code{DicksonAlgebra($p$,$k$)} (counted
+from $1$, in the order \code{d\{deg\}} is listed) is $c_{k,k-j}=\wt_{n_j}$ with
+\[
+  n_j=p^{k-j}\,\frac{p^j-1}{p-1}=\frac{p^k-p^{k-j}}{p-1}.
+\]
+This is computed in \code{\_left\_steenrod\_coaction\_milnor\_gen}.  For example
+\code{d4,d6,d7} for $p=2$, $k=3$ are $\wt_4,\wt_6,\wt_7$, and \code{d12,d16} for
+$p=3$, $k=2$ are $\wt_3=c_{2,1}=-Q_{2,1}$ and $\wt_4=c_{2,0}=Q_{2,0}$.
+\end{remark}
+
+\section{The algorithm}\label{sec:algorithm}
+
+\subsection{Decomposing Peterson elements}
+Let $\Dperf$ be the perfect closure of $\Dk$, i.e.\ $\Dk$ with all $p$-power
+roots of its elements adjoined.  Put
+\[
+  q_j=c_{k,k-j}^{\,p^{-(k-j)}}\in\Dperf\quad(0\le j\le k),\qquad
+  \varphi(u)=\sum_{j=0}^k q_j\,u^{p^j},
+\]
+so $q_0=1$ and $q_k=c_{k,0}$.  Since $\varphi(u)=u+O(u^p)$ is additive, it has
+an additive compositional inverse $\psi(w)=w+O(w^p)$.
+
+\begin{definition}
+For $n\ge0$ and $m=(p-1)n$ let
+\begin{equation}\label{eq:Omega}
+  \Omega_n=\coef{u^m}\Bigl(\frac{u}{\varphi(u)}\Bigr)^{m}
+  =\sum_{R}\binom{-m}{|R|}\binom{|R|}{r_1,r_2,\dots,r_k}\prod_{j=1}^k q_j^{\,r_j}\ \in\Dperf ,
+\end{equation}
+where the sum runs over $R=(r_1,\dots,r_k)$ with $\sum_jr_j(p^j-1)=m$.
+\end{definition}
+
+This is exactly what \code{PetersonPolynomials.decompose} and
+\code{DicksonAlgebra.peterson} compute.  The Milnor basis enumerates the
+exponent vectors $R$.  The term $q^R$ is the Dickson monomial
+$\prod_j c_{k,k-j}^{\,r_j/p^{k-j}}$.  When a term with nonzero coefficient
+has $p^{k-j}\nmid r_j$, the element lies in $\Dperf\setminus\Dk$ and the code
+raises \code{ValueError}.  Terms with $r_j\ne0$ for some $j>k$ are dropped,
+which is consistent with $q_j=0$ for $j>k$.
+
+\begin{proposition}[Lagrange inversion]\label{prop:lagrange}
+$\displaystyle\sum_{n\ge0}\Omega_n\,w^{(p-1)n}=\frac{w}{\psi(w)}$.
+\end{proposition}
+
+\begin{proof}
+Lagrange inversion in residue form holds over any commutative
+ring~\cite{Gessel}.  It says $\coef{w^m}H(\psi(w))=\coef{u^m}H(u)\varphi'(u)(u/\varphi(u))^{m+1}$.
+Here $\varphi'=1$ because $\varphi$ is additive.  Take $H(u)=\varphi(u)/u$.
+Also, $u/\varphi(u)$ is a series in $u^{p-1}$.
+\end{proof}
+
+\begin{theorem}\label{thm:Aomega}
+$\Omega_{n_j}=c_{k,k-j}$ for $0\le j\le k$.  In particular the generators
+satisfy $\Omega_{n_j}=\wt_{n_j}$.
+\end{theorem}
+
+\begin{proof}
+Put $\Omega(w)=w/\psi(w)$.  As in the proof of Theorem~\ref{thm:A},
+$\sum_j\Omega_{n_j}X^{p^{k-j}}=\coef{w^{p^k}}\Omega(w)S(Xw)$.  With
+$H(u)=\frac{\varphi(u)}{u}S(X\varphi(u))$, Lagrange inversion turns this into
+\[
+  \coef{u^{p^k}}\,S\bigl(X\varphi(u)\bigr)\Bigl(\frac{u}{\varphi(u)}\Bigr)^{p^k}
+  =\coef{u^{p^k}}\,S\bigl(X\varphi(u)\bigr)\cdot\bigl(1+\textstyle\sum_{j\ge1}q_j^{p^k}u^{p^k(p^j-1)}\bigr)^{-1}.
+\]
+The second factor is $1$ plus terms of $u$-degree $\ge p^k$.  The first has no
+constant term.  So only the constant $1$ contributes, and we get
+$\coef{u^{p^k}}\sum_aX^{p^a}\varphi(u)^{p^a}=\sum_{a+j=k}q_j^{p^a}X^{p^a}=f_V(X)$.
+\end{proof}
+
+\begin{conjecture}\label{conj:B}
+If $\wt_n$ is $\GL_k$-invariant, then $\wt_n=\Omega_n$.
+\end{conjecture}
+
+By Theorem~\ref{thm:Aomega} the conjecture holds at the generator degrees
+$n=n_j$.  It has been verified in all cases listed in Table~\ref{tab:checks}.
+The algorithm itself only needs the elements $\Omega_n$, so it does not depend
+on Conjecture~\ref{conj:B}.  The conjecture only matters for relating the
+code's \code{peterson(n)} to the polynomial $\wt_n$ in other degrees.
+
+\subsection{The action on Peterson elements}
+The coefficient $a(R,n)$ of~\eqref{eq:aRn} is what
+\code{\_\_action\_exponents} computes for the ordinary action.  The recursion
+\code{\_\_action\_exponents2} produces the multinomial
+$\binom{N(R)}{pr_1,p^2r_2,\dots}$ as an iterated product of binomial
+coefficients, and \code{binom\_modp(p, psum+n*(p-1)-esum, psum)} is
+$\binom{(p-1)(n+d(R))}{N(R)}$.  The operation $\Lambda_t$ extends uniquely to
+$\Dperf$ (with values in $\Dperf[t^{1/p^\infty}]$).  We let $P^R$ act on
+$\Dperf$ by taking the coefficient of the integral monomial $t^R$.
+
+\begin{conjecture}[Action formula]\label{conj:C}
+For all $k$, $n$ and $R$,
+\[
+  P^R\,\Omega_n=a(R,n)\,\Omega_{n+d(R)},\qquad
+  \chi(P^R)\,\Omega_n=\binom{-(p-1)n}{N(R)}\binom{N(R)}{pr_1,p^2r_2,\dots}\,\Omega_{n+d(R)}.
+\]
+\end{conjecture}
+
+The second formula is the one the code uses for the conjugate action
+(\code{isconjugate=True}).  The algorithm needs the first formula only at the
+generator degrees $n=n_j$, where $\Omega_{n_j}=c_{k,k-j}$:
+\begin{equation}\label{eq:gen}
+  P^R c_{k,k-j}=a(R,n_j)\,\Omega_{n_j+d(R)} .
+\end{equation}
+This case is proved in Theorem~\ref{thm:gen}.  If the coefficient is nonzero,
+then $\Omega_{n_j+d(R)}=P^Rc_{k,k-j}/a(R,n_j)$ lies in $\Dk$, so the call to
+\code{peterson} cannot fail.
+
+\begin{example}
+For $p=3$, $k=2$, $R=(0,1)$ and $n=n_1=3$ we have $d(R)=4$ and $N(R)=9$.  The
+coefficient is $a(R,3)=\binom{14}{9}\equiv1$, so
+$P(0,1)c_{2,1}=\Omega_7=c_{2,1}c_{2,0}$.  The code prints
+\code{P(0,1)*d12 = d12*d16}.  For $R=(1)$ the coefficient is
+$\binom{8}{3}\equiv2$, so $P^1c_{2,1}=2c_{2,0}$, matching
+\code{P(1)*d12 = 2*d16}.  In classical notation this reads
+$P^1Q_{2,1}=Q_{2,0}$.
+\end{example}
+
+\section{Proofs and evidence}\label{sec:proof}
+
+\subsection{A generating-function form}
+Let $s_j=t_j^{1/p^j}$ and let
+\[
+  T^*(w)=\sum_{j\ge0}(t_jw)^{p^{-j}}=w+\sum_{j\ge1}s_j\,w^{p^{-j}}
+\]
+be the adjoint of $T$.  We work with formal sums of monomials
+$x^\alpha t^\epsilon w^\beta$ with $\epsilon\in\mathbb{Z}[1/p]_{\ge0}^{J}$ and
+$\beta\in\mathbb{Z}[1/p]$, where each $x$-degree has only finitely many terms.
+These form a ring, and every expression below has only finitely many terms in
+each $x$-degree.  Let $\pi$ be the projection onto monomials with integral
+$t$-exponents.  It is linear over elements with integral $t$-exponents.
+
+\begin{lemma}\label{lem:G}
+Let $(\Omega_M)_{M\ge0}$ be elements of degree $(p-1)M$ in a graded
+commutative $\F$-algebra, and $\Omega(w)=\sum_M\Omega_Mw^{(p-1)M}$.  Then
+\[
+  \pi\Bigl[\sum_M\Omega_M\,T^*(w)^{(p-1)M}\Bigr]=\sum_{n\ge0}\sum_R a(R,n)\,t^R\,\Omega_{n+d(R)}\,w^{(p-1)n}.
+\]
+\end{lemma}
+
+\begin{proof}
+Write $T^*(w)=w(1+\sum_{j\ge1}\vartheta_j)$ with
+$\vartheta_j=s_jw^{p^{-j}-1}$.  Then
+$T^*(w)^{(p-1)M}=w^{(p-1)M}\sum_A\binom{(p-1)M}{|A|}\binom{|A|}{A}\vartheta^A$.
+The $t_j$-exponent of $\vartheta^A$ is $A_j/p^j$, which is integral iff
+$A_j=p^jr_j$.  In that case $\vartheta^A=t^Rw^{-(p-1)d(R)}$.  Put
+$n=M-d(R)$.  Terms with $n<0$ vanish, because then
+$(p-1)M<N(R)-|R|\le N(R)$.
+\end{proof}
+
+On $\Dperf$ the total operation has fractional $t$-exponents, since
+$\Lambda_t(y^{1/p})=\Lambda_t(y)^{1/p}$.  For example, for $p=2$, $k=2$,
+$\Lambda_t(c_{2,1}^{1/2})$ contains $t_1^{1/2}c_{2,0}^{1/2}$.  The operation $P^R$
+is the coefficient of the integral monomial $t^R$.  So Conjecture~\ref{conj:C}
+(first formula) says exactly that
+\begin{equation}\label{eq:F2}
+  \pi\bigl[\Lambda_t\,\Omega(w)\bigr]=\pi\bigl[\Omega(T^*w)\bigr],\qquad \Omega(w)=\frac{w}{\psi(w)} .
+\end{equation}
+In degrees where $\Omega_n\in\Dk$ (in particular for $k=1$, and at the generator
+degrees $n_j$), $\Lambda_t\Omega_n$ has integral exponents and the $\pi$ on the
+left can be dropped.  Informally: up to terms with fractional $t$-exponents, the total Steenrod
+operation acts on the Peterson series through the adjoint $T^*$.  The
+mechanism is the identity
+\begin{equation}\label{eq:adj}
+  S\bigl(x\,T^*(w)\bigr)=S\bigl(T(x)\,w\bigr)+B(x,w),\qquad
+  B(x,w)=\sum_{j\ge1}\sum_{a<j}x^{p^a}(t_jw)^{p^{a-j}},
+\end{equation}
+obtained by splitting $\sum_{a,j}x^{p^a}(t_jw)^{p^{a-j}}$ according to whether
+$a\ge j$.  Every monomial of $B$ has $t$-exponent $p^{-c}\varepsilon_j$ with
+$c\ge1$, where $\varepsilon_j$ is the $j$-th unit vector.
+
+\begin{theorem}\label{thm:k1}
+Conjecture~\ref{conj:C} (first formula) holds for $k=1$.  Hence the algorithm
+of Section~\ref{sec:algorithm} is correct for $D_1$.
+\end{theorem}
+
+\begin{proof}
+For $k=1$, $\Omega_n=\wt_n$, since both equal
+$(-1)^n\binom{-(p-1)n}{n}x^{(p-1)n}$.  By
+Proposition~\ref{prop:monomials}, $\Omega(w)=1-S(xw)^{p-1}$.  Therefore
+$\Lambda_t\Omega(w)=1-S(T(x)w)^{p-1}$ and $\Omega(T^*w)=1-S(xT^*w)^{p-1}$.
+By~\eqref{eq:adj},
+\[
+  S(xT^*w)^e=\sum_{i=0}^e\binom ei S(T(x)w)^{e-i}B^i .
+\]
+For $1\le i\le e\le p-1$, every monomial of $B^i$ has $t$-exponent vector
+equal to a sum of $i$ vectors of the form $p^{-c}\varepsilon_j$ with $c\ge1$.
+Each coordinate of such a sum is either $0$ or lies in $(0,(p-1)/p]$, and at
+least one coordinate is nonzero, so the sum is not integral.  Hence
+$\pi(B^i)=0$, and since $S(T(x)w)$ is integral,
+$\pi(S(xT^*w)^e)=S(T(x)w)^e$.  So
+$\pi[\Omega(T^*w)]=\Lambda_t\Omega(w)$.  Now compare coefficients using
+Lemma~\ref{lem:G}.
+\end{proof}
+
+\subsection{The general case at the generators}
+For $k\ge2$ the argument of Theorem~\ref{thm:k1}, applied to
+$\prod_l(1-S(x_lT^*w)^{p-1})$, fails.  Fractional pieces coming from
+\emph{different} factors can combine into integral monomials.  These cross
+terms do not vanish in general; they are exactly why $(\ast)$ fails for
+non-invariant $\wt_n$ (for example $p=2$, $k=2$, $n=1$, $R=(1)$).  At the
+generators we can nevertheless prove the formula.  The first step reduces it to
+a single identity.
+
+\begin{proposition}\label{prop:reduction}
+Put
+\[
+  F_t(X)=\coef{w^{p^k}}\;\pi\bigl[\Omega(T^*w)\bigr]\,S(Xw)
+  =\sum_{j=0}^k\Bigl(\sum_R a(R,n_j)\,t^R\,\Omega_{n_j+d(R)}\Bigr)X^{p^{k-j}} .
+\]
+Then~\eqref{eq:gen} holds for all $j$ and $R$ if and only if
+$F_t\bigl(T(x_1)\bigr)=0$.
+\end{proposition}
+
+\begin{proof}
+The two expressions for $F_t$ agree by Lemma~\ref{lem:G}.  For $j=0$ we have
+$a(R,0)=\binom{N(R)-|R|}{N(R)}=0$ unless $R=0$, so $F_t$ is additive and monic
+of degree $p^k$, with coefficients in $\Dperf[t]$.  It is symmetric in the
+$x_i$.  So if $F_t(T(x_1))=0$, then $F_t$ vanishes on $T(V)$, and by (D2)
+$F_t=f_{T(V)}=\Lambda_tf_V$ by~\eqref{eq:Lf}.  Comparing coefficients
+gives~\eqref{eq:gen}.  The converse is the same computation read backwards.
+\end{proof}
+
+The rest of this subsection proves $F_t(T(x_1))=0$.  We need three tools: a
+factorisation of the Peterson series, a bound on its support, and an explicit
+formula for $F_t(T(X))$.  Throughout, $\alpha(m)$ denotes the base-$p$ digit
+sum of $m\ge0$.  Recall that $\alpha(a+b)\le\alpha(a)+\alpha(b)$, with
+equality iff the addition has no carries.  By Lucas' theorem, a multinomial
+coefficient $\binom{a_1+\dots+a_m}{a_1,\dots,a_m}$ is nonzero mod $p$ iff the
+addition $a_1+\dots+a_m$ has no carries.  Write
+$g(z)=1-S(z)^{p-1}=z/S(z)$ and $\gamma_m=\coef{z^m}g(z)$.  By
+Proposition~\ref{prop:monomials}, $\gamma_m\ne0$ only if $m=0$ or
+$\alpha(m)=p-1$.
+
+\emph{Factorisation.}  Let $0\ne v\in V$, $f_v(X)=X^p-v^{p-1}X$ and
+$U=f_v(V)^{1/p}$, an $\F$-space of rank $k-1$.  Put $\psi_v(w)=S(vw)/v$.
+
+\begin{lemma}\label{lem:factor}
+$\Omega_V(w)=g(vw)\cdot\Omega_U\bigl(\psi_v(w)\bigr)$.
+\end{lemma}
+
+\begin{proof}
+By (D2), $f_V=f_{f_v(V)}\circ f_v$.  Write additive series as twisted
+polynomials in the Frobenius $F$, with adjoint $(aF^i)^*=F^{-i}a$ and
+$(AB)^*=B^*A^*$.  Then $\varphi_V=f_V^*F^k$, and
+\[
+  \varphi_V=f_v^*\,f_{f_v(V)}^*\,F^k=(f_v^*F)\circ\bigl(F^{-1}(f_{f_v(V)}^*F^{k-1})F\bigr)
+  =\varphi_{\langle v\rangle}\circ\varphi_U ,
+\]
+because conjugating by $F$ takes $p$-th roots of the coefficients.  Hence
+$\psi_V=\psi_U\circ\psi_{\langle v\rangle}$ and
+$w/\psi_V(w)=\frac{w}{\psi_{\langle v\rangle}(w)}\cdot
+\frac{\psi_{\langle v\rangle}(w)}{\psi_U(\psi_{\langle v\rangle}(w))}$.  For rank
+one, $\varphi_{\langle v\rangle}(u)=u-v^{p-1}u^p$, so
+$\psi_{\langle v\rangle}=\psi_v$ and $w/\psi_v(w)=vw/S(vw)=g(vw)$.
+\end{proof}
+
+\begin{lemma}[Support]\label{lem:support}
+Let $\eta(w)=\sum_{a\ge0}e_aw^{p^a}$ be any additive series.  Then
+$\coef{w^E}\,\Omega_V(\eta(w))=0$ unless $\alpha(E)\le k(p-1)$.
+\end{lemma}
+
+\begin{proof}
+Induction on $k$; for $k=0$, $\Omega_V=1$.  By Lemma~\ref{lem:factor},
+$\Omega_V(\eta(w))=g(v\eta(w))\,\Omega_U(\eta'(w))$ with $\eta'=\psi_v\circ\eta$
+additive.  The first factor is $1-S(v\eta(w))^{p-1}$, and $S(v\eta(w))$ is
+additive in $w$.  So the first factor is supported in exponents that are $0$ or
+a sum of $p-1$ powers of $p$, i.e.\ of digit sum $\le p-1$.  By induction the
+second factor is supported in digit sum $\le(k-1)(p-1)$.  Now use
+subadditivity of $\alpha$.
+\end{proof}
+
+\begin{lemma}\label{lem:FT}
+For $R$ put $D_R=p^k+(p-1)d(R)$, and write $\coef{y^{pR}}$ for the coefficient
+of $\prod_jy_j^{p^jr_j}$.  Put
+\[
+  b_R=\coef{y^{pR}}\bigl(1+\textstyle\sum_jy_j\bigr)^{D_R},\qquad
+  \delta_{R,e}=\coef{y^{pR}}\Bigl(\sum_{j>e}y_j^{p^e}\Bigr)\bigl(1+\textstyle\sum_jy_j\bigr)^{D_R-p^e}.
+\]
+Then
+\[
+  F_t\bigl(T(X)\bigr)=\sum_Rt^R\coef{w^{D_R}}\,\Omega(w)\,B_R(Xw),\qquad
+  B_R(z)=b_R\,S(z)-\sum_{e\ge0}\delta_{R,e}\,z^{p^e}.
+\]
+\end{lemma}
+
+\begin{proof}
+Since $S(T(X)w)$ has integral $t$-exponents,
+$F_t(T(X))=\pi\coef{w^{p^k}}\Omega(T^*w)\,S(T(X)w)$.
+By~\eqref{eq:adj}, $S(T(X)w)=S(XT^*w)-B(X,w)$.  The first part is
+$\pi\coef{w^{p^k}}H(T^*w)$ with $H(w)=\Omega(w)S(Xw)$.  Expanding as in
+Lemma~\ref{lem:G} gives $\sum_Rt^Rb_R\coef{w^{D_R}}H(w)$.  For the second
+part, take a monomial $X^{p^a}(t_jw)^{p^{a-j}}$ of $B$ (so $a<j$) times the
+term $\Omega_M w^{(p-1)M}\binom{(p-1)M}{|A|}\binom{|A|}{A}\vartheta^A$ of
+$\Omega(T^*w)$.  Its $t$-exponents are integral iff $A_i=p^ir_i$ for $i\ne j$
+and $A_j=p^jr_j-p^a$ with $r_j\ge1$.  Then its $w$-exponent is
+$(p-1)M-(p-1)d(R)+p^a$, which equals $p^k$ iff $(p-1)M=D_R-p^a$.  Summing the
+coefficients over $j>a$ gives $\delta_{R,a}$.  So the second part is
+$-\sum_Rt^R\sum_a\delta_{R,a}X^{p^a}\Omega_{(D_R-p^a)/(p-1)}=-\sum_Rt^R\coef{w^{D_R}}\Omega(w)\sum_a\delta_{R,a}(Xw)^{p^a}$.
+\end{proof}
+
+\begin{lemma}[Digit sums]\label{lem:digits}
+Let $R$ be arbitrary, $e\ge0$ and $D=D_R$.
+\begin{enumerate}
+\item If $\coef{y^{pR}}(1+\sum_jy_j)^{D-1}\ne0$, then $\alpha(D-1)\ge k(p-1)$.
+\item If $\delta_{R,e}\ne0$, then $\alpha(D-p^e)>k(p-1)$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+Recall $D-N(R)=p^k-|R|$.  (1) The coefficient is
+$\binom{D-1}{N(R)}\binom{N(R)}{pR}$.  If it is nonzero, the parts $p^jr_j$ add
+without carries, so $\alpha(N(R))=\sum_j\alpha(r_j)\ge\alpha(|R|)$.  Moreover
+$D-1-N(R)=p^k-1-|R|\ge0$ and $N(R)+(p^k-1-|R|)$ has no carries.  Hence
+$\alpha(D-1)=\alpha(N(R))+k(p-1)-\alpha(|R|)\ge k(p-1)$.
+
+(2) Some summand $\binom{D-p^e}{N(R)-p^e}\binom{N(R)-p^e}{pR-p^e\varepsilon_j}$
+with $j>e$ and $r_j\ge1$ is nonzero.  The parts $p^ir_i$ ($i\ne j$) and
+$p^jr_j-p^e=p^e\bigl(p^{j-e}(r_j-1)+p^{j-e}-1\bigr)$ add without carries, so
+\[
+  \alpha(N(R)-p^e)=\sum_{i\ne j}\alpha(r_i)+\alpha(r_j-1)+(j-e)(p-1).
+\]
+Further $D-N(R)=p^k-|R|$ with $1\le|R|\le p^k$, and
+$\alpha(p^k-|R|)=k(p-1)-\alpha(|R|-1)$.  The binomial coefficient is nonzero, so
+\[
+  \alpha(D-p^e)=\alpha(N(R)-p^e)+k(p-1)-\alpha(|R|-1)\ge(j-e)(p-1)+k(p-1)>k(p-1),
+\]
+since $\alpha(|R|-1)\le\sum_{i\ne j}\alpha(r_i)+\alpha(r_j-1)$.
+\end{proof}
+
+\begin{theorem}[Action on the generators]\label{thm:gen}
+Formula~\eqref{eq:gen} holds for all $k$, $j$ and $R$:
+\[
+  P^R c_{k,k-j}=a(R,n_j)\,\Omega_{n_j+d(R)} .
+\]
+\end{theorem}
+
+\begin{proof}
+By Proposition~\ref{prop:reduction} we must show $F_t(T(v))=0$ for $v=x_1$.
+By Lemma~\ref{lem:factor}, $\Omega_V(w)=g(vw)G(w)$ with
+$G(w)=\Omega_U(\psi_v(w))$.  Since $g(z)S(z)=z$,
+\[
+  g(z)B_R(z)=\sum_EG_{R,E}\,z^E,\qquad
+  G_{R,E}=b_R\,[E=1]-\sum_{e\ge0}\delta_{R,e}\,\gamma_{E-p^e}.
+\]
+By Lemma~\ref{lem:FT}, the coefficient of $t^R$ in $F_t(T(v))$ is
+$\sum_EG_{R,E}\,v^E\coef{w^{D_R-E}}G(w)$.  We show that every term vanishes.
+Suppose $\coef{w^{D_R-E}}G\ne0$.  By Lemma~\ref{lem:support} (rank $k-1$,
+$\eta=\psi_v$), $\alpha(D_R-E)\le(k-1)(p-1)$.
+\begin{itemize}
+\item If $E=1$, then
+  $G_{R,1}=b_R-\delta_{R,0}=\coef{y^{pR}}(1+\sum y_j)^{D_R-1}$.  If this were
+  nonzero, Lemma~\ref{lem:digits}(1) would give
+  $\alpha(D_R-1)\ge k(p-1)>(k-1)(p-1)$.  This is a contradiction.
+\item If $E>1$, a nonzero summand $\delta_{R,e}\gamma_{E-p^e}$ has
+  $\alpha(E-p^e)\le p-1$.  Hence
+  $\alpha(D_R-p^e)\le\alpha(D_R-E)+\alpha(E-p^e)\le k(p-1)$, contradicting
+  Lemma~\ref{lem:digits}(2).
+\end{itemize}
+So $G_{R,E}=0$ whenever $\coef{w^{D_R-E}}G\ne0$, and $F_t(T(v))=0$.
+\end{proof}
+
+\begin{corollary}\label{cor:algo}
+The algorithm of Section~\ref{sec:algorithm} computes the correct
+$\A$-action on $\Dk$ for all $p$ and $k$.  Moreover, if $a(R,n_j)\ne0$, then
+$\wt_{n_j+d(R)}=\Omega_{n_j+d(R)}$.  So Conjecture~\ref{conj:B} holds in all
+degrees that the algorithm uses.
+\end{corollary}
+
+\begin{proof}
+The first claim follows from Theorem~\ref{thm:gen} and Section~\ref{sec:whole}.
+For the second, run the same proof with the polynomial family $\wt_n$ in
+place of $\Omega_n$.  Lemmas~\ref{lem:G} and~\ref{lem:FT} hold for any family.
+The factorisation is $\wt(w)=g(x_1w)\prod_{l\ge2}g(x_lw)$ (Proposition~\ref{prop:monomials}),
+and the second factor is supported in digit sum $\le(k-1)(p-1)$.  So
+$P^Rc_{k,k-j}=a(R,n_j)\,\wt_{n_j+d(R)}$ as well.
+\end{proof}
+
+For single powers $P^i$, Theorem~\ref{thm:gen} recovers the known formulas of
+Hung~\cite{Hung91} ($p=2$) and Hung--Minh~\cite{HungMinh} (odd $p$; see
+also~\cite[Thm.~3.4]{Sum21}).  We compared these with the code's output for all
+$s$ and $i$ for $p=2$, $k=3,4$; $p=3$, $k=2,3$; and $p=5,7$, $k=2$, using
+$c_{k,s}=(-1)^{k-s}Q_{k,s}$.  All 298 values agree.
+
+What remains open is Conjecture~\ref{conj:C} in degrees $n$ other than the
+generator degrees, and the conjugate formula.  Neither is needed for the
+algorithm.
+
+\subsection{Computer verification}
+All checks below compute the action directly on polynomials in
+$\F[x_1,\dots,x_k]$, by substituting $x_i\mapsto T(x_i)$ (or
+$x_i\mapsto T^{-1}(x_i)$ for $\chi$) and extracting coefficients.  They are
+independent of yacop's implementation.  Every check that was run succeeded.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+statement & range & cases\\
+\midrule
+$(\ast)$ for $\wt_n$, $k=1$ (exact formula) & $p=3,5,7$, $n<60$ & 1350\\
+$(\ast)$, invariant $\wt_n$ & $p=2$: $k=2,3$; $p=3$: $k\le3$; $p=5,7$: $k=2$ & 682\\
+conjugate formula, invariant $\wt_n$ & $p=2$: $k=2,3$; $p=3$: $k\le3$; $p=5$: $k\le2$ & 321\\
+Conjecture~\ref{conj:B} & $p=2$: $k=3,4$, $n\le40$; $p=3$: $k=2$, $n\le 40$; & \\
+  & \quad $k=3$, $n\le30$; $p=5$: $n\le40$; $p=7$: $n\le30$ ($k=2$) & 143\\
+$(\ast)$ for $\Omega_n$, all $n$ (in $\Dperf$) & $p=2$: $k=2,3$; $p=3$: $k=2$ & 134\\
+$(\ast)$ for $P^{\Delta_j}=P(0,\dots,0,1)$, invariant $\wt_n$ & $p=2$: $k=3$ ($j=2,3$), $k=4$ ($j=2$); & \\
+  & \quad $p=3$: $k=3$, $j=2$; $p=5$: $k=2$, $j=2$ & 75\\
+$G_{R,E}=0$ when $\alpha(D_R-E)\le(k-1)(p-1)$ & $p=2,3,5$; $k\le4$; $\ell(R)\le3$, $r_j\le p+1$ & $\approx10^6$\\
+\bottomrule
+\end{tabular}
+\caption{Computer checks of the action formula.  ``Cases'' counts pairs
+$(n,R)$ (or values of $n$ for the decomposition), with $R$ ranging over small
+Milnor indices.}\label{tab:checks}
+\end{table}
+
+The module doctests also check associativity $(ab)m=a(bm)$ of the action the
+code defines (\code{\_manual\_test\_left\_action}).
+
+\section{The action on the whole algebra}\label{sec:whole}
+
+The code computes $P^R(m)$ for a monomial $m$ through a \emph{coaction}: a list
+of triples $(y,Q,R')$, standing for $y\otimes\xi^{R'}$ (and exterior
+$\tau^Q$).  Then $P^R(m)$ is the sum of the $y$ with $R'=R$
+(\code{\_act\_from\_coact} in \code{algebra\_base.py}).  The ingredients are:
+
+\begin{enumerate}
+\item \emph{Generators.}  For $c_{k,k-j}$ the coaction is
+  $\sum_R a(R,n_j)\,\Omega_{n_j+d(R)}\otimes\xi^R$, truncated to the $R$ that
+  are dominated by the requested operation.
+\item \emph{Powers.}  The function \code{\_factor\_key} writes an exponent in
+  base $p$, $g^{e}=\prod_u (g^{p^u})^{\varepsilon_u}$ with $0\le\varepsilon_u<p$.
+  The coaction of $g^{p^u}$ is that of $g$ with everything raised to the $p^u$-th
+  power, since $P^R(y^{p^u})=(P^{R/p^u}y)^{p^u}$, or $0$ if $p^u\nmid R$.  For
+  $\varepsilon_u>1$ a multinomial expansion is used (\code{\_multinomials}).
+\item \emph{Products.}  Coactions of factors are multiplied
+  (\code{\_coaction\_helper}).  This is the Cartan formula
+  $P^R(yz)=\sum_{R'+R''=R}P^{R'}(y)P^{R''}(z)$, i.e.\ multiplicativity of
+  $\Lambda_t$.
+\item \emph{Negative powers.}  In the localised algebra (the elements
+  \code{\_zetapower}, \code{\_xipower} involve $c_{k,0}^{-1}$), a negative
+  exponent $-e$ is written as $-p^u+(p^u-e)$, with $p^u$ larger than every
+  entry of $R$.  Then $c_{k,0}^{-p^u}$ is invariant under all relevant $P^{R'}$.
+\item \emph{M\`ui generators.}  For $\tau_n$ the code uses Milnor's coproduct
+  $\Delta\tau_n=\tau_n\otimes1+\sum_i\xi_{n-i}^{p^i}\otimes\tau_i$.  It reads
+  $\xi_j$ as the element \code{\_xipower(j)} of the localised Dickson algebra,
+  defined by $\xi_j=-\sum_{i<j}\xi_i\,\zeta_{j-i}^{p^i}$ with
+  $\zeta_i=c_{k,i}/c_{k,0}$.  We have not verified this part independently.
+  The source marks the corresponding conjugate formula with a \code{FIXME}.
+\end{enumerate}
+Because $\Dk$ is a polynomial algebra, (1)--(3) determine the action
+completely.  Together with Theorem~\ref{thm:gen} this proves that the $\Dk$
+part of the code is correct.  The code also offers an
+independent route, \code{admissible\_action}, through admissible matrices, and
+restriction maps $D_k\to D_{k'}$ for $k'<k$; these are not discussed here.
+
+\section{The dual Dickson algebras}\label{sec:dual}
+
+The class \code{DicksonDualSteenrodAlgebra($p$,$k$)} implements
+\[
+  \A_*(k)=\F[\xi_1,\dots,\xi_k]\otimes E(\tau_0,\dots,\tau_{k-1})\subset\A_* ,
+\]
+with the generators placed in negative degrees ($|\xi_j|=-2(p^j-1)$,
+$|\tau_j|=1-2p^j$).  The code prints the $\xi_j$ as \code{zeta[j]}.  Milnor's
+coproduct $\Delta\xi_n=\sum_i\xi_{n-i}^{p^i}\otimes\xi_i$ only involves
+indices $\le n$, and similarly for $\tau_n$.  So $\A_*(k)$ is a sub-bialgebra
+of~$\A_*$.  It is an $\A$-module algebra via
+$\theta\cdot y=\sum y_{(1)}\langle\theta,y_{(2)}\rangle$
+(\code{\_coproduct\_gen} and \code{\_left\_steenrod\_coaction\_milnor\_gen}).
+
+It is related to the Dickson algebras in two ways.
+
+\emph{(a) The localised Dickson algebra.}  The algebra map
+$\xi_i\mapsto c_{k,i}/c_{k,0}$ (\code{DicksonAlgebra.\_zetapower}) sends
+$\A_*(k)$'s polynomial part into $\Dk[c_{k,0}^{-1}]$ and preserves degrees.
+The code uses its conjugate (\code{\_xipower}) for the M\`ui generators, as
+explained in Section~\ref{sec:whole}.
+
+\emph{(b) Peterson elements are images of a canonical element of $\A_*$.}  Let
+$\xi(w)=\sum_j\xi_jw^{p^j}$ and $\zeta(w)=\sum_j\chi(\xi_j)w^{p^j}$.  These
+are compositional inverses of each other, because
+$\sum_i\chi(\xi_i)\xi_{n-i}^{p^i}=0$ for $n\ge1$.  Let
+$\mu\colon\A_*\to\Dperf$ be the algebra map with $\chi(\xi_j)\mapsto q_j$ for
+$j\le k$ and $\chi(\xi_j)\mapsto0$ for $j>k$.  Then $\mu(\zeta)=\varphi$,
+$\mu(\xi)=\psi$, and by Proposition~\ref{prop:lagrange}
+\[
+  \sum_n\Omega_n\,w^{(p-1)n}=\mu\Bigl(\frac{w}{\xi(w)}\Bigr)
+  =\mu\Bigl(\sum_R(-1)^{|R|}\binom{|R|}{R}\xi^R\,w^{(p-1)d(R)}\Bigr).
+\]
+The roots of $\varphi$ form an $\F$-subspace $Y$ of dimension $k$, in degree
+$-|x_1|$, of an algebraic closure.  Since $\varphi$ has linear coefficient $1$
+and top coefficient $c_{k,0}$, we have $\varphi=f_Y/c_0(Y)$ and
+$q_j=c_j(Y)/c_0(Y)$.  So, up to the conjugation $\chi$, $\mu$ is the map of (a)
+for the ``dual'' space $Y$ in place of $V$.  In this sense the Peterson elements of $V$ are the images of the
+canonical elements $\sum_{d(R)=n}(-1)^{|R|}\binom{|R|}{R}\xi^R\in\A_*(k)$ under
+the Dickson map of the dual space.  Equation~\eqref{eq:F2}, with the adjoint
+$T^*$, suggests that this duality is the natural setting for a proof of
+Conjecture~\ref{conj:C}.
+
+\begin{thebibliography}{99}
+\bibitem{Dickson} L.~E.~Dickson, \emph{A fundamental system of invariants of the
+general modular linear group with a solution of the form problem}, Trans.\ Amer.\
+Math.\ Soc.\ \textbf{12} (1911), 75--98.
+\bibitem{Gessel} I.~M.~Gessel, \emph{Lagrange inversion}, J.\ Combin.\ Theory
+Ser.\ A \textbf{144} (2016), 212--249.
+\bibitem{Hung91} N.~H.~V.~Hung, \emph{The action of the Steenrod squares on
+the modular invariants of linear groups}, Proc.\ Amer.\ Math.\ Soc.\ \textbf{113}
+(1991), 1097--1104.
+\bibitem{HungMinh} N.~H.~V.~Hung and P.~A.~Minh, \emph{The action of the mod $p$
+Steenrod operations on the modular invariants of linear groups}, Vietnam J.\
+Math.\ \textbf{23} (1995), 39--56.
+\bibitem{HungPeterson98} N.~H.~V.~Hung and F.~P.~Peterson, \emph{Spherical
+classes and the Dickson algebra}, Math.\ Proc.\ Cambridge Philos.\ Soc.\
+\textbf{124} (1998), 253--264.
+\bibitem{KamekoMimura} M.~Kameko and M.~Mimura, \emph{M\`ui invariants and Milnor
+operations}, arXiv:0903.4912.
+\bibitem{Milnor} J.~Milnor, \emph{The Steenrod algebra and its dual}, Ann.\ of
+Math.\ \textbf{67} (1958), 150--171.
+\bibitem{Mui} H.~M\`ui, \emph{Modular invariant theory and cohomology algebras of
+symmetric groups}, J.\ Fac.\ Sci.\ Univ.\ Tokyo Sect.\ IA Math.\ \textbf{22}
+(1975), 319--369.
+\bibitem{Sum} N.~Sum, \emph{Steenrod operations on the modular invariants},
+Kodai Math.\ J.\ \textbf{17} (1994), 585--595.
+\bibitem{Sum21} N.~Sum, \emph{Steenrod operations on the modular invariants},
+arXiv:2111.07073.
+\end{thebibliography}
+
+\end{document}
