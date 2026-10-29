@@ -43,10 +43,10 @@ them which generalises a formula of Hung and Peterson, and prove that the
 Dickson invariants are Peterson elements.  We extract the action formula from
 the code.  For odd $p$ it holds with the normalisation $\wt_n=(-1)^n\omega_n$,
 not with the one stated in the code's documentation.  We prove the formula
-on the Dickson generators for all $k$ and all Milnor basis elements.  This is
-exactly what the algorithm needs, so the algorithm is correct.  We also prove
-the formula for all Peterson elements when $k=1$, and report on computer
-verification of the remaining cases.  Finally we explain the auxiliary class
+for all Peterson elements, all $k$ and all Milnor basis elements.  In
+particular the algorithm is correct.  The code's formula for the conjugate
+action is reduced to a binomial identity that we verify by computer but do not
+prove.  Finally we explain the auxiliary class
 \code{DicksonDualSteenrodAlgebra}.
 \end{abstract}
 
@@ -87,13 +87,13 @@ where the second factor is a multinomial coefficient.  The code (functions
 \item Section~\ref{sec:algorithm} describes the algorithm.  The code's
   decomposition of Peterson elements into Dickson monomials is a Lagrange
   inversion formula (Proposition~\ref{prop:lagrange}).
-\item Section~\ref{sec:proof} proves $(\ast)$ at the Dickson generators for
-  all $k$ and $R$ (Theorem~\ref{thm:gen}).  So the algorithm is correct
-  (Corollary~\ref{cor:algo}).  It also proves $(\ast)$ for all $n$ when $k=1$
-  (Theorem~\ref{thm:k1}).  The remaining cases of $(\ast)$, other degrees $n$
-  for $k\ge2$ and the conjugate formula, are stated as
-  Conjecture~\ref{conj:C}.  They have been checked by computer in the cases of
-  Table~\ref{tab:checks}.
+\item Section~\ref{sec:proof} proves $(\ast)$ at the Dickson generators
+  (Theorem~\ref{thm:gen}), which shows that the algorithm is correct
+  (Corollary~\ref{cor:algo}).  It then proves $(\ast)$ in all degrees
+  (Theorem~\ref{thm:all}).  The conjugate formula used by the code is stated
+  as Conjecture~\ref{conj:C}.  It is reduced to a binomial identity
+  (Proposition~\ref{prop:conj}) that has been checked by computer, like the
+  other statements in Table~\ref{tab:checks}.
 \item Section~\ref{sec:whole} explains how the code obtains the action on all
   of $\Dk$ (and on the M\`ui generators), and Section~\ref{sec:dual} explains
   \code{DicksonDualSteenrodAlgebra}.
@@ -105,8 +105,8 @@ $\omega_n=(x_1\cdots x_k)\,\chi(P^n)\bigl((x_1\cdots x_k)^{-1}\bigr)$.  For odd
 $p$, formula $(\ast)$ is \emph{false} for the $\omega_n$; for example
 $P^1\omega_1=-\omega_2$ in $H^*(B\mathbb{Z}/3)$, while $(\ast)$ predicts
 $+\omega_2$.  Formula $(\ast)$ is correct for
-$\wt_n=(-1)^n\omega_n$.  This is proved at the generators (Theorem~\ref{thm:gen}) and checked
-by computer in other degrees.  Both the decomposition formula and the Cartan formula
+$\wt_n=(-1)^n\omega_n$ (Theorem~\ref{thm:all}, together with
+Corollary~\ref{cor:algo} for the comparison of $\wt_n$ and $\Omega_n$).  Both the decomposition formula and the Cartan formula
 are insensitive to this sign change: $n$ is additive under products, so a
 Dickson monomial in the $\wt$'s picks up the same sign $(-1)^n$ as $\wt_n$
 itself.  So the decomposition formula is the same for $\omega$ and $\wt$, and
@@ -352,17 +352,28 @@ $\binom{(p-1)(n+d(R))}{N(R)}$.  The operation $\Lambda_t$ extends uniquely to
 $\Dperf$ (with values in $\Dperf[t^{1/p^\infty}]$).  We let $P^R$ act on
 $\Dperf$ by taking the coefficient of the integral monomial $t^R$.
 
-\begin{conjecture}[Action formula]\label{conj:C}
+\begin{theorem}[Action formula]\label{thm:C}
 For all $k$, $n$ and $R$,
 \[
-  P^R\,\Omega_n=a(R,n)\,\Omega_{n+d(R)},\qquad
-  \chi(P^R)\,\Omega_n=\binom{-(p-1)n}{N(R)}\binom{N(R)}{pr_1,p^2r_2,\dots}\,\Omega_{n+d(R)}.
+  P^R\,\Omega_n=a(R,n)\,\Omega_{n+d(R)} .
+\]
+\end{theorem}
+
+This is proved in Section~\ref{sec:proof} (Theorem~\ref{thm:all}).  The code
+uses a second formula for the conjugate action (\code{isconjugate=True}).  We
+can reduce it to a binomial identity (Proposition~\ref{prop:conj}), but we have
+not proved it.
+
+\begin{conjecture}[Conjugate action]\label{conj:C}
+For all $k$, $n$ and $R$,
+\[
+  \chi(P^R)\,\Omega_n=b(R,n)\,\Omega_{n+d(R)},\qquad
+  b(R,n)=\binom{-(p-1)n}{N(R)}\binom{N(R)}{pr_1,p^2r_2,\dots}.
 \]
 \end{conjecture}
 
-The second formula is the one the code uses for the conjugate action
-(\code{isconjugate=True}).  The algorithm needs the first formula only at the
-generator degrees $n=n_j$, where $\Omega_{n_j}=c_{k,k-j}$:
+The algorithm needs Theorem~\ref{thm:C} only at the generator degrees
+$n=n_j$, where $\Omega_{n_j}=c_{k,k-j}$:
 \begin{equation}\label{eq:gen}
   P^R c_{k,k-j}=a(R,n_j)\,\Omega_{n_j+d(R)} .
 \end{equation}
@@ -415,8 +426,8 @@ $(p-1)M<N(R)-|R|\le N(R)$.
 On $\Dperf$ the total operation has fractional $t$-exponents, since
 $\Lambda_t(y^{1/p})=\Lambda_t(y)^{1/p}$.  For example, for $p=2$, $k=2$,
 $\Lambda_t(c_{2,1}^{1/2})$ contains $t_1^{1/2}c_{2,0}^{1/2}$.  The operation $P^R$
-is the coefficient of the integral monomial $t^R$.  So Conjecture~\ref{conj:C}
-(first formula) says exactly that
+is the coefficient of the integral monomial $t^R$.  So Theorem~\ref{thm:C}
+says exactly that
 \begin{equation}\label{eq:F2}
   \pi\bigl[\Lambda_t\,\Omega(w)\bigr]=\pi\bigl[\Omega(T^*w)\bigr],\qquad \Omega(w)=\frac{w}{\psi(w)} .
 \end{equation}
@@ -434,7 +445,7 @@ $a\ge j$.  Every monomial of $B$ has $t$-exponent $p^{-c}\varepsilon_j$ with
 $c\ge1$, where $\varepsilon_j$ is the $j$-th unit vector.
 
 \begin{theorem}\label{thm:k1}
-Conjecture~\ref{conj:C} (first formula) holds for $k=1$.  Hence the algorithm
+Theorem~\ref{thm:C} holds for $k=1$.  Hence the algorithm
 of Section~\ref{sec:algorithm} is correct for $D_1$.
 \end{theorem}
 
@@ -534,8 +545,14 @@ second factor is supported in digit sum $\le(k-1)(p-1)$.  Now use
 subadditivity of $\alpha$.
 \end{proof}
 
+For $D_0\ge1$ put
+\[
+  F^{D_0}_t(X)=\coef{w^{D_0}}\;\pi\bigl[\Omega(T^*w)\bigr]\,S(Xw),
+\]
+so that $F_t=F^{p^k}_t$.  This is an additive polynomial in $X$.
+
 \begin{lemma}\label{lem:FT}
-For $R$ put $D_R=p^k+(p-1)d(R)$, and write $\coef{y^{pR}}$ for the coefficient
+Fix $D_0\ge1$.  For $R$ put $D_R=D_0+(p-1)d(R)$, and write $\coef{y^{pR}}$ for the coefficient
 of $\prod_jy_j^{p^jr_j}$.  Put
 \[
   b_R=\coef{y^{pR}}\bigl(1+\textstyle\sum_jy_j\bigr)^{D_R},\qquad
@@ -543,40 +560,41 @@ of $\prod_jy_j^{p^jr_j}$.  Put
 \]
 Then
 \[
-  F_t\bigl(T(X)\bigr)=\sum_Rt^R\coef{w^{D_R}}\,\Omega(w)\,B_R(Xw),\qquad
+  F^{D_0}_t\bigl(T(X)\bigr)=\sum_Rt^R\coef{w^{D_R}}\,\Omega(w)\,B_R(Xw),\qquad
   B_R(z)=b_R\,S(z)-\sum_{e\ge0}\delta_{R,e}\,z^{p^e}.
 \]
 \end{lemma}
 
 \begin{proof}
 Since $S(T(X)w)$ has integral $t$-exponents,
-$F_t(T(X))=\pi\coef{w^{p^k}}\Omega(T^*w)\,S(T(X)w)$.
+$F^{D_0}_t(T(X))=\pi\coef{w^{D_0}}\Omega(T^*w)\,S(T(X)w)$.
 By~\eqref{eq:adj}, $S(T(X)w)=S(XT^*w)-B(X,w)$.  The first part is
-$\pi\coef{w^{p^k}}H(T^*w)$ with $H(w)=\Omega(w)S(Xw)$.  Expanding as in
+$\pi\coef{w^{D_0}}H(T^*w)$ with $H(w)=\Omega(w)S(Xw)$.  Expanding as in
 Lemma~\ref{lem:G} gives $\sum_Rt^Rb_R\coef{w^{D_R}}H(w)$.  For the second
 part, take a monomial $X^{p^a}(t_jw)^{p^{a-j}}$ of $B$ (so $a<j$) times the
 term $\Omega_M w^{(p-1)M}\binom{(p-1)M}{|A|}\binom{|A|}{A}\vartheta^A$ of
 $\Omega(T^*w)$.  Its $t$-exponents are integral iff $A_i=p^ir_i$ for $i\ne j$
 and $A_j=p^jr_j-p^a$ with $r_j\ge1$.  Then its $w$-exponent is
-$(p-1)M-(p-1)d(R)+p^a$, which equals $p^k$ iff $(p-1)M=D_R-p^a$.  Summing the
+$(p-1)M-(p-1)d(R)+p^a$, which equals $D_0$ iff $(p-1)M=D_R-p^a$.  Summing the
 coefficients over $j>a$ gives $\delta_{R,a}$.  So the second part is
 $-\sum_Rt^R\sum_a\delta_{R,a}X^{p^a}\Omega_{(D_R-p^a)/(p-1)}=-\sum_Rt^R\coef{w^{D_R}}\Omega(w)\sum_a\delta_{R,a}(Xw)^{p^a}$.
 \end{proof}
 
 \begin{lemma}[Digit sums]\label{lem:digits}
-Let $R$ be arbitrary, $e\ge0$ and $D=D_R$.
+Let $D_0\ge1$, $R$ arbitrary, $e\ge0$ and $D=D_R=D_0+(p-1)d(R)$.
 \begin{enumerate}
-\item If $\coef{y^{pR}}(1+\sum_jy_j)^{D-1}\ne0$, then $\alpha(D-1)\ge k(p-1)$.
-\item If $\delta_{R,e}\ne0$, then $\alpha(D-p^e)>k(p-1)$.
+\item If $\coef{y^{pR}}(1+\sum_jy_j)^{D-1}\ne0$, then $\alpha(D-1)\ge\alpha(D_0-1)$.
+\item If $\delta_{R,e}\ne0$, then $\alpha(D-p^e)\ge\alpha(D_0-1)+p-1$.
 \end{enumerate}
 \end{lemma}
 
 \begin{proof}
-Recall $D-N(R)=p^k-|R|$.  (1) The coefficient is
+Recall $D-N(R)=D_0-|R|$.  (1) The coefficient is
 $\binom{D-1}{N(R)}\binom{N(R)}{pR}$.  If it is nonzero, the parts $p^jr_j$ add
 without carries, so $\alpha(N(R))=\sum_j\alpha(r_j)\ge\alpha(|R|)$.  Moreover
-$D-1-N(R)=p^k-1-|R|\ge0$ and $N(R)+(p^k-1-|R|)$ has no carries.  Hence
-$\alpha(D-1)=\alpha(N(R))+k(p-1)-\alpha(|R|)\ge k(p-1)$.
+$D-1-N(R)=D_0-1-|R|\ge0$ and $N(R)+(D_0-1-|R|)$ has no carries.  Since
+$\alpha(D_0-1)\le\alpha(D_0-1-|R|)+\alpha(|R|)$, we get
+$\alpha(D-1)=\alpha(N(R))+\alpha(D_0-1-|R|)\ge\alpha(D_0-1)$.
 
 (2) Some summand $\binom{D-p^e}{N(R)-p^e}\binom{N(R)-p^e}{pR-p^e\varepsilon_j}$
 with $j>e$ and $r_j\ge1$ is nonzero.  The parts $p^ir_i$ ($i\ne j$) and
@@ -584,12 +602,42 @@ $p^jr_j-p^e=p^e\bigl(p^{j-e}(r_j-1)+p^{j-e}-1\bigr)$ add without carries, so
 \[
   \alpha(N(R)-p^e)=\sum_{i\ne j}\alpha(r_i)+\alpha(r_j-1)+(j-e)(p-1).
 \]
-Further $D-N(R)=p^k-|R|$ with $1\le|R|\le p^k$, and
-$\alpha(p^k-|R|)=k(p-1)-\alpha(|R|-1)$.  The binomial coefficient is nonzero, so
+The binomial coefficient is nonzero, so $D-N(R)=D_0-|R|\ge0$ (with
+$|R|\ge1$) and $\alpha(D-p^e)=\alpha(N(R)-p^e)+\alpha(D_0-|R|)$.  Moreover
+$\alpha(D_0-|R|)\ge\alpha(D_0-1)-\alpha(|R|-1)$ and
+$\alpha(|R|-1)\le\sum_{i\ne j}\alpha(r_i)+\alpha(r_j-1)$.  Hence
 \[
-  \alpha(D-p^e)=\alpha(N(R)-p^e)+k(p-1)-\alpha(|R|-1)\ge(j-e)(p-1)+k(p-1)>k(p-1),
+  \alpha(D-p^e)\ge(j-e)(p-1)+\alpha(D_0-1)\ge\alpha(D_0-1)+p-1. \qedhere
 \]
-since $\alpha(|R|-1)\le\sum_{i\ne j}\alpha(r_i)+\alpha(r_j-1)$.
+\end{proof}
+
+\begin{proposition}[Vanishing]\label{prop:vanish}
+If $\alpha(D_0-1)>(k-1)(p-1)$, then $F^{D_0}_t(T(v))=0$ for all $v\in V$.
+\end{proposition}
+
+\begin{proof}
+By additivity it suffices to take $v\ne0$.  By Lemma~\ref{lem:factor}, $\Omega_V(w)=g(vw)G(w)$ with
+$G(w)=\Omega_U(\psi_v(w))$.  Since $g(z)S(z)=z$,
+\[
+  g(z)B_R(z)=\sum_EG_{R,E}\,z^E,\qquad
+  G_{R,E}=b_R\,[E=1]-\sum_{e\ge0}\delta_{R,e}\,\gamma_{E-p^e}.
+\]
+By Lemma~\ref{lem:FT}, the coefficient of $t^R$ in $F^{D_0}_t(T(v))$ is
+$\sum_EG_{R,E}\,v^E\coef{w^{D_R-E}}G(w)$.  We show that every term vanishes.
+Suppose $\coef{w^{D_R-E}}G\ne0$.  By Lemma~\ref{lem:support} (rank $k-1$,
+$\eta=\psi_v$), $\alpha(D_R-E)\le(k-1)(p-1)$.
+\begin{itemize}
+\item If $E=1$, then
+  $G_{R,1}=b_R-\delta_{R,0}=\coef{y^{pR}}(1+\sum y_j)^{D_R-1}$.  If this were
+  nonzero, Lemma~\ref{lem:digits}(1) would give
+  $\alpha(D_R-1)\ge\alpha(D_0-1)>(k-1)(p-1)$.  This is a contradiction.
+\item If $E>1$, a nonzero summand $\delta_{R,e}\gamma_{E-p^e}$ has
+  $\alpha(E-p^e)\le p-1$.  Hence
+  $\alpha(D_R-p^e)\le\alpha(D_R-E)+\alpha(E-p^e)\le k(p-1)$.  But
+  Lemma~\ref{lem:digits}(2) gives
+  $\alpha(D_R-p^e)\ge\alpha(D_0-1)+p-1>k(p-1)$.
+\end{itemize}
+So $G_{R,E}=0$ whenever $\coef{w^{D_R-E}}G\ne0$, and $F^{D_0}_t(T(v))=0$.
 \end{proof}
 
 \begin{theorem}[Action on the generators]\label{thm:gen}
@@ -600,28 +648,9 @@ Formula~\eqref{eq:gen} holds for all $k$, $j$ and $R$:
 \end{theorem}
 
 \begin{proof}
-By Proposition~\ref{prop:reduction} we must show $F_t(T(v))=0$ for $v=x_1$.
-By Lemma~\ref{lem:factor}, $\Omega_V(w)=g(vw)G(w)$ with
-$G(w)=\Omega_U(\psi_v(w))$.  Since $g(z)S(z)=z$,
-\[
-  g(z)B_R(z)=\sum_EG_{R,E}\,z^E,\qquad
-  G_{R,E}=b_R\,[E=1]-\sum_{e\ge0}\delta_{R,e}\,\gamma_{E-p^e}.
-\]
-By Lemma~\ref{lem:FT}, the coefficient of $t^R$ in $F_t(T(v))$ is
-$\sum_EG_{R,E}\,v^E\coef{w^{D_R-E}}G(w)$.  We show that every term vanishes.
-Suppose $\coef{w^{D_R-E}}G\ne0$.  By Lemma~\ref{lem:support} (rank $k-1$,
-$\eta=\psi_v$), $\alpha(D_R-E)\le(k-1)(p-1)$.
-\begin{itemize}
-\item If $E=1$, then
-  $G_{R,1}=b_R-\delta_{R,0}=\coef{y^{pR}}(1+\sum y_j)^{D_R-1}$.  If this were
-  nonzero, Lemma~\ref{lem:digits}(1) would give
-  $\alpha(D_R-1)\ge k(p-1)>(k-1)(p-1)$.  This is a contradiction.
-\item If $E>1$, a nonzero summand $\delta_{R,e}\gamma_{E-p^e}$ has
-  $\alpha(E-p^e)\le p-1$.  Hence
-  $\alpha(D_R-p^e)\le\alpha(D_R-E)+\alpha(E-p^e)\le k(p-1)$, contradicting
-  Lemma~\ref{lem:digits}(2).
-\end{itemize}
-So $G_{R,E}=0$ whenever $\coef{w^{D_R-E}}G\ne0$, and $F_t(T(v))=0$.
+Take $D_0=p^k$, for which $\alpha(p^k-1)=k(p-1)>(k-1)(p-1)$.
+Proposition~\ref{prop:vanish} gives $F_t(T(x_1))=0$; now apply
+Proposition~\ref{prop:reduction}.
 \end{proof}
 
 \begin{corollary}\label{cor:algo}
@@ -646,9 +675,104 @@ also~\cite[Thm.~3.4]{Sum21}).  We compared these with the code's output for all
 $s$ and $i$ for $p=2$, $k=3,4$; $p=3$, $k=2,3$; and $p=5,7$, $k=2$, using
 $c_{k,s}=(-1)^{k-s}Q_{k,s}$.  All 298 values agree.
 
-What remains open is Conjecture~\ref{conj:C} in degrees $n$ other than the
-generator degrees, and the conjugate formula.  Neither is needed for the
-algorithm.
+\subsection{All degrees}
+\begin{theorem}\label{thm:all}
+Theorem~\ref{thm:C} holds: $P^R\Omega_n=a(R,n)\,\Omega_{n+d(R)}$ for all $k$, $n$
+and $R$.
+\end{theorem}
+
+\begin{proof}
+Put $G=\pi[\Omega_V(T^*w)]$ and $G'=\pi[\Lambda_t\Omega_V(w)]=\pi[\Omega_{T(V)}(w)]$.
+By Lemma~\ref{lem:G} we must show $G=G'$.  Let $\Delta=G'-G=\sum_n\Delta_nw^{(p-1)n}$.
+Then $\Delta_0=0$, and every $\Delta_n$ has integral $t$-exponents.
+
+\emph{Step 1: a family of linear conditions.}  Let $\alpha(D_0-1)>(k-1)(p-1)$ and
+$u\in T(V)$.  By Proposition~\ref{prop:vanish},
+$\coef{w^{D_0}}G(w)S(uw)=F^{D_0}_t(u)=0$.  Lemmas~\ref{lem:factor}
+and~\ref{lem:support} hold for the rank-$k$ space $T(V)$ as well.  So
+$\Omega_{T(V)}(w)S(uw)=uw\,\Omega_{U'}(\psi_u(w))$ is supported in exponents $E$
+with $\alpha(E-1)\le(k-1)(p-1)$.  Since $S(uw)$ is integral, the same holds for
+$G'(w)S(uw)$.  Hence the additive polynomial
+\[
+  L_{D_0}(X)=\coef{w^{D_0}}\Delta(w)S(Xw)=\sum_{e\ge0}\Delta_{(D_0-p^e)/(p-1)}X^{p^e}
+\]
+vanishes on $T(V)$.  Divide $L_{D_0}$ by the monic additive polynomial $f_{T(V)}$:
+$L_{D_0}=M\circ f_{T(V)}+\mathrm{Rem}$, where $\mathrm{Rem}$ has degree $<p^k$.
+The usual division algorithm works for additive polynomials over any ring of
+characteristic $p$.  Since $\mathrm{Rem}$ vanishes on the $p^k$ elements of
+$T(V)$, $\mathrm{Rem}=0$.
+
+\emph{Step 2: a recursion.}  Let $C=\{n\ge1:p^{k-1}\mid(p-1)n\}$.  For $n\in C$
+put $D_0=(p-1)n+p^{k-1}$.  The low $k-1$ digits of $(p-1)n$ vanish, so
+$\alpha(D_0-1)=\alpha((p-1)n)+(k-1)(p-1)>(k-1)(p-1)$.  In
+$L_{D_0}$:
+\begin{itemize}
+\item the term $e=k-1$ is $\Delta_nX^{p^{k-1}}$;
+\item the terms $e<k-1$ are $X^{p^e}$ with $e<k-1$, and are already reduced;
+\item the terms $e\ge k$ have indices
+  $n_e=n-(p^e-p^{k-1})/(p-1)<n$.  Here $(p-1)n_e\equiv0\bmod p^{k-1}$, so
+  $n_e\in C\cup\{0\}$, or the term is absent.
+\end{itemize}
+Reducing $X^{p^e}$ ($e\ge k$) with $X^{p^k}\equiv-\sum_{i<k}c_i(T(V))X^{p^i}$, the
+coefficient of $X^{p^{k-1}}$ in $\mathrm{Rem}$ is $\Delta_n+\sum_{e\ge k}\rho_e\Delta_{n_e}$
+for certain $\rho_e$.  It vanishes by Step 1.  By induction on $n\in C$, starting
+from $\Delta_0=0$, we get $\Delta_n=0$ for all $n\in C$.
+
+\emph{Step 3: integral degrees.}  Let $N=p^km$ with $m\ge1$; then $N\in C$.
+Moreover $\Omega_N=\Omega_m^{p^k}$: raise $(u/\varphi)^{(p-1)m}$ to the
+$p^k$-th power in~\eqref{eq:Omega}.  This lies in $\Dk$, because
+$q_j^{p^k}\in\Dk$.  So $\Lambda_t\Omega_N$ has integral $t$-exponents, and
+Step 2 gives
+\[
+  \Lambda_t\Omega_N=\sum_St^S\,a(S,N)\,\Omega_{N+d(S)} .
+\]
+
+\emph{Step 4: descent.}  For arbitrary $m$,
+$\Lambda_t\Omega_m=(\Lambda_t\Omega_{p^km})^{p^{-k}}$.  The coefficient of the
+integral monomial $t^R$ comes from $S=p^kR$.  It is
+$\bigl(a(p^kR,p^km)\,\Omega_{p^k(m+d(R))}\bigr)^{p^{-k}}=a(R,m)\,\Omega_{m+d(R)}$,
+by Lucas' theorem and $\Omega_{p^kj}=\Omega_j^{p^k}$.
+\end{proof}
+
+For $k=1$, $C$ consists of all $n\ge1$, and Step 2 is
+Theorem~\ref{thm:k1} again.
+
+\subsection{The conjugate action}
+On $\Dperf$ we let $\chi(P^R)$ act by the integral coefficients of
+$\Lambda'_t=\Lambda_t^{-1}$, as for $P^R$.
+
+\begin{proposition}\label{prop:conj}
+Suppose that, for all $n\ge0$ and $R\ne0$,
+\begin{equation}\label{eq:antipode}
+  \sum_{R'+R''=R}b(R',\,n+d(R''))\;a(R'',\,n)=0 .
+\end{equation}
+Then Conjecture~\ref{conj:C} holds.
+\end{proposition}
+
+\begin{proof}
+By the same descent as in Step 4, it suffices to treat $N$ with
+$\Omega_N\in\Dk$.  The element $\chi(P^R)$ is a linear combination of Milnor
+basis elements $P^S$ with $d(S)=d(R)$.  So by Theorem~\ref{thm:all},
+$\chi(P^R)\Omega_N$ is a scalar multiple of $\Omega_{N+d(R)}$.  We show by
+induction on $|R|$ that the scalar is $b(R,N)$, for all such $N$.  Apply
+$\sum_{R'+R''=R}\chi(P^{R'})P^{R''}=0$ (the antipode identity, $R\ne0$) to
+$\Omega_N$.  If $a(R'',N)\ne0$, then $\Omega_{N+d(R'')}=P^{R''}\Omega_N/a(R'',N)$
+lies in $\Dk$, so for $R''\ne0$ the induction hypothesis applies to it.  Thus
+\[
+  \chi(P^R)\Omega_N=-\sum_{R''\ne0}b(R',N+d(R''))\,a(R'',N)\,\Omega_{N+d(R)}
+  =b(R,N)\,\Omega_{N+d(R)}
+\]
+by~\eqref{eq:antipode}, since $a(0,\cdot)=1$.
+\end{proof}
+
+Identity~\eqref{eq:antipode} is a statement about binomial coefficients mod
+$p$ only.  It holds in all $7175$ cases we checked ($p=2,3$ with $\ell(R)\le3$;
+$p=5$ with $\ell(R)\le2$; $r_j\le p+1$; $n<25$), but we have no proof.  One way to approach it:
+the operator $G\mapsto\pi[G(T^*w)]$ maps $w^{-(p-1)n}$ to
+$\sum_Rt^Rb(R,n)\,w^{-(p-1)(n+d(R))}$ and $w^{(p-1)M}$ to
+$\sum_Rt^Ra(R,M-d(R))\,w^{(p-1)(M-d(R))}$.  So~\eqref{eq:antipode} says that its
+matrices on negative and on positive powers of $w$ are mutually inverse up to
+transposition.
 
 \subsection{Computer verification}
 All checks below compute the action directly on polynomials in
@@ -671,6 +795,8 @@ $(\ast)$ for $\Omega_n$, all $n$ (in $\Dperf$) & $p=2$: $k=2,3$; $p=3$: $k=2$ & 
 $(\ast)$ for $P^{\Delta_j}=P(0,\dots,0,1)$, invariant $\wt_n$ & $p=2$: $k=3$ ($j=2,3$), $k=4$ ($j=2$); & \\
   & \quad $p=3$: $k=3$, $j=2$; $p=5$: $k=2$, $j=2$ & 75\\
 $G_{R,E}=0$ when $\alpha(D_R-E)\le(k-1)(p-1)$ & $p=2,3,5$; $k\le4$; $\ell(R)\le3$, $r_j\le p+1$ & $\approx10^6$\\
+same, general $D_0$ (Prop.~\ref{prop:vanish}) & $p=2,3,5$; $k\le3$; $\ell(R)\le2$; $D_0<p^{k+1}+p$ & $1.3\cdot10^6$\\
+identity~\eqref{eq:antipode} & $p=2,3$: $\ell(R)\le3$; $p=5$: $\ell(R)\le2$; $n<25$ & 7175\\
 \bottomrule
 \end{tabular}
 \caption{Computer checks of the action formula.  ``Cases'' counts pairs
@@ -714,7 +840,8 @@ $\tau^Q$).  Then $P^R(m)$ is the sum of the $y$ with $R'=R$
 \end{enumerate}
 Because $\Dk$ is a polynomial algebra, (1)--(3) determine the action
 completely.  Together with Theorem~\ref{thm:gen} this proves that the $\Dk$
-part of the code is correct.  The code also offers an
+part of the code is correct for the ordinary action.  The conjugate action
+(\code{left\_steenrod\_action\_milnor\_conj}) relies on Conjecture~\ref{conj:C}.  The code also offers an
 independent route, \code{admissible\_action}, through admissible matrices, and
 restriction maps $D_k\to D_{k'}$ for $k'<k$; these are not discussed here.
 
@@ -758,8 +885,8 @@ $q_j=c_j(Y)/c_0(Y)$.  So, up to the conjugation $\chi$, $\mu$ is the map of (a)
 for the ``dual'' space $Y$ in place of $V$.  In this sense the Peterson elements of $V$ are the images of the
 canonical elements $\sum_{d(R)=n}(-1)^{|R|}\binom{|R|}{R}\xi^R\in\A_*(k)$ under
 the Dickson map of the dual space.  Equation~\eqref{eq:F2}, with the adjoint
-$T^*$, suggests that this duality is the natural setting for a proof of
-Conjecture~\ref{conj:C}.
+$T^*$, suggests that this duality is the natural setting for these
+formulas, and perhaps for a proof of Conjecture~\ref{conj:C}.
 
 \begin{thebibliography}{99}
 \bibitem{Dickson} L.~E.~Dickson, \emph{A fundamental system of invariants of the

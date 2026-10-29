@@ -1,7 +1,7 @@
 # Compares yacop's action of single powers P^i (Sq^i for p=2) on the Dickson
 # invariants Q_{k,s} = (-1)^(k-s) c_{k,s} with the formulas of Hung (p=2,
 # PAMS 1991) and Hung-Minh (odd p, Vietnam J. Math. 1995; restated in Sum,
-# arXiv:2111.07073, Thm 3.4).  See the remark after Corollary 5.9.
+# arXiv:2111.07073, Thm 3.4).  See the remark after Corollary 5.10.
 #
 # Run:  ./yacop.sh -c "$(cat dickson-checks/hung_minh.py)"
 import yacop, sys
