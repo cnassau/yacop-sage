@@ -45,9 +45,9 @@ the code.  For odd $p$ it holds with the normalisation $\wt_n=(-1)^n\omega_n$,
 not with the one stated in the code's documentation.  We prove the formula
 for all Peterson elements, all $k$ and all Milnor basis elements.  In
 particular the algorithm is correct.  We also prove the code's formula for
-the conjugate action.  For $p=2$ we compare with Arnon's generalised Dickson
-invariants and deduce that every $\GL_k$-invariant Peterson element is a
-Lagrange element.  Finally we explain the auxiliary class
+the conjugate action.  Using two-sided Peterson elements, which for $p=2$ are
+Arnon's generalised Dickson invariants, we show that the $\GL_k$-invariant
+Peterson elements are exactly the Lagrange elements that are polynomials.  Finally we explain the auxiliary class
 \code{DicksonDualSteenrodAlgebra}.
 \end{abstract}
 
@@ -92,9 +92,10 @@ where the second factor is a multinomial coefficient.  The code (functions
   (Theorem~\ref{thm:gen}), which shows that the algorithm is correct
   (Corollary~\ref{cor:algo}).  It then proves $(\ast)$ in all degrees
   (Theorem~\ref{thm:all}), and the formula used by the code for the
-  conjugate action (Theorem~\ref{thm:conjall}).  For $p=2$ it relates the
-  elements $\Omega_n$ to Arnon's generalised Peterson elements and proves
-  Conjecture~\ref{conj:B} (Theorem~\ref{thm:arnon}).  Table~\ref{tab:checks} lists
+  conjugate action (Theorem~\ref{thm:conjall}).  It identifies the
+  $\Omega_n$ with two-sided Peterson elements (Theorem~\ref{thm:arnon}), on
+  which the action formula has a three-line proof
+  (Theorem~\ref{thm:twoaction}).  This proves Theorem~\ref{conj:B}.  Table~\ref{tab:checks} lists
   independent computer checks.
 \item Section~\ref{sec:whole} explains how the code obtains the action on all
   of $\Dk$, Section~\ref{sec:mui} derives the action on the M\`ui generators,
@@ -338,16 +339,18 @@ constant term.  So only the constant $1$ contributes, and we get
 $\coef{u^{p^k}}\sum_aX^{p^a}\varphi(u)^{p^a}=\sum_{a+j=k}q_j^{p^a}X^{p^a}=f_V(X)$.
 \end{proof}
 
-\begin{conjecture}\label{conj:B}
-If $\wt_n$ is $\GL_k$-invariant, then $\wt_n=\Omega_n$.
-\end{conjecture}
+\begin{theorem}\label{conj:B}
+If $\wt_n$ is $\GL_k$-invariant, then $\wt_n=\Omega_n$.  This happens if and
+only if $\sigma_p(n)\ge k$, where
+$\sigma_p(n)=\alpha((p-1)n)/(p-1)+\nu_p(n)$, $\alpha$ is the base-$p$ digit sum
+and $\nu_p$ is the $p$-adic valuation.
+\end{theorem}
 
-By Theorem~\ref{thm:Aomega} the conjecture holds at the generator degrees
-$n=n_j$.  For $p=2$ it holds in all degrees (Corollary~\ref{cor:conjB2}).  For
-odd $p$ it has been verified in all cases listed in Table~\ref{tab:checks}.
-The algorithm itself only needs the elements $\Omega_n$, so it does not depend
-on Conjecture~\ref{conj:B}.  The conjecture only matters for relating the
-code's \code{peterson(n)} to the polynomial $\wt_n$ in other degrees.
+At the generator degrees $n=n_j$ this is Theorem~\ref{thm:Aomega}.  The general
+case is proved in Section~\ref{sec:arnon} (Corollary~\ref{cor:conjB2}).  The
+algorithm itself only needs the elements $\Omega_n$, so it does not depend on
+Theorem~\ref{conj:B}.  That theorem only matters for relating the code's
+\code{peterson(n)} to the polynomial $\wt_n$ in other degrees.
 
 \subsection{The action on Peterson elements}
 The coefficient $a(R,n)$ of~\eqref{eq:aRn} is what
@@ -662,8 +665,8 @@ Proposition~\ref{prop:reduction}.
 \begin{corollary}\label{cor:algo}
 The algorithm of Section~\ref{sec:algorithm} computes the correct
 $\A$-action on $\Dk$ for all $p$ and $k$.  Moreover, if $a(R,n_j)\ne0$, then
-$\wt_{n_j+d(R)}=\Omega_{n_j+d(R)}$.  So Conjecture~\ref{conj:B} holds in all
-degrees that the algorithm uses.
+$\wt_{n_j+d(R)}=\Omega_{n_j+d(R)}$.  This is the case of Theorem~\ref{conj:B}
+that the algorithm uses.
 \end{corollary}
 
 \begin{proof}
@@ -845,117 +848,223 @@ $\|E\|_\lambda=|R|$, and $\mu+\nu=|E|-|R|$.  Lemma~\ref{lem:levels} with
 $\delta=|R|$ shows that it vanishes.  Now apply Proposition~\ref{prop:conj}.
 \end{proof}
 
-\subsection{The case $p=2$: Arnon's generalised Peterson elements}\label{sec:arnon}
-In this subsection $p=2$, and $\sigma(n)=\alpha(n)+\nu(n)$ for $n\ge1$, where
-$\nu$ is the $2$-adic valuation.  Arnon~\cite{Arnon} works in the perfect
-closure $R(k)$ of $\F[x_1,\dots,x_k]$, whose invariants are
-$R(k)^{\GL_k}=\Dperf$~\cite[Prop.~3.6(a)]{Arnon}.  For $n\in\mathbb{N}[\frac12]$
-he defines
-\[
-  {}_k\omega_n=\sum x_1^{s_1}\cdots x_k^{s_k},
-\]
-summed over $s_1+\dots+s_k=n$ with each $s_i$ either $0$ or a power of $2$ with
-exponent in $\mathbb{Z}$.  The sum is finite, and he proves:
-\begin{enumerate}
-\item[(A1)] ${}_k\omega_n$ is $\GL_k$-invariant, and ${}_k\omega_{2n}=({}_k\omega_n)^2$
-  \cite[Prop.~3.4(b), 3.6(e)]{Arnon}.
-\item[(A2)] In every way of writing $n=\sum_{i\le k}2^{r_i}$, $r_i\ge\sigma(n)-k$.
-  So for integral $n$, ${}_k\omega_n$ has only integral exponents if and only if
-  $\sigma(n)\ge k$, and then ${}_k\omega_n=\wt_n$ by
-  Proposition~\ref{prop:monomials}(2) \cite[Prop.~3.4(a), 3.6(b)]{Arnon}.
-\item[(A3)] $Sq^t\,{}_k\omega_n=\binom{n+t}{2t}\,{}_k\omega_{n+t}$ for all
-  $n,t\in\mathbb{N}[\frac12]$ \cite[Thm.~3.9]{Arnon}.
-\end{enumerate}
-Here $Sq^t$ acts on $R(k)$ through the total square $x\mapsto x+x^2$ extended
-to square roots.  For integral $t$ this is our action of $P^{(t)}=Sq^t$ on
-$\Dperf$, since $\Lambda_t$ is the unique extension to the perfect closure.  At
-$R=(t)$ we have $a(R,n)=\binom{n+t}{2t}$, so (A3) is the case $p=2$, $R=(t)$ of
-Theorem~\ref{thm:all}, extended to half-integral degrees.  Arnon's proof is a
-short counting argument: $Sq^{t_i}$ either fixes $x_i^{2^r}$, squares it, or
-kills it, and the number of ways to recover a monomial of ${}_k\omega_{n+t}$
-is $\binom{n+t}{2t}$ modulo~$2$.  His Theorem~3.11 writes ${}_k\omega_n$ as a
-polynomial in the Dickson invariants; it plays the role of our
-decomposition~\eqref{eq:Omega}.
+\subsection{Two-sided Peterson elements and Theorem~\ref{conj:B}}\label{sec:arnon}
+For $p=2$, Arnon~\cite{Arnon} replaces the one-sided series $S$ by a
+two-sided one.  This subsection does the same for all $p$.  The result is a
+family $\Theta_n$ on which the total operation acts \emph{exactly} through the
+adjoint $T^*$, and which coincides with the $\Omega_n$.
 
-\begin{theorem}\label{thm:arnon}
-For $p=2$, $\Omega_n={}_k\omega_n$ for all integers $n\ge0$.
+We work in the perfect closure $H^{\mathrm{perf}}$ of $H$, whose
+$\GL_k$-invariants are $\Dperf$.  Extend the digit sum $\alpha$ and the
+$p$-adic valuation $\nu=\nu_p$ to $\mathbb{Z}[1/p]_{\ge0}$.  Call
+$a\in\mathbb{Z}[1/p]_{\ge0}$ \emph{two-sided admissible} if $a=0$ or
+$\alpha(a)=p-1$, and write $a=\sum_{r\in\mathbb{Z}}\varepsilon_rp^r$.  For an
+integer $n\ge1$ put
+\[
+  \sigma_p(n)=\frac{\alpha((p-1)n)}{p-1}+\nu_p(n).
+\]
+For $p=2$ this is $\alpha(n)+\nu(n)$.
+
+\begin{definition}
+Let $\widehat S(z)=\sum_{r\in\mathbb{Z}}z^{p^r}$, and define $\Theta_n$ for
+$n\in\mathbb{N}[\frac1p]$ by
+\[
+  \Theta(w)=\prod_{i=1}^k\bigl(1-\widehat S(x_iw)^{p-1}\bigr)
+  =\sum_{n}\Theta_n\,w^{(p-1)n}.
+\]
+As in Proposition~\ref{prop:monomials}(2),
+\[
+  \Theta_n=\sum_{\substack{a_1+\dots+a_k=(p-1)n\\ a_i\ \text{two-sided admissible}}}
+  \ \prod_{i=1}^k\frac{1}{\varepsilon(a_i)!}\;x_1^{a_1}\cdots x_k^{a_k}.
+\]
+\end{definition}
+
+Different tuples $(a_i)$ give different monomials, and all coefficients are
+nonzero.  So $\Theta_n$ contains a given monomial if and only if its exponent
+vector is such a tuple.  For $p=2$, $\Theta_n$ is Arnon's element
+${}_k\omega_n$~\cite[Def.~3.2]{Arnon}.
+
+\begin{lemma}\label{lem:twosupport}
+\begin{enumerate}
+\item Let $m=a_1+\dots+a_k>0$ with all $a_i$ two-sided admissible.  Then every
+  digit position $r$ that occurs in some $a_i$ satisfies
+  $r\ge\nu(m)-k+\alpha(m)/(p-1)$.  In particular each $\Theta_n$ is a finite
+  sum.
+\item For an integer $n\ge1$, $\Theta_n$ has integral exponents if and only if
+  $\sigma_p(n)\ge k$.  In that case $\Theta_n=\wt_n$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(1) Let $r$ be the lowest digit position occurring in the $a_i$.  If
+$r\ge\nu(m)$, the claim holds because $\alpha(m)\le\sum\alpha(a_i)\le k(p-1)$.
+Otherwise, add the $a_i$ column by column.  Column $r$ of the sum is nonzero,
+but the digits of $m$ in positions $r,\dots,\nu(m)-1$ vanish.  So there is a
+carry out of each of these $\nu(m)-r$ columns.  Every unit carried lowers the
+digit sum by $p-1$, so
+\[
+  k(p-1)\ge\sum_i\alpha(a_i)\ge\alpha(m)+(p-1)(\nu(m)-r).
+\]
+Finiteness follows, since the digit positions are also bounded above by
+$\log_pm$.
+
+(2) Put $m=(p-1)n$, so that $\nu(m)=\nu(n)$.  If $\sigma_p(n)\ge k$, then (1)
+gives $r\ge\sigma_p(n)-k\ge0$.  So all exponents are integral, and
+Proposition~\ref{prop:monomials}(2) shows $\Theta_n=\wt_n$.
+
+Conversely, let $\sigma_p(n)<k$.  Write the lowest nonzero digit unit of $m$ as
+\[
+  p^{\nu}=(p-1)(p^{\nu-1}+\dots+p^0)+p\cdot p^{-1}.
+\]
+This turns the $\alpha(m)$ digit units of $m$ into
+$\alpha(m)+(\nu+1)(p-1)=(\sigma_p(n)+1)(p-1)$ units, one of which sits in
+position $-1$.  Split them into $\sigma_p(n)+1\le k$ groups of $p-1$ units
+each.  Each group is a two-sided admissible number, because no position can
+hold more than $p-1$ units of one group.  So $\Theta_n$ contains a monomial
+with a non-integral exponent.
+\end{proof}
+
+\begin{theorem}\label{thm:twoaction}
+$\Lambda_t\Theta(w)=\Theta(T^*w)$.  Consequently, for all integers $n\ge0$
+and all $R$,
+\[
+  P^R\,\Theta_n=a(R,n)\,\Theta_{n+d(R)} .
+\]
 \end{theorem}
 
 \begin{proof}
-Induction on $n$.  Both sides are $1$ for $n=0$.  For $n=1$, apply
-Theorem~\ref{thm:all} with $R=(m)$ and $n=m$: $a((m),m)=1$ and $Sq^m$ squares
-elements of degree $m$, so $\Omega_{2m}=\Omega_m^2$.  Hence
-$\Omega_1^{2^{k-1}}=\Omega_{2^{k-1}}=c_{k,k-1}$ by Theorem~\ref{thm:Aomega}.
-By (A1), (A2) and Theorem~\ref{thm:A},
-${}_k\omega_1^{2^{k-1}}={}_k\omega_{2^{k-1}}=\wt_{2^{k-1}}=c_{k,k-1}$, since
-$\sigma(2^{k-1})=k$.  Frobenius is injective on $R(k)$, so
-$\Omega_1={}_k\omega_1$.  For $n\ge2$, pick a binary digit $2^a$ of $n$ with
-$a\ge1$ and put $t=2^{a-1}$.  Then $\binom{n}{2t}=1$, and
-Theorem~\ref{thm:all} and (A3) give
+The series $\widehat S$ is additive.  It also satisfies
+$\widehat S(y^{p^c})=\widehat S(y)$ for every $y$ and every $c\in\mathbb{Z}$,
+because the substitution only shifts the summation index.  The operation
+$\Lambda_t$ is a ring map on the perfect closure with
+$\Lambda_t(x^{p^r})=T(x)^{p^r}$.  Hence
 \[
-  \Omega_n=Sq^t\,\Omega_{n-t}=Sq^t\,{}_k\omega_{n-t}={}_k\omega_n . \qedhere
+  \Lambda_t\widehat S(xw)=\widehat S(T(x)w)=\sum_j\widehat S(t_jx^{p^j}w)
+  =\sum_j\widehat S\bigl(x\,(t_jw)^{p^{-j}}\bigr)=\widehat S\bigl(x\,T^*(w)\bigr).
+\]
+Taking the product over $i$ gives $\Lambda_t\Theta(w)=\Theta(T^*w)$.
+
+Now apply $\pi$ and compare the coefficients of $w^{(p-1)n}$ with $n$
+integral.  On the left this is $\sum_Rt^RP^R\Theta_n$.  On the right, use the
+expansion in the proof of Lemma~\ref{lem:G}.  For $M\in\mathbb{Z}[1/p]$ write
+$(1+X)^{(p-1)M}=\bigl((1+X)^{(p-1)Mp^e}\bigr)^{p^{-e}}$.  The terms with
+integral $t$-exponents again have $w$-exponent $(p-1)(M-d(R))$.  So the
+$\Theta_M$ with $M\notin\mathbb{Z}$ contribute nothing to integral powers.
+Lemma~\ref{lem:G}, applied to the family $(\Theta_M)_{M\in\mathbb{N}}$, gives
+the claim.
+\end{proof}
+
+This is the identity behind~\eqref{eq:F2}.  For the one-sided series $S$ it
+only holds up to the error term $B$ of~\eqref{eq:adj}.  The two-sided series
+absorbs $B$, because $\widehat S(y^{p^c})=\widehat S(y)$ also holds for
+$c<0$.  For $p=2$, Theorem~\ref{thm:twoaction} contains Arnon's
+formula $Sq^t\,{}_k\omega_n=\binom{n+t}{2t}{}_k\omega_{n+t}$ for integral
+$n,t$~\cite[Thm.~3.9]{Arnon}.  He also proves it for half-integral $n,t$, by a
+counting argument.
+
+\begin{theorem}\label{thm:arnon}
+$\Omega_n=\Theta_n$ for all $p$, $k$ and all integers $n\ge0$.
+\end{theorem}
+
+\begin{proof}
+Induction on $n$.  Both sides are $1$ for $n=0$.
+
+\emph{Frobenius.}  Put $i=(p-1)m$.  Then $a((i),m)=\binom{p(p-1)m}{p(p-1)m}=1$,
+and $P^i$ (or $Sq^i$ for $p=2$) raises elements of the degree of $\Omega_m$ to
+the $p$-th power.  So Theorem~\ref{thm:all} gives $\Omega_{pm}=\Omega_m^p$.
+Also $\Theta_{pm}=\Theta_m^p$, because $\Theta(w)^p=\Theta(w)$ by
+$\widehat S(y)^p=\widehat S(y)$.
+
+\emph{The case $n=1$.}  We have
+$\Omega_1^{p^{k-1}}=\Omega_{p^{k-1}}=c_{k,k-1}$ by Theorem~\ref{thm:Aomega},
+since $n_1=p^{k-1}$.  Also $\sigma_p(p^{k-1})=1+(k-1)=k$.  So
+Lemma~\ref{lem:twosupport} and Theorem~\ref{thm:A} give
+$\Theta_1^{p^{k-1}}=\Theta_{p^{k-1}}=\wt_{p^{k-1}}=c_{k,k-1}$.  Frobenius is
+injective on $H^{\mathrm{perf}}$, so $\Omega_1=\Theta_1$.
+
+\emph{The case $n\ge2$.}  Then $(p-1)n\ge p$, so $(p-1)n$ has a nonzero digit
+$d$ in some position $e\ge1$.  Put $t=p^{e-1}$.  By Lucas' theorem,
+$a((t),n-t)=\binom{(p-1)n}{p^e}=d\ne0$, and $t<n$.  By
+Theorems~\ref{thm:all} and~\ref{thm:twoaction},
+\[
+  \Omega_n=d^{-1}P^t\,\Omega_{n-t}=d^{-1}P^t\,\Theta_{n-t}=\Theta_n. \qedhere
 \]
 \end{proof}
 
 \begin{lemma}\label{lem:transvection}
-Let $p=2$, $k\ge2$, $n\ge1$, and let $\tau$ be the substitution
-$x_1\mapsto x_1+x_2$.  Then
+Let $k\ge2$, $n\ge1$, and let $\tau$ be the substitution $x_1\mapsto x_1+x_2$.
+The part of $\tau(\wt_n)-\wt_n$ of $x_1$-degree $0$ is the coefficient of
+$w^{(p-1)n}$ in
 \[
-  \tau(\wt_n)=\wt_n+x_2\,\wt^{(k-2)}_{n-1}(x_3,\dots,x_k),
+  -x_2w\,S(x_2w)^{p-2}\prod_{l=3}^k\bigl(1-S(x_lw)^{p-1}\bigr).
 \]
-where $\wt^{(k-2)}_{n-1}$ is the Peterson element in the $k-2$ variables
-$x_3,\dots,x_k$ (equal to $\delta_{n,1}$ if $k=2$).  In particular $\wt_n$ is
-$\GL_k$-invariant if and only if $\sigma(n)\ge k$.
+It is nonzero if and only if $\sigma_p(n)<k$.
 \end{lemma}
 
 \begin{proof}
-By Proposition~\ref{prop:monomials}(2), $\wt_n$ is the sum of the monomials
-$x^s$ with $\sum s_i=n$ and each $s_i$ zero or a power of $2$.  For such $s_1$,
-$\tau(x_1^{s_1})=x_1^{s_1}+x_2^{s_1}$ if $s_1>0$.  So $\tau(\wt_n)-\wt_n$ is the
-sum of $x_2^{s_1+s_2}x_3^{s_3}\cdots x_k^{s_k}$ over the terms with $s_1>0$.
-The coefficient of $x_2^mx_3^{s_3}\cdots x_k^{s_k}$ is the number of ways to
-write $m=s_1+s_2$ with $s_1>0$ and $s_1,s_2\in\{0\}\cup2^{\mathbb{N}}$.  This
-number is $1$ for $m=1$, and $0$ or $2$ for $m\ge2$.  This proves the formula.
+Let $G(z)=1-S(z)^{p-1}=\sum_ag(a)z^a$, so that
+$\wt(w)=\prod_lG(x_lw)$.  For an admissible $a$, the coefficient of $x_1^0$ in
+$(x_1+x_2)^a$ is $x_2^a$.  So the coefficient of $x_1^0x_2^bx_3^{a_3}\cdots$ in
+$\tau(\wt_n)$ is $\sum_{a_1+a_2=b}g(a_1)g(a_2)\prod_{l\ge3}g(a_l)$.  In $\wt_n$
+the same coefficient is $g(b)\prod_{l\ge3}g(a_l)$.  So the part of
+$x_1$-degree $0$ of $\tau(\wt(w))-\wt(w)$ is
+$\bigl(G^2-G\bigr)(x_2w)\prod_{l\ge3}G(x_lw)$.  By~\eqref{eq:S},
+\[
+  G^2-G=S^{2(p-1)}-S^{p-1}=S^{p-2}(S^p-S)=-zS^{p-2}.
+\]
 
-The group $\GL_k(\mathbb{F}_2)$ is generated by the permutations and $\tau$,
-and $\wt_n$ is symmetric.  So $\wt_n$ is invariant if and only if
-$\wt^{(k-2)}_{n-1}=0$, i.e.\ if and only if $n-1$ is not a sum of at most $k-2$
-powers of $2$.  This means $\alpha(n-1)\ge k-1$.  Finally
-$\alpha(n-1)=\alpha(n)+\nu(n)-1=\sigma(n)-1$.
+The expansion of $S^{p-2}$ has nonzero coefficients $(p-2)!/\varepsilon!$ and
+distinct exponents.  These exponents are the $e\ge0$ with $\alpha(e)=p-2$.  So
+the expression is nonzero if and only if, with $m=(p-1)n$,
+\[
+  m-1=e+a_3+\dots+a_k,\qquad \alpha(e)=p-2,\ a_l\ \text{admissible}.
+\]
+Now $\alpha(m-1)=\alpha(m)-1+\nu(m)(p-1)=(\sigma_p(n)-1)(p-1)+(p-2)$.  Since
+the digit sum is subadditive, a decomposition with $j$ nonzero $a_l$ needs
+$(p-2)+j(p-1)\ge\alpha(m-1)$, i.e.\ $j\ge\sigma_p(n)-1$.  Conversely, the
+digit units of $m-1$ can be split into one group of $p-2$ units and
+$\sigma_p(n)-1$ groups of $p-1$ units.  So a decomposition exists if and only if
+$\sigma_p(n)-1\le k-2$.
 \end{proof}
 
 \begin{corollary}\label{cor:conjB2}
-Conjecture~\ref{conj:B} holds for $p=2$.  Moreover, for $p=2$ the following
-are equivalent: $\wt_n$ is $\GL_k$-invariant; $\Omega_n\in\Dk$;
-$\sigma(n)\ge k$.  When they hold, $\wt_n=\Omega_n$.  (For $k=1$ all three
-hold for every $n\ge1$.)
+Theorem~\ref{conj:B} holds.  More precisely, for all $p$, $k$ and $n\ge1$ the
+following are equivalent:
+\begin{enumerate}
+\item $\wt_n$ is $\GL_k$-invariant;
+\item $\Omega_n\in\Dk$;
+\item $\sigma_p(n)\ge k$.
+\end{enumerate}
+When they hold, $\wt_n=\Omega_n$.
 \end{corollary}
 
 \begin{proof}
-By Theorem~\ref{thm:arnon}, $\Omega_n={}_k\omega_n$.  By (A2) this has integral
-exponents if and only if $\sigma(n)\ge k$, and then it equals $\wt_n$.  Combine
-this with Lemma~\ref{lem:transvection}.
+By Theorem~\ref{thm:arnon} and Lemma~\ref{lem:twosupport}, $\Omega_n=\Theta_n$
+lies in $H$ if and only if $\sigma_p(n)\ge k$, and then it equals $\wt_n$.
+Since $\Omega_n\in\Dperf$, this proves (2)$\Leftrightarrow$(3) and
+(3)$\Rightarrow$(1).  For $k=1$, (3) always holds.
+
+Let $k\ge2$ and $\sigma_p(n)<k$.  Then $\tau(\wt_n)\ne\wt_n$ by
+Lemma~\ref{lem:transvection}, so $\wt_n$ is not invariant.
 \end{proof}
 
-For example, for $k=3$ the integers $n\le40$ with $\sigma(n)<3$ are
-$1,2,3,5,9,17,33$, which are exactly the non-invariant $\wt_n$ listed after
-Proposition~\ref{prop:monomials}.
+For example, for $p=2$, $k=3$, the integers $n\le40$ with $\sigma_2(n)<3$ are
+$1,2,3,5,9,17,33$.  For $p=3$, $k=2$, the integers with $\sigma_3(n)<2$ are
+$1,2,5,14,41,\dots$, i.e.\ $2n=2$ or $2n=3^j+1$.  These are exactly the
+non-invariant $\wt_n$ listed after Proposition~\ref{prop:monomials}.
 
-\begin{remark}[Two-sided generating functions]\label{rem:twosided}
-Let $T(z)=\sum_{r\in\mathbb{Z}}z^{2^r}$.  Then
-$\sum_{n\in\mathbb{N}[\frac12]}{}_k\omega_n\,w^n=\prod_i\bigl(1+T(x_iw)\bigr)$,
-and the coefficient of each $w^n$ is a finite sum by (A2).  The one-sided series
-$S(z)=\sum_{r\ge0}z^{2^r}$ satisfies $S-S^2=z$, and
-Proposition~\ref{prop:monomials}(1) reads
-$\sum_n\wt_nw^n=\prod_i(1+S(x_iw))$.  The two-sided series instead satisfies
-$T^2=T$, so $\prod_i(1+T(x_iw))$ is idempotent.  This is the generating-function
-form of ${}_k\omega_{2n}={}_k\omega_n^2$.  The one-sided $\wt_n$ have no such
-relation, and they are not invariant when $\sigma(n)<k$.  Passing
-from $S$ to $T$ is what moves the Peterson elements into $\Dperf$, where the
-Lagrange elements $\Omega_n$ live.  For odd $p$ the analogous series
-$T_p(z)=\sum_{r\in\mathbb{Z}}z^{p^r}$ satisfies $T_p^p=T_p$, so
-$\prod_i(1-T_p(x_iw)^{p-1})$ is again Frobenius-stable.  We have not checked
-whether its coefficients are the $\Omega_n$ for odd $p$.
+\begin{remark}[Comparison with Arnon]\label{rem:twosided}
+For $p=2$ the results of this subsection overlap with~\cite[\S3]{Arnon}.
+Arnon proves that ${}_k\omega_n=\Theta_n$ is invariant, satisfies
+${}_k\omega_{2n}={}_k\omega_n^2$ and has integral exponents if and only if
+$\sigma_2(n)\ge k$~\cite[Prop.~3.4, 3.6]{Arnon}.  He also computes $Sq^t$ on it
+(Theorem~3.9), and writes it as a polynomial in the Dickson invariants
+(Theorem~3.11, the analogue of our decomposition~\eqref{eq:Omega}).
+
+The identity $\widehat S^p=\widehat S$ makes $\Theta(w)$ stable under
+Frobenius, which is the generating-function form of
+$\Theta_{pn}=\Theta_n^p$.  The one-sided series instead satisfies
+$S-S^p=z$, and the difference is the error term $B$ of~\eqref{eq:adj}.
 \end{remark}
 
 \subsection{Computer verification}
@@ -973,12 +1082,14 @@ statement & range & cases\\
 $(\ast)$ for $\wt_n$, $k=1$ (exact formula) & $p=3,5,7$, $n<60$ & 1350\\
 $(\ast)$, invariant $\wt_n$ & $p=2$: $k=2,3$; $p=3$: $k\le3$; $p=5,7$: $k=2$ & 682\\
 conjugate formula, invariant $\wt_n$ & $p=2$: $k=2,3$; $p=3$: $k\le3$; $p=5$: $k\le2$ & 321\\
-Conjecture~\ref{conj:B} & $p=2$: $k=3,4$, $n\le40$; $p=3$: $k=2$, $n\le 40$; & \\
+Theorem~\ref{conj:B} & $p=2$: $k=3,4$, $n\le40$; $p=3$: $k=2$, $n\le 40$; & \\
   & \quad $k=3$, $n\le30$; $p=5$: $n\le40$; $p=7$: $n\le30$ ($k=2$) & 143\\
 $(\ast)$ for $\Omega_n$, all $n$ (in $\Dperf$) & $p=2$: $k=2,3$; $p=3$: $k=2$ & 134\\
-$\Omega_n={}_k\omega_n$ (Thm.~\ref{thm:arnon}) & $p=2$: $k=1$, $n\le30$; $k=2$, $n\le40$; & \\
+$\Omega_n=\Theta_n$, $p=2$ (Thm.~\ref{thm:arnon}) & $k=1$, $n\le30$; $k=2$, $n\le40$; & \\
   & \quad $k=3$, $n\le24$; $k=4$, $n\le10$ & 108\\
-Lemma~\ref{lem:transvection} & $p=2$: $k=2,3,4$, $n\le40$ & 120\\
+$\Omega_n=\Theta_n$, odd $p$ & $p=3$: $k\le3$; $p=5$: $k\le3$; $p=7$: $k=2$ & 141\\
+Lemmas~\ref{lem:twosupport}(2), \ref{lem:transvection} & $p=2$: $k\le4$, $n\le40$; $p=3$: $k\le3$; & \\
+  & \quad $p=5$: $k\le3$; $p=7$: $k=2$ & 297\\
 $(\ast)$ for $P^{\Delta_j}=P(0,\dots,0,1)$, invariant $\wt_n$ & $p=2$: $k=3$ ($j=2,3$), $k=4$ ($j=2$); & \\
   & \quad $p=3$: $k=3$, $j=2$; $p=5$: $k=2$, $j=2$ & 75\\
 $G_{R,E}=0$ when $\alpha(D_R-E)\le(k-1)(p-1)$ & $p=2,3,5$; $k\le4$; $\ell(R)\le3$, $r_j\le p+1$ & $\approx10^6$\\
