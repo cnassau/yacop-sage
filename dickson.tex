@@ -1053,6 +1053,64 @@ $1,2,3,5,9,17,33$.  For $p=3$, $k=2$, the integers with $\sigma_3(n)<2$ are
 $1,2,5,14,41,\dots$, i.e.\ $2n=2$ or $2n=3^j+1$.  These are exactly the
 non-invariant $\wt_n$ listed after Proposition~\ref{prop:monomials}.
 
+\begin{proposition}\label{prop:twoconj}
+Let $U=T^{-1}$, so that $\Lambda'_t(x)=U(x)=\sum_ju_jx^{p^j}$ with
+$u_j\in\F[t]$, and let $U^*(w)=\sum_j(u_jw)^{p^{-j}}$ be its adjoint.  Then
+$U^*=(T^*)^{-1}$, and
+\[
+  \Lambda'_t\Theta(w)=\Theta(U^*w).
+\]
+For all integers $n\ge0$ and all $R$,
+$\chi(P^R)\,\Theta_n=b(R,n)\,\Theta_{n+d(R)}$.  This statement, for all $k$,
+is equivalent to the identity
+\begin{equation}\label{eq:Gconj}
+  \pi\Bigl[\Bigl(\frac{U^*(w)}{w}\Bigr)^{(p-1)M}\Bigr]
+  =\sum_R b\bigl(R,M-d(R)\bigr)\,t^R\,w^{-(p-1)d(R)}\qquad(M\in\mathbb{N}),
+\end{equation}
+which only involves the series $U^*$.
+\end{proposition}
+
+\begin{proof}
+The computation in the proof of Theorem~\ref{thm:twoaction} applies to any
+ring map $x\mapsto\sum_ju_jx^{p^j}$.  It gives
+$\Lambda'_t\widehat S(xw)=\widehat S(U(x)w)=\widehat S(xU^*(w))$, and hence
+the displayed identity.  Taking adjoints reverses composition, so $U^*=(T^*)^{-1}$.
+The formula for $\chi(P^R)\Theta_n$ follows from $\Theta_n=\Omega_n$
+(Theorem~\ref{thm:arnon}) and Theorem~\ref{thm:conjall}.
+
+For the equivalence, give $t_j$ degree $p^j-1$ and $w$ degree $1$.  Then
+$T^*$, and hence $U^*$, is homogeneous of degree $1$.  So a monomial
+$t^Rw^\beta$ of $U^*(w)^{(p-1)M}$ with integral $R$ has
+$\beta=(p-1)(M-d(R))$; in particular non-integral $M$ only contribute to
+non-integral powers of $w$.  The projection $\pi$ is linear over the $t$-free
+elements $\Theta_M$.  Comparing coefficients of $t^Rw^{(p-1)n}$ in
+$\pi[\Lambda'_t\Theta(w)]=\sum_M\Theta_M\,\pi[U^*(w)^{(p-1)M}]$ therefore
+gives
+\[
+  \chi(P^R)\,\Theta_n=\coef{t^R}\Bigl(\frac{U^*(w)}{w}\Bigr)^{(p-1)M}w^{(p-1)d(R)}
+  \cdot\Theta_M,\qquad M=n+d(R).
+\]
+Since $\Theta_M\ne0$ once $k(p-1)\ge\alpha((p-1)M)$, the formula for all $k$
+is equivalent to~\eqref{eq:Gconj}.  Terms of~\eqref{eq:Gconj} with $M<d(R)$
+vanish, because then $(p-1)(d(R)-M)<N(R)$, so the binomial factor of $b$ is
+$\binom{(p-1)(d(R)-M)}{N(R)}=0$.
+\end{proof}
+
+Identity~\eqref{eq:Gconj} is the conjugate analogue of Lemma~\ref{lem:G}.
+Unlike Lemma~\ref{lem:G}, it does not seem to have a direct proof.  For
+$T^*(w)=w(1+\sum_j\vartheta_j)$ the integral $t$-exponents are read off
+monomial by monomial.  The coefficients $u_j$ of $U^*$, by contrast, are the
+images of Milnor's conjugates $\chi(\xi_j)$, and products of terms with
+fractional $t$-exponents can have integral exponents.  Lagrange inversion
+does not help either.  The exponents of $U^*$ lie in $\mathbb{Z}[1/p]$, so the
+derivative it needs is not defined in characteristic~$p$.  Its
+characteristic-$0$ form predicts an extra factor
+$c/(c-N(R)+|R|)$, with $c=(p-1)M$.  This is already wrong for $p=3$,
+$R=(1)$, $M=2$: it gives $1$ instead of $b((1),1)=2$.
+So~\eqref{eq:Gconj} rests on the antipode identity~\eqref{eq:antipode} and
+Lemma~\ref{lem:levels}, as Theorem~\ref{thm:conjall} does.  The two-sided
+series makes the ordinary action formula immediate, but not the conjugate one.
+
 \begin{remark}[Comparison with Arnon]\label{rem:twosided}
 For $p=2$ the results of this subsection overlap with~\cite[\S3]{Arnon}.
 Arnon proves that ${}_k\omega_n=\Theta_n$ is invariant, satisfies
