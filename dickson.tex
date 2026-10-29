@@ -44,9 +44,8 @@ Dickson invariants are Peterson elements.  We extract the action formula from
 the code.  For odd $p$ it holds with the normalisation $\wt_n=(-1)^n\omega_n$,
 not with the one stated in the code's documentation.  We prove the formula
 for all Peterson elements, all $k$ and all Milnor basis elements.  In
-particular the algorithm is correct.  The code's formula for the conjugate
-action is reduced to a binomial identity that we verify by computer but do not
-prove.  Finally we explain the auxiliary class
+particular the algorithm is correct.  We also prove the code's formula for
+the conjugate action.  Finally we explain the auxiliary class
 \code{DicksonDualSteenrodAlgebra}.
 \end{abstract}
 
@@ -90,10 +89,9 @@ where the second factor is a multinomial coefficient.  The code (functions
 \item Section~\ref{sec:proof} proves $(\ast)$ at the Dickson generators
   (Theorem~\ref{thm:gen}), which shows that the algorithm is correct
   (Corollary~\ref{cor:algo}).  It then proves $(\ast)$ in all degrees
-  (Theorem~\ref{thm:all}).  The conjugate formula used by the code is stated
-  as Conjecture~\ref{conj:C}.  It is reduced to a binomial identity
-  (Proposition~\ref{prop:conj}) that has been checked by computer, like the
-  other statements in Table~\ref{tab:checks}.
+  (Theorem~\ref{thm:all}), and the formula used by the code for the
+  conjugate action (Theorem~\ref{thm:conjall}).  Table~\ref{tab:checks} lists
+  independent computer checks.
 \item Section~\ref{sec:whole} explains how the code obtains the action on all
   of $\Dk$ (and on the M\`ui generators), and Section~\ref{sec:dual} explains
   \code{DicksonDualSteenrodAlgebra}.
@@ -360,17 +358,16 @@ For all $k$, $n$ and $R$,
 \end{theorem}
 
 This is proved in Section~\ref{sec:proof} (Theorem~\ref{thm:all}).  The code
-uses a second formula for the conjugate action (\code{isconjugate=True}).  We
-can reduce it to a binomial identity (Proposition~\ref{prop:conj}), but we have
-not proved it.
+uses a second formula for the conjugate action (\code{isconjugate=True}),
+proved in Theorem~\ref{thm:conjall}.
 
-\begin{conjecture}[Conjugate action]\label{conj:C}
+\begin{theorem}[Conjugate action]\label{thm:conjact}
 For all $k$, $n$ and $R$,
 \[
   \chi(P^R)\,\Omega_n=b(R,n)\,\Omega_{n+d(R)},\qquad
   b(R,n)=\binom{-(p-1)n}{N(R)}\binom{N(R)}{pr_1,p^2r_2,\dots}.
 \]
-\end{conjecture}
+\end{theorem}
 
 The algorithm needs Theorem~\ref{thm:C} only at the generator degrees
 $n=n_j$, where $\Omega_{n_j}=c_{k,k-j}$:
@@ -741,12 +738,15 @@ Theorem~\ref{thm:k1} again.
 On $\Dperf$ we let $\chi(P^R)$ act by the integral coefficients of
 $\Lambda'_t=\Lambda_t^{-1}$, as for $P^R$.
 
+The proof reduces the conjugate formula to the ordinary one, using the
+antipode identity and a vanishing statement for binomial coefficients.
+
 \begin{proposition}\label{prop:conj}
 Suppose that, for all $n\ge0$ and $R\ne0$,
 \begin{equation}\label{eq:antipode}
   \sum_{R'+R''=R}b(R',\,n+d(R''))\;a(R'',\,n)=0 .
 \end{equation}
-Then Conjecture~\ref{conj:C} holds.
+Then Theorem~\ref{thm:conjact} holds.
 \end{proposition}
 
 \begin{proof}
@@ -765,14 +765,76 @@ lies in $\Dk$, so for $R''\ne0$ the induction hypothesis applies to it.  Thus
 by~\eqref{eq:antipode}, since $a(0,\cdot)=1$.
 \end{proof}
 
-Identity~\eqref{eq:antipode} is a statement about binomial coefficients mod
-$p$ only.  It holds in all $7175$ cases we checked ($p=2,3$ with $\ell(R)\le3$;
-$p=5$ with $\ell(R)\le2$; $r_j\le p+1$; $n<25$), but we have no proof.  One way to approach it:
-the operator $G\mapsto\pi[G(T^*w)]$ maps $w^{-(p-1)n}$ to
-$\sum_Rt^Rb(R,n)\,w^{-(p-1)(n+d(R))}$ and $w^{(p-1)M}$ to
-$\sum_Rt^Ra(R,M-d(R))\,w^{(p-1)(M-d(R))}$.  So~\eqref{eq:antipode} says that its
-matrices on negative and on positive powers of $w$ are mutually inverse up to
-transposition.
+To prove~\eqref{eq:antipode} we need a projection on power series.  Let
+$y_1,\dots,y_J$ be variables, $Y=1+\sum_iy_i$, and fix levels
+$\lambda=(\lambda_1,\dots,\lambda_J)\in\mathbb{Z}_{\ge0}^J$.  Let $\Pi_\lambda$
+keep the monomials $y^E$ with $p^{\lambda_i}\mid E_i$ for all $i$, and put
+$\|E\|_\lambda=\sum_iE_i/p^{\lambda_i}$ for such $E$.  For $m\in\mathbb{Z}$, $Y^m$
+is a power series, a polynomial if $m\ge0$.
+
+\begin{lemma}\label{lem:levels}
+Let $E\ne0$ with $p^{\lambda_i}\mid E_i$, and let $\mu,\nu\in\mathbb{Z}$ with
+$\mu+\nu=|E|-\delta$, where $1\le\delta\le\|E\|_\lambda$.  Then
+\[
+  \coef{y^E}\,\Pi_\lambda(Y^\mu)\,\Pi_\lambda(Y^\nu)=0 .
+\]
+\end{lemma}
+
+\begin{proof}
+Write $m=\sum_am_ap^a$ in base $p$ ($p$-adically if $m<0$).  By Lucas,
+$Y^m=\prod_a(1+\sum_iy_i^{p^a})^{m_a}$.  In this product the exponent of $y_i$ is
+$\sum_ap^ak_{a,i}$ with digits $k_{a,i}\le m_a<p$, so it is divisible by
+$p^{\lambda_i}$ iff $k_{a,i}=0$ for $a<\lambda_i$.  Hence
+\[
+  \Pi_\lambda(Y^m)=\prod_{a\ge0}\Bigl(1+\sum_{i:\lambda_i\le a}y_i^{p^a}\Bigr)^{m_a}
+  =\Bigl(1+\sum_{i\in Z}y_i\Bigr)^{m_0}\cdot\Pi_{\lambda^-}\bigl(Y^{\lfloor m/p\rfloor}\bigr)^p,
+\]
+where $Z=\{i:\lambda_i=0\}$, $\lambda^-_i=\max(\lambda_i-1,0)$ and
+$\lfloor m/p\rfloor=(m-m_0)/p$.  We use induction on
+$\sum_{i\notin Z,\,E_i\ne0}\lambda_i$.
+
+If $E_i=0$ for all $i\notin Z$, set those $y_i=0$.  Then
+$\Pi_\lambda(Y^m)$ becomes $(1+\sum_{i\in Z}y_i)^m$, and the coefficient is
+$\binom{|E|-\delta}{|E|}\binom{|E|}{E}=0$, since $0\le|E|-\delta<|E|$.
+
+Otherwise let $s=\mu_0+\nu_0\le2p-2$, $\mu'=\lfloor\mu/p\rfloor$,
+$\nu'=\lfloor\nu/p\rfloor$.  Then the coefficient is a sum, over splittings
+$E_i=e_i+pe'_i$ ($i\in Z$), of $\coef{y^e}(1+\sum_{i\in Z}y_i)^s$ times
+$\coef{y^{E''}}\Pi_{\lambda^-}(Y^{\mu'})\Pi_{\lambda^-}(Y^{\nu'})$.  Here
+$E''_i=E_i/p$ for $i\notin Z$ and $E''_i=e'_i$ for $i\in Z$.  Only splittings
+with $|e|\le s$ contribute.  We check the hypotheses for $(\lambda^-,E'',\mu',\nu')$.
+We have $|E|=p|E''|+|e|$, so $\mu'+\nu'=(\mu+\nu-s)/p=|E''|-\delta''$ with
+$\delta''=(\delta+s-|e|)/p$, an integer.  Since $\delta\ge1$ and $|e|\le s$,
+$\delta''\ge1$.  Let $c=\sum_{i\notin Z}E_i/p^{\lambda_i}\ge1$, so that
+$\|E\|_\lambda=c+|e|+p|e'|$ and $\|E''\|_{\lambda^-}=c+|e'|$.  Then
+$\delta''\le(c+s)/p+|e'|<c+1+|e'|$, using $s\le2p-2<(p-1)c+p$.  So
+$\delta''\le\|E''\|_{\lambda^-}$.  If $E''=0$, then $|E|=|e|\le s$ and $c=0$,
+which is excluded.  So the induction hypothesis applies, and every term
+vanishes.
+\end{proof}
+
+\begin{theorem}\label{thm:conjall}
+Identity~\eqref{eq:antipode} holds.  Hence Theorem~\ref{thm:conjact} holds.
+\end{theorem}
+
+\begin{proof}
+Let $\rho_a(t)$ and $\rho_b(t)$ be the operators on formal symbols
+$(E_n)_{n\ge0}$ given by $E_n\mapsto\sum_Rt^Ra(R,n)E_{n+d(R)}$ and
+$E_n\mapsto\sum_Rt^Rb(R,n)E_{n+d(R)}$.  Identity~\eqref{eq:antipode} says
+$\rho_b\rho_a=1$.  Both operators are the identity plus terms of positive
+$t$-degree, so this is equivalent to $\rho_a\rho_b=1$, i.e.\ to
+\[
+  \sum_{R_1+R_2=R}b(R_1,n)\,a(R_2,n+d(R_1))=0\qquad(R\ne0).
+\]
+Now $b(R_1,n)=\coef{y^{pR_1}}Y^{-(p-1)n}$, where
+$y^{pR}=\prod_jy_j^{p^jr_j}$.  Similarly
+$a(R_2,n+d(R_1))=\coef{y^{pR_2}}Y^{(p-1)n+N(R)-|R|}$, because
+$(p-1)(n+d(R_1)+d(R_2))=(p-1)n+N(R)-|R|$.  So the sum is
+$\coef{y^{pR}}\Pi_\lambda(Y^\mu)\Pi_\lambda(Y^\nu)$ with $\lambda_j=j$,
+$\mu=-(p-1)n$, $\nu=(p-1)n+N(R)-|R|$.  Here $E=pR$ has $|E|=N(R)$ and
+$\|E\|_\lambda=|R|$, and $\mu+\nu=|E|-|R|$.  Lemma~\ref{lem:levels} with
+$\delta=|R|$ shows that it vanishes.  Now apply Proposition~\ref{prop:conj}.
+\end{proof}
 
 \subsection{Computer verification}
 All checks below compute the action directly on polynomials in
@@ -797,6 +859,7 @@ $(\ast)$ for $P^{\Delta_j}=P(0,\dots,0,1)$, invariant $\wt_n$ & $p=2$: $k=3$ ($j
 $G_{R,E}=0$ when $\alpha(D_R-E)\le(k-1)(p-1)$ & $p=2,3,5$; $k\le4$; $\ell(R)\le3$, $r_j\le p+1$ & $\approx10^6$\\
 same, general $D_0$ (Prop.~\ref{prop:vanish}) & $p=2,3,5$; $k\le3$; $\ell(R)\le2$; $D_0<p^{k+1}+p$ & $1.3\cdot10^6$\\
 identity~\eqref{eq:antipode} & $p=2,3$: $\ell(R)\le3$; $p=5$: $\ell(R)\le2$; $n<25$ & 7175\\
+Lemma~\ref{lem:levels} & $p=2,3$; $J\le3$; $\lambda_i\le2$; $|\mu|\le25$ & 240516\\
 \bottomrule
 \end{tabular}
 \caption{Computer checks of the action formula.  ``Cases'' counts pairs
@@ -841,7 +904,8 @@ $\tau^Q$).  Then $P^R(m)$ is the sum of the $y$ with $R'=R$
 Because $\Dk$ is a polynomial algebra, (1)--(3) determine the action
 completely.  Together with Theorem~\ref{thm:gen} this proves that the $\Dk$
 part of the code is correct for the ordinary action.  The conjugate action
-(\code{left\_steenrod\_action\_milnor\_conj}) relies on Conjecture~\ref{conj:C}.  The code also offers an
+(\code{left\_steenrod\_action\_milnor\_conj}) uses Theorem~\ref{thm:conjact} on
+the Dickson generators, so its $\Dk$ part is correct too.  The code also offers an
 independent route, \code{admissible\_action}, through admissible matrices, and
 restriction maps $D_k\to D_{k'}$ for $k'<k$; these are not discussed here.
 
@@ -886,7 +950,7 @@ for the ``dual'' space $Y$ in place of $V$.  In this sense the Peterson elements
 canonical elements $\sum_{d(R)=n}(-1)^{|R|}\binom{|R|}{R}\xi^R\in\A_*(k)$ under
 the Dickson map of the dual space.  Equation~\eqref{eq:F2}, with the adjoint
 $T^*$, suggests that this duality is the natural setting for these
-formulas, and perhaps for a proof of Conjecture~\ref{conj:C}.
+formulas.
 
 \begin{thebibliography}{99}
 \bibitem{Dickson} L.~E.~Dickson, \emph{A fundamental system of invariants of the

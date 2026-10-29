@@ -1,6 +1,7 @@
 # Checks the binomial identity (antipode identity) of Proposition 5.12, eq. (8):
 #   sum_{R'+R''=R} b(R', n+d(R'')) a(R'', n) = 0   for R != 0,
-# which implies the conjugate formula (Conjecture 4.6).  Plain Python 3.
+# which gives the conjugate formula (Theorem 4.6), and the more general
+# Lemma 5.13 used to prove it.  Plain Python 3.
 #
 # Run:  python3 dickson-checks/antipode.py
 import itertools
@@ -37,3 +38,33 @@ for p in [2,3,5]:
           bad+=1
           if bad<5: print("fail",p,R,n,s%p)
 print("antipode identity: tested",tot,"failures",bad)
+
+# Lemma 5.13: [y^E] Pi_lam(Y^mu) Pi_lam(Y^nu) = 0 if mu + nu = |E| - delta,
+# 1 <= delta <= sum_i E_i / p^lam_i.
+def coefY(p,m,A):
+    s=sum(A); v=binp(p,m,s); t=0
+    for x in A: t+=x; v=v*binp(p,t,x)%p
+    return v
+def G(p,lam,mu,nu,E):
+    # [y^E] Pi_lam(Y^mu) Pi_lam(Y^nu): sum over splits A+B=E with p^lam_i | A_i, B_i
+    tot=0
+    for A in itertools.product(*[range(0,e+1,p**l) for e,l in zip(E,lam)]):
+        B=[e-a for e,a in zip(E,A)]
+        if any(b % p**l for b,l in zip(B,lam)): continue
+        tot+=coefY(p,mu,A)*coefY(p,nu,B)
+    return tot%p
+bad=0; tot=0
+for p in [2,3]:
+  for J in [1,2,3]:
+    for lam in itertools.product(range(0,3),repeat=J):
+      for cnt in itertools.product(range(0,3),repeat=J):
+        E=[c*p**l for c,l in zip(cnt,lam)]
+        if not any(E): continue
+        count=sum(cnt)
+        for delta in range(1,count+1):
+          for mu in range(-25,26):
+            nu=sum(E)-delta-mu; tot+=1
+            if G(p,lam,mu,nu,E):
+              bad+=1
+              if bad<5: print("FAIL",p,lam,E,delta,mu)
+print("general level lemma: tested",tot,"failures",bad)

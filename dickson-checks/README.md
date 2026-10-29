@@ -22,7 +22,7 @@ The plain Python scripts run with `python3`.
 | `lagrange_action.py` (Sage) | (*) for the Lagrange elements Omega_n in all degrees | Table 1, row 5 | ~10 s |
 | `primitives.py` (Sage) | (*) for the Milnor primitives P(0,…,0,1) | Table 1, row 6 | ~5 s |
 | `digit_lemma.py` (Python) | vanishing of G_{R,E} (Proposition 5.8), at D0 = p^k and at general D0 | Table 1 | ~2 s |
-| `antipode.py` (Python) | binomial identity (8) of Prop. 5.12, which implies the conjugate formula | Table 1, last row | ~2 s |
+| `antipode.py` (Python) | identity (8) of Prop. 5.12 and Lemma 5.13 (conjugate formula, Theorem 4.6) | Table 1, last rows | ~15 s |
 | `hung_minh.py` (Sage + yacop) | yacop's P^i on Dickson invariants against Hung (p = 2) and Hung–Minh (odd p) | remark after Cor. 5.10 | ~15 s |
 
 Every line of output should report `bad=0`, `0 disagree` or `violations 0`.
