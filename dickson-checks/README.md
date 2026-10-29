@@ -31,6 +31,7 @@ $(cat dickson-checks/mui_action.py)"
 | `primitives.py` (Sage) | (*) for the Milnor primitives P(0,…,0,1) | Table 1, row 6 | ~5 s |
 | `digit_lemma.py` (Python) | vanishing of G_{R,E} (Proposition 5.8), at D0 = p^k and at general D0 | Table 1 | ~2 s |
 | `antipode.py` (Python) | identity (8) of Prop. 5.12 and Lemma 5.13 (conjugate formula, Theorem 4.6) | Table 1, last rows | ~15 s |
+| `arnon.py` (Sage) | p = 2: Omega_n equals Arnon's generalized Peterson element; transvection identity and invariance criterion sigma(n) >= k | Section 5.5, Table 1 | ~5 s |
 | `hung_minh.py` (Sage + yacop) | yacop's P^i on Dickson invariants against Hung (p = 2) and Hung–Minh (odd p) | remark after Cor. 5.10 | ~15 s |
 | `mui_action.py` (Sage + yacop) | P^r on the Mùi generators tau_j against a direct computation in H^*(BV) | Section 6 | ~5 s |
 | `mui_associativity.py` (Sage + yacop) | associativity of the ordinary and conjugate action on the tau_j; conjugate = antipode | Section 6 | ~20 min |

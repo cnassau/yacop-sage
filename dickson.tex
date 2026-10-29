@@ -45,7 +45,9 @@ the code.  For odd $p$ it holds with the normalisation $\wt_n=(-1)^n\omega_n$,
 not with the one stated in the code's documentation.  We prove the formula
 for all Peterson elements, all $k$ and all Milnor basis elements.  In
 particular the algorithm is correct.  We also prove the code's formula for
-the conjugate action.  Finally we explain the auxiliary class
+the conjugate action.  For $p=2$ we compare with Arnon's generalised Dickson
+invariants and deduce that every $\GL_k$-invariant Peterson element is a
+Lagrange element.  Finally we explain the auxiliary class
 \code{DicksonDualSteenrodAlgebra}.
 \end{abstract}
 
@@ -90,7 +92,9 @@ where the second factor is a multinomial coefficient.  The code (functions
   (Theorem~\ref{thm:gen}), which shows that the algorithm is correct
   (Corollary~\ref{cor:algo}).  It then proves $(\ast)$ in all degrees
   (Theorem~\ref{thm:all}), and the formula used by the code for the
-  conjugate action (Theorem~\ref{thm:conjall}).  Table~\ref{tab:checks} lists
+  conjugate action (Theorem~\ref{thm:conjall}).  For $p=2$ it relates the
+  elements $\Omega_n$ to Arnon's generalised Peterson elements and proves
+  Conjecture~\ref{conj:B} (Theorem~\ref{thm:arnon}).  Table~\ref{tab:checks} lists
   independent computer checks.
 \item Section~\ref{sec:whole} explains how the code obtains the action on all
   of $\Dk$, Section~\ref{sec:mui} derives the action on the M\`ui generators,
@@ -192,8 +196,10 @@ $\wt_n=(-1)^n\omega_n$.  It has degree $(p-1)n|x_1|$.  (Code:
 definition.)
 \end{definition}
 
-For $p=2$ these are the elements studied by Hung and
-Peterson~\cite[\S2]{HungPeterson98}.
+For $p=2$ these are the elements studied by Arnon~\cite[Def.~3.2]{Arnon},
+who attributes them to Peterson, and by Hung and
+Peterson~\cite[\S2]{HungPeterson98}.  Arnon also allows negative powers of $2$
+as exponents; see Section~\ref{sec:arnon}.
 
 \begin{proposition}\label{prop:monomials}
 \begin{enumerate}
@@ -262,7 +268,8 @@ monomials, and $F(x_1)=0$.
 \end{proof}
 
 \begin{remark}
-For $p=2$, Theorem~\ref{thm:A} is the formula of~\cite[\S2]{HungPeterson98}.
+For $p=2$, Theorem~\ref{thm:A} is~\cite[Prop.~3.6(c)]{Arnon} and the formula
+of~\cite[\S2]{HungPeterson98}.
 In the code, generator number $j$ of \code{DicksonAlgebra($p$,$k$)} (counted
 from $1$, in the order \code{d\{deg\}} is listed) is $c_{k,k-j}=\wt_{n_j}$ with
 \[
@@ -336,7 +343,8 @@ If $\wt_n$ is $\GL_k$-invariant, then $\wt_n=\Omega_n$.
 \end{conjecture}
 
 By Theorem~\ref{thm:Aomega} the conjecture holds at the generator degrees
-$n=n_j$.  It has been verified in all cases listed in Table~\ref{tab:checks}.
+$n=n_j$.  For $p=2$ it holds in all degrees (Corollary~\ref{cor:conjB2}).  For
+odd $p$ it has been verified in all cases listed in Table~\ref{tab:checks}.
 The algorithm itself only needs the elements $\Omega_n$, so it does not depend
 on Conjecture~\ref{conj:B}.  The conjecture only matters for relating the
 code's \code{peterson(n)} to the polynomial $\wt_n$ in other degrees.
@@ -837,6 +845,119 @@ $\|E\|_\lambda=|R|$, and $\mu+\nu=|E|-|R|$.  Lemma~\ref{lem:levels} with
 $\delta=|R|$ shows that it vanishes.  Now apply Proposition~\ref{prop:conj}.
 \end{proof}
 
+\subsection{The case $p=2$: Arnon's generalised Peterson elements}\label{sec:arnon}
+In this subsection $p=2$, and $\sigma(n)=\alpha(n)+\nu(n)$ for $n\ge1$, where
+$\nu$ is the $2$-adic valuation.  Arnon~\cite{Arnon} works in the perfect
+closure $R(k)$ of $\F[x_1,\dots,x_k]$, whose invariants are
+$R(k)^{\GL_k}=\Dperf$~\cite[Prop.~3.6(a)]{Arnon}.  For $n\in\mathbb{N}[\frac12]$
+he defines
+\[
+  {}_k\omega_n=\sum x_1^{s_1}\cdots x_k^{s_k},
+\]
+summed over $s_1+\dots+s_k=n$ with each $s_i$ either $0$ or a power of $2$ with
+exponent in $\mathbb{Z}$.  The sum is finite, and he proves:
+\begin{enumerate}
+\item[(A1)] ${}_k\omega_n$ is $\GL_k$-invariant, and ${}_k\omega_{2n}=({}_k\omega_n)^2$
+  \cite[Prop.~3.4(b), 3.6(e)]{Arnon}.
+\item[(A2)] In every way of writing $n=\sum_{i\le k}2^{r_i}$, $r_i\ge\sigma(n)-k$.
+  So for integral $n$, ${}_k\omega_n$ has only integral exponents if and only if
+  $\sigma(n)\ge k$, and then ${}_k\omega_n=\wt_n$ by
+  Proposition~\ref{prop:monomials}(2) \cite[Prop.~3.4(a), 3.6(b)]{Arnon}.
+\item[(A3)] $Sq^t\,{}_k\omega_n=\binom{n+t}{2t}\,{}_k\omega_{n+t}$ for all
+  $n,t\in\mathbb{N}[\frac12]$ \cite[Thm.~3.9]{Arnon}.
+\end{enumerate}
+Here $Sq^t$ acts on $R(k)$ through the total square $x\mapsto x+x^2$ extended
+to square roots.  For integral $t$ this is our action of $P^{(t)}=Sq^t$ on
+$\Dperf$, since $\Lambda_t$ is the unique extension to the perfect closure.  At
+$R=(t)$ we have $a(R,n)=\binom{n+t}{2t}$, so (A3) is the case $p=2$, $R=(t)$ of
+Theorem~\ref{thm:all}, extended to half-integral degrees.  Arnon's proof is a
+short counting argument: $Sq^{t_i}$ either fixes $x_i^{2^r}$, squares it, or
+kills it, and the number of ways to recover a monomial of ${}_k\omega_{n+t}$
+is $\binom{n+t}{2t}$ modulo~$2$.  His Theorem~3.11 writes ${}_k\omega_n$ as a
+polynomial in the Dickson invariants; it plays the role of our
+decomposition~\eqref{eq:Omega}.
+
+\begin{theorem}\label{thm:arnon}
+For $p=2$, $\Omega_n={}_k\omega_n$ for all integers $n\ge0$.
+\end{theorem}
+
+\begin{proof}
+Induction on $n$.  Both sides are $1$ for $n=0$.  For $n=1$, apply
+Theorem~\ref{thm:all} with $R=(m)$ and $n=m$: $a((m),m)=1$ and $Sq^m$ squares
+elements of degree $m$, so $\Omega_{2m}=\Omega_m^2$.  Hence
+$\Omega_1^{2^{k-1}}=\Omega_{2^{k-1}}=c_{k,k-1}$ by Theorem~\ref{thm:Aomega}.
+By (A1), (A2) and Theorem~\ref{thm:A},
+${}_k\omega_1^{2^{k-1}}={}_k\omega_{2^{k-1}}=\wt_{2^{k-1}}=c_{k,k-1}$, since
+$\sigma(2^{k-1})=k$.  Frobenius is injective on $R(k)$, so
+$\Omega_1={}_k\omega_1$.  For $n\ge2$, pick a binary digit $2^a$ of $n$ with
+$a\ge1$ and put $t=2^{a-1}$.  Then $\binom{n}{2t}=1$, and
+Theorem~\ref{thm:all} and (A3) give
+\[
+  \Omega_n=Sq^t\,\Omega_{n-t}=Sq^t\,{}_k\omega_{n-t}={}_k\omega_n . \qedhere
+\]
+\end{proof}
+
+\begin{lemma}\label{lem:transvection}
+Let $p=2$, $k\ge2$, $n\ge1$, and let $\tau$ be the substitution
+$x_1\mapsto x_1+x_2$.  Then
+\[
+  \tau(\wt_n)=\wt_n+x_2\,\wt^{(k-2)}_{n-1}(x_3,\dots,x_k),
+\]
+where $\wt^{(k-2)}_{n-1}$ is the Peterson element in the $k-2$ variables
+$x_3,\dots,x_k$ (equal to $\delta_{n,1}$ if $k=2$).  In particular $\wt_n$ is
+$\GL_k$-invariant if and only if $\sigma(n)\ge k$.
+\end{lemma}
+
+\begin{proof}
+By Proposition~\ref{prop:monomials}(2), $\wt_n$ is the sum of the monomials
+$x^s$ with $\sum s_i=n$ and each $s_i$ zero or a power of $2$.  For such $s_1$,
+$\tau(x_1^{s_1})=x_1^{s_1}+x_2^{s_1}$ if $s_1>0$.  So $\tau(\wt_n)-\wt_n$ is the
+sum of $x_2^{s_1+s_2}x_3^{s_3}\cdots x_k^{s_k}$ over the terms with $s_1>0$.
+The coefficient of $x_2^mx_3^{s_3}\cdots x_k^{s_k}$ is the number of ways to
+write $m=s_1+s_2$ with $s_1>0$ and $s_1,s_2\in\{0\}\cup2^{\mathbb{N}}$.  This
+number is $1$ for $m=1$, and $0$ or $2$ for $m\ge2$.  This proves the formula.
+
+The group $\GL_k(\mathbb{F}_2)$ is generated by the permutations and $\tau$,
+and $\wt_n$ is symmetric.  So $\wt_n$ is invariant if and only if
+$\wt^{(k-2)}_{n-1}=0$, i.e.\ if and only if $n-1$ is not a sum of at most $k-2$
+powers of $2$.  This means $\alpha(n-1)\ge k-1$.  Finally
+$\alpha(n-1)=\alpha(n)+\nu(n)-1=\sigma(n)-1$.
+\end{proof}
+
+\begin{corollary}\label{cor:conjB2}
+Conjecture~\ref{conj:B} holds for $p=2$.  Moreover, for $p=2$ the following
+are equivalent: $\wt_n$ is $\GL_k$-invariant; $\Omega_n\in\Dk$;
+$\sigma(n)\ge k$.  When they hold, $\wt_n=\Omega_n$.  (For $k=1$ all three
+hold for every $n\ge1$.)
+\end{corollary}
+
+\begin{proof}
+By Theorem~\ref{thm:arnon}, $\Omega_n={}_k\omega_n$.  By (A2) this has integral
+exponents if and only if $\sigma(n)\ge k$, and then it equals $\wt_n$.  Combine
+this with Lemma~\ref{lem:transvection}.
+\end{proof}
+
+For example, for $k=3$ the integers $n\le40$ with $\sigma(n)<3$ are
+$1,2,3,5,9,17,33$, which are exactly the non-invariant $\wt_n$ listed after
+Proposition~\ref{prop:monomials}.
+
+\begin{remark}[Two-sided generating functions]\label{rem:twosided}
+Let $T(z)=\sum_{r\in\mathbb{Z}}z^{2^r}$.  Then
+$\sum_{n\in\mathbb{N}[\frac12]}{}_k\omega_n\,w^n=\prod_i\bigl(1+T(x_iw)\bigr)$,
+and the coefficient of each $w^n$ is a finite sum by (A2).  The one-sided series
+$S(z)=\sum_{r\ge0}z^{2^r}$ satisfies $S-S^2=z$, and
+Proposition~\ref{prop:monomials}(1) reads
+$\sum_n\wt_nw^n=\prod_i(1+S(x_iw))$.  The two-sided series instead satisfies
+$T^2=T$, so $\prod_i(1+T(x_iw))$ is idempotent.  This is the generating-function
+form of ${}_k\omega_{2n}={}_k\omega_n^2$.  The one-sided $\wt_n$ have no such
+relation, and they are not invariant when $\sigma(n)<k$.  Passing
+from $S$ to $T$ is what moves the Peterson elements into $\Dperf$, where the
+Lagrange elements $\Omega_n$ live.  For odd $p$ the analogous series
+$T_p(z)=\sum_{r\in\mathbb{Z}}z^{p^r}$ satisfies $T_p^p=T_p$, so
+$\prod_i(1-T_p(x_iw)^{p-1})$ is again Frobenius-stable.  We have not checked
+whether its coefficients are the $\Omega_n$ for odd $p$.
+\end{remark}
+
 \subsection{Computer verification}
 All checks below compute the action directly on polynomials in
 $\F[x_1,\dots,x_k]$, by substituting $x_i\mapsto T(x_i)$ (or
@@ -855,6 +976,9 @@ conjugate formula, invariant $\wt_n$ & $p=2$: $k=2,3$; $p=3$: $k\le3$; $p=5$: $k
 Conjecture~\ref{conj:B} & $p=2$: $k=3,4$, $n\le40$; $p=3$: $k=2$, $n\le 40$; & \\
   & \quad $k=3$, $n\le30$; $p=5$: $n\le40$; $p=7$: $n\le30$ ($k=2$) & 143\\
 $(\ast)$ for $\Omega_n$, all $n$ (in $\Dperf$) & $p=2$: $k=2,3$; $p=3$: $k=2$ & 134\\
+$\Omega_n={}_k\omega_n$ (Thm.~\ref{thm:arnon}) & $p=2$: $k=1$, $n\le30$; $k=2$, $n\le40$; & \\
+  & \quad $k=3$, $n\le24$; $k=4$, $n\le10$ & 108\\
+Lemma~\ref{lem:transvection} & $p=2$: $k=2,3,4$, $n\le40$ & 120\\
 $(\ast)$ for $P^{\Delta_j}=P(0,\dots,0,1)$, invariant $\wt_n$ & $p=2$: $k=3$ ($j=2,3$), $k=4$ ($j=2$); & \\
   & \quad $p=3$: $k=3$, $j=2$; $p=5$: $k=2$, $j=2$ & 75\\
 $G_{R,E}=0$ when $\alpha(D_R-E)\le(k-1)(p-1)$ & $p=2,3,5$; $k\le4$; $\ell(R)\le3$, $r_j\le p+1$ & $\approx10^6$\\
@@ -1029,7 +1153,20 @@ the Dickson map of the dual space.  Equation~\eqref{eq:F2}, with the adjoint
 $T^*$, suggests that this duality is the natural setting for these
 formulas.
 
+\emph{(c) Comparison with Arnon.}  For $p=2$, Arnon~\cite[\S\S4--5]{Arnon}
+studies a different kind of duality.  He forms the inverse limit
+$\widetilde D_\infty$ of the perfect Dickson algebras over $k$, and a
+nondegenerate symmetric pairing between its bounded part and
+$\widetilde D_\infty$ itself.  The pairing makes both into dual topological
+Hopf algebras.  In it the elements $\omega_n$ are dual to the powers of
+$\omega_1$, the coproduct is $\psi(\omega_n)=\sum_{i+j=n}\omega_i\otimes\omega_j$,
+and the left action of a completed Steenrod algebra is dual to a right action
+that he computes explicitly.  This construction is not used in the code, and
+\code{DicksonDualSteenrodAlgebra} is unrelated to it.
+
 \begin{thebibliography}{99}
+\bibitem{Arnon} D.~Arnon, \emph{Generalized Dickson invariants}, Israel J.\
+Math.\ \textbf{118} (2000), 183--205.
 \bibitem{Dickson} L.~E.~Dickson, \emph{A fundamental system of invariants of the
 general modular linear group with a solution of the form problem}, Trans.\ Amer.\
 Math.\ Soc.\ \textbf{12} (1911), 75--98.
