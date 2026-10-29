@@ -963,12 +963,27 @@ class DicksonAlgebra(DicksonBase):
         """
         implementation of the Steenrod algebra action via conjugates
 
+        The polynomial part uses the conjugate formula for Peterson elements.
+        The exterior generators tau_n use (1 x chi) applied to the coaction of
+        tau_n, so this agrees with the ordinary action composed with the
+        antipode.  NOTE: the model of the tau_n used by the ordinary action
+        (Delta(tau_n) = tau_n*1 + sum xi_{n-i}^{p^i}*tau_i with xi from
+        ``_xipower``) is not an A-module in general: for p=2, k=3, generic,
+        P(8) * xi_1 = d14 is nonzero, and associativity fails for
+        P(8), Q_0 on tau1*tau2.  So results involving the tau_n can be wrong.
+
         TESTS::
 
             sage: from yacop.modules.dickson import DicksonAlgebra
             sage: from yacop.utils.region import region
             sage: E=DicksonAlgebra(3,2)
-            sage: E._manual_test_left_conj_action(region(tmax=30,emax=30))
+            sage: E._manual_test_left_conj_action(region(tmax=30,emax=30)) # long time
+            488 non-zero multiplications checked
+            sage: A = SteenrodAlgebra(3); E.inject_variables()
+            Defining tau0, d12, tau1, d16
+            sage: all(op % m == op.antipode() * m for op in [A.Q(0), A.Q(1), A.P(1), A.P(0,1)]
+            ....:     for m in [tau1*d16, tau0*tau1, tau0*d12])
+            True
         """
         if idx & 1:
             num = (idx + 1) >> 1
@@ -987,14 +1002,51 @@ class DicksonAlgebra(DicksonBase):
                         self.peterson(n + deg, coeff=cf), 0, expos
                     )
         else:
-            # FIXME: the exterior part is wrong
             n = idx >> 1
-            # Delta(tau_n) = sum zeta_{n-i}^{p^i}*tau_i + tau_n*1
-            ppow = 1
+            # The conjugate coaction is (1 x chi) applied to
+            #   Delta(tau_n) = tau_n*1 + sum_i xi_{n-i}^{p^i} * tau_i,
+            # and chi(tau_i) = -sum_{j<=i} chi(xi_{i-j})^{p^j} * tau_j.
+            p = self._prime
             yield self._coaction_tensor(self._monomial_gen(idx + 1), 0, ())
             for i in range(0, n + 1):
-                yield self._coaction_tensor(self._zetapower(n - i, ppow), 1 << i, ())
-                ppow = ppow * self._prime
+                left = self._xipower(n - i, p ** i)
+                for j in range(0, i + 1):
+                    for (expos, cf) in self._conjugate_xi_monomials(i - j):
+                        yield self._coaction_tensor(
+                            left * (-cf), 1 << j, tuple(e * p ** j for e in expos)
+                        )
+
+    @cached_method
+    def _conjugate_xi_monomials(self, m):
+        """
+        The conjugate chi(xi_m) of the Milnor generator xi_m, as a list of
+        pairs (exponent tuple R, coefficient) for the monomials xi^R.
+
+        TESTS::
+
+            sage: from yacop.modules.dickson import DicksonAlgebra
+            sage: D = DicksonAlgebra(3,2)
+            sage: D._conjugate_xi_monomials(0)
+            [((), 1)]
+            sage: sorted(D._conjugate_xi_monomials(2))
+            [((0, 1), 2), ((4,), 1)]
+        """
+        p = self._prime
+        F = self.base_ring()
+        # chi(xi_m) = - sum_{i<m} xi_{m-i}^{p^i} chi(xi_i)
+        zeta = [{(): F.one()}]
+        for k in range(1, m + 1):
+            acc = {}
+            for i in range(k):
+                for (expos, cf) in zeta[i].items():
+                    e = list(expos) + [0] * max(0, k - i - len(expos))
+                    e[k - i - 1] += p ** i
+                    while e and e[-1] == 0:
+                        e.pop()
+                    key = tuple(e)
+                    acc[key] = acc.get(key, F.zero()) - cf
+            zeta.append({e: c for (e, c) in acc.items() if c})
+        return list(zeta[m].items())
 
     def _left_conjugate_coaction_on_basis(self, a, maxq, maxp):
         return self._coaction_helper(

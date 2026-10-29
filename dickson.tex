@@ -898,8 +898,16 @@ $\tau^Q$).  Then $P^R(m)$ is the sum of the $y$ with $R'=R$
   $\Delta\tau_n=\tau_n\otimes1+\sum_i\xi_{n-i}^{p^i}\otimes\tau_i$.  It reads
   $\xi_j$ as the element \code{\_xipower(j)} of the localised Dickson algebra,
   defined by $\xi_j=-\sum_{i<j}\xi_i\,\zeta_{j-i}^{p^i}$ with
-  $\zeta_i=c_{k,i}/c_{k,0}$.  We have not verified this part independently.
-  The source marks the corresponding conjugate formula with a \code{FIXME}.
+  $\zeta_i=c_{k,i}/c_{k,0}$.  This model is \emph{not} an $\A$-module in
+  general.  The elements \code{\_xipower(j)} satisfy Milnor's relations under
+  the operations $P(\Delta_i)$, but other operations need not kill them.  For
+  example, for $p=2$, $k=3$ (generic), a direct polynomial computation gives
+  $P(8)\,(c_{3,1}/c_{3,0})=c_{3,0}\ne0$, while $P(8)\xi_1=0$ in $\A_*$.
+  Consequently $(P(8)Q_0)(\tau_1\tau_2)=0$ but $P(8)(Q_0(\tau_1\tau_2))=\tau_2d_{14}$.
+  Results that involve the $\tau_n$ can therefore be wrong.  Determining the
+  correct action on the M\`ui generators is left open.  The conjugate action on
+  the $\tau_n$ is computed as (1$\otimes\chi$) of this coaction, so it agrees with
+  the ordinary action composed with the antipode.
 \end{enumerate}
 Because $\Dk$ is a polynomial algebra, (1)--(3) determine the action
 completely.  Together with Theorem~\ref{thm:gen} this proves that the $\Dk$

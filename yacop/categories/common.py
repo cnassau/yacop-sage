@@ -447,7 +447,10 @@ class CommonParentMethods:
                 return (op1 * op2) % a
 
             def RHS(op1, op2, a):
-                return op2 % (op1 % a)
+                # chi is a graded anti-automorphism:
+                # chi(op1*op2) = (-1)^(|op1||op2|) chi(op2) chi(op1)
+                sgn = -1 if (op1.degree() * op2.degree()) & 1 else 1
+                return sgn * (op2 % (op1 % a))
 
         elif mode == "rightconj":
 
@@ -455,7 +458,8 @@ class CommonParentMethods:
                 return a % (op1 * op2)
 
             def RHS(op1, op2, a):
-                return (a % op2) % op1
+                sgn = -1 if (op1.degree() * op2.degree()) & 1 else 1
+                return sgn * ((a % op2) % op1)
 
         elif mode == "bimodconj":
 
