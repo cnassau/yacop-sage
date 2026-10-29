@@ -93,7 +93,8 @@ where the second factor is a multinomial coefficient.  The code (functions
   conjugate action (Theorem~\ref{thm:conjall}).  Table~\ref{tab:checks} lists
   independent computer checks.
 \item Section~\ref{sec:whole} explains how the code obtains the action on all
-  of $\Dk$ (and on the M\`ui generators), and Section~\ref{sec:dual} explains
+  of $\Dk$, Section~\ref{sec:mui} derives the action on the M\`ui generators,
+  and Section~\ref{sec:dual} explains
   \code{DicksonDualSteenrodAlgebra}.
 \end{itemize}
 
@@ -166,9 +167,9 @@ $R_{k,i}$ ($0\le i<k$) of degree $2(p^k-1)-2p^i+1$, with $R_{k,i}^2=0$.  These
 are built from Moore-type determinants with one row of $y$'s; see
 also~\cite{KamekoMimura}.  The \code{DicksonAlgebra} class with
 \code{generic=True} adds odd generators $\tau_i$ of degree $1-2p^i$ to $\Dk$.
-Their degrees are those of $R_{k,i}/Q_{k,0}$.  The code treats them as images
-of Milnor's $\tau_i$; see Section~\ref{sec:whole}.  This note concentrates on
-the polynomial part~$\Dk$.
+These are the invariants $R_{k,i}/Q_{k,0}$ (up to sign).  Their action is
+derived in Section~\ref{sec:mui}.  Apart from that section, this note
+concentrates on the polynomial part~$\Dk$.
 
 \section{Peterson elements}\label{sec:peterson}
 
@@ -894,20 +895,10 @@ $\tau^Q$).  Then $P^R(m)$ is the sum of the $y$ with $R'=R$
   \code{\_zetapower}, \code{\_xipower} involve $c_{k,0}^{-1}$), a negative
   exponent $-e$ is written as $-p^u+(p^u-e)$, with $p^u$ larger than every
   entry of $R$.  Then $c_{k,0}^{-p^u}$ is invariant under all relevant $P^{R'}$.
-\item \emph{M\`ui generators.}  For $\tau_n$ the code uses Milnor's coproduct
-  $\Delta\tau_n=\tau_n\otimes1+\sum_i\xi_{n-i}^{p^i}\otimes\tau_i$.  It reads
-  $\xi_j$ as the element \code{\_xipower(j)} of the localised Dickson algebra,
-  defined by $\xi_j=-\sum_{i<j}\xi_i\,\zeta_{j-i}^{p^i}$ with
-  $\zeta_i=c_{k,i}/c_{k,0}$.  This model is \emph{not} an $\A$-module in
-  general.  The elements \code{\_xipower(j)} satisfy Milnor's relations under
-  the operations $P(\Delta_i)$, but other operations need not kill them.  For
-  example, for $p=2$, $k=3$ (generic), a direct polynomial computation gives
-  $P(8)\,(c_{3,1}/c_{3,0})=c_{3,0}\ne0$, while $P(8)\xi_1=0$ in $\A_*$.
-  Consequently $(P(8)Q_0)(\tau_1\tau_2)=0$ but $P(8)(Q_0(\tau_1\tau_2))=\tau_2d_{14}$.
-  Results that involve the $\tau_n$ can therefore be wrong.  Determining the
-  correct action on the M\`ui generators is left open.  The conjugate action on
-  the $\tau_n$ is computed as (1$\otimes\chi$) of this coaction, so it agrees with
-  the ordinary action composed with the antipode.
+\item \emph{M\`ui generators.}  The exterior generators $\tau_n$ are handled by
+  the coaction of Theorem~\ref{thm:mui} (\code{\_tau\_coaction}), using the
+  Dickson part for the coefficients $\Lambda(\rho_{N,j})$; see
+  Section~\ref{sec:mui}.
 \end{enumerate}
 Because $\Dk$ is a polynomial algebra, (1)--(3) determine the action
 completely.  Together with Theorem~\ref{thm:gen} this proves that the $\Dk$
@@ -916,6 +907,84 @@ part of the code is correct for the ordinary action.  The conjugate action
 the Dickson generators, so its $\Dk$ part is correct too.  The code also offers an
 independent route, \code{admissible\_action}, through admissible matrices, and
 restriction maps $D_k\to D_{k'}$ for $k'<k$; these are not discussed here.
+
+\section{The M\`ui generators}\label{sec:mui}
+
+Let $p$ be odd, or $p=2$ with the generic Steenrod algebra.  Then
+$H^*(BV_k)=E(y_1,\dots,y_k)\otimes H$ with $|y_i|=1$ and $\beta y_i=x_i$.  We
+extend the total operation by odd parameters $e_0,e_1,\dots$ dual to the Milnor
+primitives $Q_l$:
+\[
+  \Lambda(x)=T(x)=\sum_jt_jx^{p^j},\qquad
+  \Lambda(y)=y+E(x),\quad E(X)=\sum_le_lX^{p^l}.
+\]
+This is Milnor's coaction $\lambda(y)=y\otimes1+\sum_lx^{p^l}\otimes\tau_l$ in
+total form.
+
+\emph{The generators.}  The Moore matrix $(x_i^{p^j})_{i,j<k}$ is invertible
+over $\mathrm{Frac}(H)$.  So there are unique elements $\tau_0,\dots,\tau_{k-1}$,
+linear in the $y_i$, with
+\begin{equation}\label{eq:muidef}
+  y_v=\tau(x_v):=\sum_{j<k}\tau_j\,x_v^{p^j}\qquad\text{for all }v\in V,
+\end{equation}
+where $y_v,x_v$ denote the classes corresponding to $v$.  By uniqueness the
+$\tau_j$ are $\GL_k$-invariant, and $|\tau_j|=1-2p^j$.  Up to sign,
+$\tau_j=M_{k,j}/L_k$ is M\`ui's invariant divided by the Moore determinant,
+equivalently $R_{k,j}/Q_{k,0}$~\cite{Mui}.  These are the generators
+\code{tau\{j\}} of \code{DicksonAlgebra(p,k)} (with \code{generic=True} if
+$p=2$).  Write $\rho_{N,j}\in\Dk$ for the coefficients of the reduction
+$X^{p^N}\equiv\sum_{j<k}\rho_{N,j}X^{p^j}\bmod f_V$
+(\code{\_reduced\_frobenius}).  Also let $C=T^{-1}=\sum_mc_mX^{p^m}$, so that
+$c_m=\chi(\xi_m)(t)$.
+
+\begin{theorem}\label{thm:mui}
+\[
+  \Lambda(\tau_j)=\sum_{N\ge0}\Bigl[\sum_{i+m=N}\tau_i\,c_m^{p^i}
+  +\sum_{l+m=N}e_l\,c_m^{p^l}\Bigr]\Lambda(\rho_{N,j}) .
+\]
+In particular $Q_l\tau_j=\rho_{l,j}$, which is $\delta_{lj}$ for $l<k$.
+\end{theorem}
+
+\begin{proof}
+Apply the ring homomorphism $\Lambda$ to~\eqref{eq:muidef}.  This gives
+$\Lambda(\tau)(T(v))=y_v+E(x_v)=(\tau+E)(v)$ for $v\in V$, where $\Lambda(\tau)$
+is the additive polynomial $\sum_j\Lambda(\tau_j)X^{p^j}$.  Consider the
+additive series $(\tau+E)\circ C$, which converges $t$-adically.  It takes the
+same values on $T(V)$ as $\Lambda(\tau)$.  Divide by the monic polynomial
+$f_{T(V)}=\Lambda(f_V)$.  The remainder of $\Lambda(\tau)-(\tau+E)\circ C$ has
+degree $<p^k$ and vanishes on the $p^k$ elements of $T(V)$, so it is zero.
+Since $\Lambda(\tau)$ already has degree $<p^k$, it equals the remainder of
+$(\tau+E)\circ C$.  Now
+$(\tau+E)\circ C=\sum_N\bigl[\sum_{i+m=N}\tau_ic_m^{p^i}+\sum_{l+m=N}e_lc_m^{p^l}\bigr]X^{p^N}$.
+The remainder of $X^{p^N}$ modulo $f_{T(V)}$ is
+$\sum_j\Lambda(\rho_{N,j})X^{p^j}$, because $\rho_{N,j}$ is a polynomial in the
+Dickson invariants.
+\end{proof}
+
+In coaction language, $t_j\leftrightarrow\xi_j$, $c_m\leftrightarrow\chi(\xi_m)$
+and $e_l\leftrightarrow\tau_l$.  The coefficients $\Lambda(\rho_{N,j})$ are
+computed by the Dickson part (Theorem~\ref{thm:all}).  The conjugate coaction is
+obtained by applying $1\otimes\chi$.  In it $c_m\leftrightarrow\xi_m$ and
+$e_l\leftrightarrow\chi(\tau_l)=-\sum_{j\le l}\chi(\xi_{l-j})^{p^j}\tau_j$.
+
+\begin{remark}
+Earlier versions of the code used the model
+$\Delta\tau_n=\tau_n\otimes1+\sum_i\xi_{n-i}^{p^i}\otimes\tau_i$, with $\xi_j$ the
+elements \code{\_xipower(j)} of $\Dk[c_{k,0}^{-1}]$.  It made reduced powers
+kill the $\tau_n$.  This is not an $\A$-module.  For $p=2$, $k=3$, a direct
+polynomial computation gives $P(8)(c_{3,1}/c_{3,0})=c_{3,0}\ne0$, whereas
+$P(8)\xi_1=0$ in $\A_*$.  Consequently
+$(P(8)Q_0)(\tau_1\tau_2)=0\ne P(8)(Q_0(\tau_1\tau_2))$ in that model.  By
+Theorem~\ref{thm:mui}, reduced powers do not kill the $\tau_n$; for example
+$P^1\tau_1=-\tau_0$.
+\end{remark}
+
+\emph{Verification.}  For $p=3$ ($k=1,2$), $p=5$ ($k=2$) and $p=2$ generic
+($k=2$), the new code agrees with a direct computation of $P^r\tau_j$ in
+$H^*(BV_k)$, where $\tau_j$ is written as an explicit linear form in the $y_i$
+with rational coefficients.  The action passes the associativity tests, for
+both the ordinary and the conjugate action, on the regions where the old model
+failed.
 
 \section{The dual Dickson algebras}\label{sec:dual}
 

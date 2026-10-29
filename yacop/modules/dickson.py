@@ -948,29 +948,15 @@ class DicksonAlgebra(DicksonBase):
                         self.peterson(n + deg, coeff=cf), 0, expos
                     )
         else:
-            n = idx >> 1
-            # Delta(tau_n) = sum zeta_{n-i}^{p^i}*tau_i + tau_n*1
-            ppow = 1
-            yield self._coaction_tensor(self._monomial_gen(idx + 1), 0, ())
-            # print "Delta(tau%d)" % n
-            # print self._coaction_tensor(self._monomial_gen(idx+1), 0, ())
-            for i in range(0, n + 1):
-                # print self._coaction_tensor(self._zetapower(n - i, ppow), 1<<i, ())
-                yield self._coaction_tensor(self._xipower(n - i, ppow), 1 << i, ())
-                ppow = ppow * self._prime
+            for t in self._tau_coaction(idx >> 1, maxQ, maxP, conjugate=False):
+                yield t
 
     def _left_conjugate_steenrod_coaction_milnor_gen(self, idx, maxQ, maxP):
         """
         implementation of the Steenrod algebra action via conjugates
 
-        The polynomial part uses the conjugate formula for Peterson elements.
-        The exterior generators tau_n use (1 x chi) applied to the coaction of
-        tau_n, so this agrees with the ordinary action composed with the
-        antipode.  NOTE: the model of the tau_n used by the ordinary action
-        (Delta(tau_n) = tau_n*1 + sum xi_{n-i}^{p^i}*tau_i with xi from
-        ``_xipower``) is not an A-module in general: for p=2, k=3, generic,
-        P(8) * xi_1 = d14 is nonzero, and associativity fails for
-        P(8), Q_0 on tau1*tau2.  So results involving the tau_n can be wrong.
+        The polynomial part uses the conjugate formula for Peterson elements,
+        the exterior generators use :meth:`_tau_coaction`.
 
         TESTS::
 
@@ -1002,19 +988,120 @@ class DicksonAlgebra(DicksonBase):
                         self.peterson(n + deg, coeff=cf), 0, expos
                     )
         else:
-            n = idx >> 1
-            # The conjugate coaction is (1 x chi) applied to
-            #   Delta(tau_n) = tau_n*1 + sum_i xi_{n-i}^{p^i} * tau_i,
-            # and chi(tau_i) = -sum_{j<=i} chi(xi_{i-j})^{p^j} * tau_j.
-            p = self._prime
-            yield self._coaction_tensor(self._monomial_gen(idx + 1), 0, ())
-            for i in range(0, n + 1):
-                left = self._xipower(n - i, p ** i)
-                for j in range(0, i + 1):
-                    for (expos, cf) in self._conjugate_xi_monomials(i - j):
-                        yield self._coaction_tensor(
-                            left * (-cf), 1 << j, tuple(e * p ** j for e in expos)
-                        )
+            for t in self._tau_coaction(idx >> 1, maxQ, maxP, conjugate=True):
+                yield t
+
+    @cached_method
+    def _reduced_frobenius(self, N):
+        """
+        The reduction of X^(p^N) modulo the Dickson polynomial
+        f(X) = sum_i c_{k,i} X^(p^i): the list of coefficients rho_{N,j},
+        j < k, with X^(p^N) = sum_j rho_{N,j} X^(p^j) mod f.
+
+        TESTS::
+
+            sage: from yacop.modules.dickson import DicksonAlgebra
+            sage: D = DicksonAlgebra(2,2,generic=False); D.inject_variables()
+            Defining d2, d3
+            sage: D._reduced_frobenius(1), D._reduced_frobenius(2), D._reduced_frobenius(3)
+            ([0, 1], [d3, d2], [d2*d3, d3 + d2**2])
+        """
+        k, p = self._index, self._prime
+        if N < k:
+            return [self.one() if j == N else self.zero() for j in range(k)]
+        prev = self._reduced_frobenius(N - 1)
+        # c_{k,i} is the generator d with index 2(k-i), and c_{k,k} = 1
+        c = [self._monomial_gen(2 * (k - i)) for i in range(k)]
+        new = [self.zero()] * k
+        for j in range(k):
+            if prev[j].is_zero():
+                continue
+            pw = prev[j] ** p
+            if j + 1 < k:
+                new[j + 1] += pw
+            else:
+                for i in range(k):
+                    new[i] -= pw * c[i]
+        return new
+
+    def _tau_coaction(self, n, maxQ, maxP, conjugate=False):
+        r"""
+        Coaction of the exterior generator tau_n = -mu_n.
+
+        The mu_j (j<k) are the Mui invariants (divided by L_k) defined by
+        y_v + sum_j mu_j x_v^(p^j) = 0 for all v in V.  The total operation
+        maps x -> T(x) = sum t_j x^(p^j) and y -> y + E(x) with
+        E(X) = sum e_l X^(p^l).  Writing C = T^(-1) = sum c_m X^(p^m) and
+        X^(p^N) = sum_j rho_{N,j} X^(p^j) mod f_V, one gets
+
+            Lambda(tau_j) = sum_N [ sum_{i+m=N} tau_i c_m^(p^i)
+                                    + sum_{l+m=N} e_l c_m^(p^l) ] Lambda(rho_{N,j}).
+
+        Here t ~ xi and c_m ~ chi(xi_m), e_l ~ tau_l.  For the conjugate
+        action apply (1 x chi): c_m ~ xi_m and e_l ~ chi(tau_l).
+        """
+        k, p = self._index, self._prime
+        maxP = list(maxP)
+        # every monomial of chi(xi_m) or xi_m has index weight m
+        mbound = sum((j + 1) * e for (j, e) in enumerate(maxP))
+        qtop = int(maxQ).bit_length()
+        coact = (
+            self._left_conjugate_coaction_on_basis
+            if conjugate
+            else self._left_coaction_on_basis
+        )
+
+        def xi_monomials(m):
+            if conjugate:
+                return [((), 1)] if m == 0 else [(tuple([0] * (m - 1) + [1]), 1)]
+            return self._conjugate_xi_monomials(m)
+
+        def scaled(expos, f):
+            return tuple(e * f for e in expos)
+
+        def add(e1, e2):
+            n1 = max(len(e1), len(e2))
+            a = list(e1) + [0] * (n1 - len(e1))
+            for (i, e) in enumerate(e2):
+                a[i] += e
+            while a and a[-1] == 0:
+                a.pop()
+            return tuple(a)
+
+        bases = []
+        # tau-part: tau_i (x) (xi-monomial)^(p^i), contributing to X^(p^(i+m))
+        for i in range(k):
+            tau_i = self._monomial_gen(2 * i + 1)
+            for m in range(mbound + 1):
+                for (expos, cf) in xi_monomials(m):
+                    bases.append((i + m, tau_i * cf, 0, scaled(expos, p ** i)))
+        # e-part: e_l c_m^(p^l), contributing to X^(p^(l+m)).  For the
+        # conjugate, chi(tau_l) involves tau_j with j <= l and
+        # chi(xi_{l-j})^(p^j) of weight l-j, so l can exceed qtop.
+        for l in range(qtop + (mbound if conjugate else 0)):
+            for m in range(mbound + 1):
+                for (expos, cf) in xi_monomials(m):
+                    e2 = scaled(expos, p ** l)
+                    if not conjugate:
+                        bases.append((l + m, self.one() * cf, 1 << l, e2))
+                    else:
+                        # chi(tau_l) = -sum_{j<=l} chi(xi_{l-j})^(p^j) tau_j
+                        for j in range(l + 1):
+                            for (ex, c2) in self._conjugate_xi_monomials(l - j):
+                                bases.append(
+                                    (l + m, self.one() * (-cf * c2), 1 << j,
+                                     add(scaled(ex, p ** j), e2))
+                                )
+        for (N, res, q, pexp) in bases:
+            base = self._coaction_tensor(res, q, pexp)
+            for rem in base.filter(maxQ, maxP):
+                _, mq2, mp2 = rem
+                rho = self._reduced_frobenius(N)[n]
+                for (key, cf) in rho:
+                    b2 = self._coaction_tensor(res * cf, q, pexp)
+                    for t in coact(key, mq2, mp2):
+                        for r in b2 * t:
+                            yield r
 
     @cached_method
     def _conjugate_xi_monomials(self, m):
