@@ -566,12 +566,11 @@ class DicksonAlgebra(DicksonBase):
             123   [tau0*d36**2*d52, tau2*d36*d52**2]
             sage: TestSuite(E).run()
 
-            sage: # the following failes once
             sage: A=SteenrodAlgebra(3)
             sage: A.P(1)*(A.Q(0)*(tau0*tau1))
-            2*tau0*d52
+            2*tau0
             sage: (A.P(1)*A.Q(0))*(tau0*tau1)
-            2*tau0*d52
+            2*tau0
 
             sage: F=DicksonAlgebra(5,2,generic=False); F
             Dickson algebra D(2) for prime 5
@@ -850,7 +849,7 @@ class DicksonAlgebra(DicksonBase):
             yield (1, [], 0, partialsum, expsum)
 
     def _left_steenrod_coaction_milnor_gen(self, idx, maxQ, maxP):
-        """
+        r"""
         implementation of the Steenrod algebra action
 
         TESTS::
@@ -882,35 +881,33 @@ class DicksonAlgebra(DicksonBase):
             sage: E=DicksonAlgebra(2,4,generic=True) ; E.inject_variables()
             Defining tau0, d16, tau1, d24, tau2, d28, tau3, d30
             sage: E._manual_test_left_action(region(tmax=12,tmin=10),opdeg=15) # long time
-            384 non-zero multiplications checked
+            412 non-zero multiplications checked
             sage: A=SteenrodAlgebra(2,generic=True)
             sage: [(i,A.P(i)*d30) for i in range(60) if A.P(i)*d30 != 0]
             [(0, d30), (8, d16*d30), (12, d24*d30), (14, d28*d30), (15, d30**2)]
             sage: [(i,A.P(i)*d16) for i in range(60) if A.P(i)*d16 != 0]
             [(0, d16), (4, d24), (6, d28), (7, d30), (8, d16**2)]
             sage: [(g,A.Q(0)*g) for g in E.gens()]
-            [(tau0, 1),
-             (d16, 0),
-             (tau1, d28*d30**(-1)),
-             (d24, 0),
-             (tau2, d28**3*d30**(-3) + d24*d30**(-1)),
-             (d28, 0),
-             (tau3,
-             d28**7*d30**(-7) + d24*d28**4*d30**(-5) + d24**2*d28*d30**(-3) + d16*d30**(-1)),
-             (d30, 0)]
+            [(tau0, 1), (d16, 0), (tau1, 0), (d24, 0), (tau2, 0), (d28, 0), (tau3, 0), (d30, 0)]
             sage: [(g,A.Q(1)*g) for g in E.gens()[::2]]
-            [(tau0, 0),
-             (tau1, 1),
-             (tau2, d28**2*d30**(-2)),
-             (tau3, d28**6*d30**(-6) + d24**2*d30**(-2))]
+            [(tau0, 0), (tau1, 1), (tau2, 0), (tau3, 0)]
             sage: [(g,A.Q(2)*g) for g in E.gens()[::2]]
-            [(tau0, 0), (tau1, 0), (tau2, 1), (tau3, d28**4*d30**(-4))]
-            sage: E._manual_test_left_action(region(tmax=10,tmin=-10)) #long time
-            2044 non-zero multiplications checked
+            [(tau0, 0), (tau1, 0), (tau2, 1), (tau3, 0)]
+
+        For `l \ge k` the Milnor primitive `Q_l` gives the reduction of
+        `X^{p^l}` modulo the Dickson polynomial, and reduced powers do not
+        kill the `\tau_j`::
+
+            sage: [(g,A.Q(4)*g) for g in E.gens()[::2]]
+            [(tau0, d30), (tau1, d28), (tau2, d24), (tau3, d16)]
+            sage: [(g,A.P(1)*g) for g in E.gens()[::2]]
+            [(tau0, 0), (tau1, tau0), (tau2, 0), (tau3, 0)]
+            sage: E._manual_test_left_action(region(tmax=4,tmin=-6)) # long time
+            111 non-zero multiplications checked
 
             sage: F = DicksonAlgebra(3, 2)
             sage: F._manual_test_left_action(region(tmax=20),opdeg=20)
-            479 non-zero multiplications checked
+            567 non-zero multiplications checked
             sage: A = SteenrodAlgebra(3)
             sage: for g in F.gens()[1::2]:
             ....:    for n in range(50):
@@ -964,7 +961,7 @@ class DicksonAlgebra(DicksonBase):
             sage: from yacop.utils.region import region
             sage: E=DicksonAlgebra(3,2)
             sage: E._manual_test_left_conj_action(region(tmax=30,emax=30)) # long time
-            488 non-zero multiplications checked
+            812 non-zero multiplications checked
             sage: A = SteenrodAlgebra(3); E.inject_variables()
             Defining tau0, d12, tau1, d16
             sage: all(op % m == op.antipode() * m for op in [A.Q(0), A.Q(1), A.P(1), A.P(0,1)]
@@ -1004,7 +1001,7 @@ class DicksonAlgebra(DicksonBase):
             sage: D = DicksonAlgebra(2,2,generic=False); D.inject_variables()
             Defining d2, d3
             sage: D._reduced_frobenius(1), D._reduced_frobenius(2), D._reduced_frobenius(3)
-            ([0, 1], [d3, d2], [d2*d3, d3 + d2**2])
+            ([0, 1], [d3, d2], [d2**2*d3, d3**2 + d2**3])
         """
         k, p = self._index, self._prime
         if N < k:
